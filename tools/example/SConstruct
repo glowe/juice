@@ -273,8 +273,7 @@ env.Depends(proj_js, settings)
 proj_settings = env.proj_settings()
 
 if should_lint:
-    # Kind of a hack to use demo as an ignore dir. demo should really be a different juice project.
-    for f in glob_js_recursive('juice', 'demo'):
+    for f in glob_js_recursive('juice'):
         env.lint_js(str(f))
     for f in glob_js_recursive('proj'):
         env.lint_js(str(f))
