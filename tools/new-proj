@@ -1,0 +1,62 @@
+#!/bin/bash
+
+program_name=$0
+project_base_path=$1;
+project_name=$2;
+function usage()
+{
+    echo "NAME"
+    echo "    $program_name"
+    echo
+    echo "SYNOPSIS"
+    echo "    $program_name PROJECT_BASE_PATH PROJECT_NAME"
+    echo
+    echo "DESCRIPTION"
+    echo
+    echo "    Starts a new juice project."
+    echo
+    exit 1
+}
+
+if [ ! $project_base_path ]; then
+    usage
+fi
+
+if [ ! $project_name ]; then
+    usage
+fi
+
+project_path=$project_base_path/$project_name
+
+if [ -d $project_path ]; then
+    echo "Error: $project_path is not empty!"
+    exit 2;
+fi
+
+if [ ! -d $project_base_path ]; then
+    echo "Creating $project_base_path"
+    mkdir -p $project_base_path
+fi
+
+echo "Setting up empty project..."
+rsync -ar tools/example/ $project_path
+
+echo "Renaming files"
+mv $project_path/project/settings/new_project.js $project_path/project/settings/${project_name}.js
+
+replace="s/new_project/${project_name}/g"
+sed -i $replace $project_path/project/settings/${project_name}.js
+mv $project_path/project/style/new_project.ecss $project_path/project/style/$project_name.ecss
+sed -i $replace $project_path/project/SConscript
+
+
+echo "Creating symlink..."
+ln -sf $PWD $project_path
+echo "Done."
+echo ""
+echo "To build type:"
+echo "cd $project_path"
+echo "scons site=$project_name"
+echo ""
+echo "To start juice:"
+echo "juice/tools/run-server site=$project_name"

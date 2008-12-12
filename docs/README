@@ -1,0 +1,139 @@
+COMPILING SPIDERMONKEY WITH THE FILE OBJECT
+
+If you find that your build times are intolerably slow, you should consider
+using spidermonkey since it's significantly faster than Rhino. However, most
+default binaries do not include support for file operations. There are
+instructions on Mozilla's website on how to compile spidermonkey with file
+support, but they are incomplete and inaccurate. Here's how we did it:
+
+1.) Ensure that you have the Netscape Portable Runtime Environment (nspr)
+library and header files. This library provides the prerequisites for file
+I/O.
+
+On a Debian-based distribution, the package is probably called libnspr4-dev.
+Use aptitude to install it:
+
+sudo aptitude install libnspr4-dev
+
+On a RedHat-based distribution the package is probably called nspr-devel.
+Use yum to install it:
+
+sudo yum install nspr-devel
+
+2.) Download and extract the spidermonkey source archive.
+
+mkdir mozilla
+cd mozilla
+wget http://ftp.mozilla.org/pub/mozilla.org/js/js-1.7.0.tar.gz
+tar xzf js-1.7.0.tar.gz
+
+3.) The spidermonkey Makefile assumes that the include path and lib path are
+in a dist directory, so you'll need to correct it. Look for this block in
+js/src/Makefile.ref:
+
+ifdef JS_THREADSAFE
+DEFINES += -DJS_THREADSAFE
+INCLUDES += -I$(DIST)/include/nspr
+ifdef USE_MSVC
+OTHER_LIBS += $(DIST)/lib/libnspr$(NSPR_LIBSUFFIX).lib
+else
+OTHER_LIBS += -L$(DIST)/lib -lnspr$(NSPR_LIBSUFFIX)
+endif
+endif
+
+Change $(DIST) to /usr (that's the default prefix where nspr is installed).
+
+ifdef JS_THREADSAFE
+DEFINES += -DJS_THREADSAFE
+INCLUDES += -I/usr/include/nspr
+ifdef USE_MSVC
+OTHER_LIBS += /usr/lib/libnspr$(NSPR_LIBSUFFIX).lib
+else
+OTHER_LIBS += -L/usr/lib -lnspr$(NSPR_LIBSUFFIX)
+endif
+endif
+
+Note, on RedHat the include directory for nspr is /usr/include/nspr4. So
+change this line:
+
+INCLUDES += -I/usr/include/nspr
+
+to
+
+INCLUDES += -I/usr/include/nspr4
+
+
+4.) Now, build SpiderMonkey with the following commands:
+
+cd mozilla/js/src
+make -f Makefile.ref JS_THREADSAFE=1 JS_HAS_FILE_OBJECT=1
+
+If you incorrectly specify arguments, you'll probably need to run the clean
+target and repeat things:
+
+make -f Makefile.ref clean
+
+5.) You should now have a js binary in mozilla/js/src/Linux_All_DBG.OBJ:
+
+./Linux_All_DBG.OBJ/js
+js> print("hello world")
+print("hello world")
+hello world
+js> quit()
+quit()
+
+6.) Copy that binary into your path and you're good to go.
+
+STARTING A NEW PROJECT
+
+You can setup a new project by using the new_project.sh utility:
+
+tools/new_project.sh PROJECT_BASE_DIR PROJECT_NAME
+
+This program will setup your project with the standard project layout and a
+default welcome page. It will also provide you with instructions on how to
+build your project and how to run the development webserver.
+
+STARTING A NEW WIDGET OR RPC PACKAGE
+
+Once you've setup your project, you'll want to start creating widget packages and rpc packages. You can use the new_pkg.js utility:
+
+js juice/tools/new_pkg.js [widget|rpc] PKG_NAME
+
+This will create the appropriate stub files for you in the appropriate
+directory locations.
+
+COMPILING THE V8 SHELL (DO NOT USE)
+
+svn checkout http://v8.googlecode.com/svn/trunk/ v8-read-only
+cd v8-read-only
+scons mode=release snapshot=on library=shared
+
+produces
+
+libv8.so
+
+sudo cp libv8.so /usr/local/lib
+
+sudo cp include/v8.h /usr/local/include
+
+sudo /sbin/ldconfig
+
+Now change directories to $JUICE_HOME/ext/tools and run make
+
+make
+
+Put v8 in your path.
+
+cp v8 ~/bin/
+
+v8
+V8 version 0.3.1
+> print("Hello World")
+Hello World
+
+
+
+
+
+

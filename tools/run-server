@@ -1,0 +1,37 @@
+#!/usr/bin/python
+import os
+import sys
+
+class UsageError(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
+def run_server(args):
+    mode = 'debug'
+    site = ''
+    try:
+        for arg in args[1:]:
+            (k, v) = arg.split('=')
+            if k == 'mode':
+                if v not in ('debug', 'release'):
+                    raise UsageError('mode must be either debug or release, it was = %s' % v)
+                mode = v
+            elif k == 'site':
+                site = v
+            else:
+                raise UsageError('Unrecognized option: ' + k)
+        if site == '':
+            raise UsageError('Empty site')
+
+        os.chdir('build/' + site + '/' + mode + '/htdocs')
+        import SimpleHTTPServer
+        # hack to make SimpleHTTPServer work
+        sys.argv = []
+        SimpleHTTPServer.test()
+    except UsageError, e:
+        print e.msg
+        print "Usage: " + args[0] + " site=SITE [mode=debug|release]"
+        sys.exit(-2)
+
+if __name__ == '__main__':
+    run_server(sys.argv)

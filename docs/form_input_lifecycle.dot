@@ -1,0 +1,18 @@
+// dot -Tps -O form_input_lifecycle.dot
+
+digraph form_input_lifecycle
+{
+    node[fontname="Helvetica", fontsize=10];
+    edge[fontname="Helvetica", fontsize=10];
+    rankdir=LR;
+
+    A [label="neither input nor form is ready"];
+    B [label="input is ready"];
+    C [label="form is ready"];
+    D [label="input and form are ready"];
+
+    A -> B [label="data"];
+    A -> C [label="form init"];
+    B -> D [label="form init"];
+    C -> D [label="data"];
+}

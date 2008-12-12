@@ -1,0 +1,14 @@
+// dot -Tps -O widget_lifecycle.dot
+
+digraph widget_lifecycle
+{
+    node[fontname="Helvetica", fontsize=10];
+    edge[fontname="Helvetica", fontsize=10];
+    rankdir=LR;
+
+    disposed [peripheries=2];
+
+    constructed -> rendered [label="render"];
+    rendered -> domified [label="inserted into dom"];
+    domified -> disposed [label="remove"];
+}

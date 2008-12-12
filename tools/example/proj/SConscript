@@ -1,0 +1,3 @@
+Import('*')
+env.Append(BUILDERS = {'ecss': Builder(action = 'ecss -i $SOURCE -o $TARGET')})
+env.ecss(bs.make_htdocs_path('style/new_proj.css'), 'style/new_proj.ecss')

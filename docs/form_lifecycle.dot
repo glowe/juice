@@ -1,0 +1,40 @@
+// dot -Tps -O form_lifecycle.dot
+
+digraph form_lifecycle
+{
+    orientation=landscape;
+    node[fontname="Helvetica", fontsize=10];
+    edge[fontname="Helvetica", fontsize=10];
+    rankdir=TB;
+
+    A [label="some inputs are not ready, form is not ready"];
+    B [label="all inputs are ready"];
+    C [label="form is ready"];
+    D [label="form and all its inputs are ready"];
+
+    A -> B [label="all inputs are ready"];
+    A -> C [label="form.init()"];
+    B -> D [label="form.init()"];
+    C -> D [label="all inputs are ready"];
+
+    E [label="neither input nor form is ready"];
+    F [label="input is ready"];
+    G [label="form is ready"];
+    H [label="input and form are ready"];
+
+    E -> F [label="data"];
+    E -> G [label="form init"];
+    F -> H [label="form init"];
+    G -> H [label="data"];
+
+    I [label="somes inputs are not ready, form is not ready"];
+    J [label="all inputs are ready"];
+    K [label="form is ready"];
+    L [label="all inputs and form are ready"];
+
+    I -> J [label="all inputs are ready"];
+    I -> K [label="form init"];
+    J -> L [label="form init"];
+    K -> L [label="all inputs are ready"];
+
+}
