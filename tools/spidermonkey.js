@@ -27,7 +27,7 @@
                      return lines.join('\n');
                  }
                  catch (e) {
-                     juice.error.raise('io_error', {path: path, e: e});
+                     juice.error.raise('IO error trying to read file: ' + path, {e: e});
                  }
                  return undefined;
              };
