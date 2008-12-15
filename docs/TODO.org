@@ -2,11 +2,11 @@
 #+STARTUP: overview
 
 * STARTED automatically generate form html/template based on abstract description of form inputs
-  [ ] Double-click protection
+  [X] Double-click protection
   [ ] General form error label at top of form?
-  [ ] RPC to load data? lazy-loaded form input?
-  [ ] Is form input ready? and disable form until it is
-  [ ] Preloading a form input with values. Is this different than with ref data from an RPC?
+  [X] RPC to load data? lazy-loaded form input?
+  [X] Is form input ready? and disable form until it is
+  [X] Preloading a form input with values. Is this different than with ref data from an RPC?
 * IMPORTANT Add facility to ignore success or failure functions when rpc finishes
   This will be important when adding rpc-based form validation. If the user
   submits the form, we shouldn't honor the request.
