@@ -7,7 +7,7 @@ proj_settings_filename = arguments[1];
 load(proj_settings_filename);
 
 files.push('proj/layouts.js');
-juice.foreach(['proj/prelude', 'proj/pages', 'proj/decorators'],
+juice.foreach(['proj/prelude', 'proj/pages'],
              function(dir) {
                  files = files.concat(juice.build.ls(dir, /[.]js$/));
              });

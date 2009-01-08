@@ -33,9 +33,9 @@
              var
              call_linked_render,
              container_element = 'div',
-             decorations = {},
              destroy_event_system,
              domified_and_linked = [],
+             enhancements = {},
              id = juice.newid(),
              linked = [],
              my = {},
@@ -246,17 +246,23 @@
                      });
              };
 
-             that.decorate = function(name, spec) {
-                 if (that.decorated(name)) {
-                     juice.error.raise('already_decorated', {name: name});
+             that.enhance = function(name, spec) {
+                 var css_class;
+                 if (that.enhanced(name)) {
+                     juice.error.raise('already_enhanced', {name: name});
                  }
-                 decorations[name] = true;
-                 my.on_domify(function() { my.$().addClass('decorator_' + name); });
-                 return juice.decorator.apply(name, that, my, spec);
+                 if (!proj.enhancers[name]) {
+                     juice.error.raise('enhancer_not_defined', {name: name});
+                 }
+                 enhancements[name] = true;
+                 css_class = 'enhancer_' + name.replace(/[.]/g, '_');
+                 my.on_domify(function() { my.$().addClass(css_class); });
+                 proj.enhancers[name](that, my, spec);
+                 return that;
              };
 
-             that.decorated = function(name) {
-                 return decorations.hasOwnProperty(name);
+             that.enhanced = function(name) {
+                 return !!enhancements[name];
              };
 
              try {
@@ -280,7 +286,6 @@
          };
 
          pkg[name] = def;
-
          return def;
      };
 
@@ -295,6 +300,14 @@
              juice.error.raise(message, {name: name});
          };
          return def;
+     };
+
+     lib.define_enhancer = function(name, constructor) {
+         var enhancer_name = current_namespace + '.' + name;
+         if (proj.enhancers[enhancer_name]) {
+             juice.error.raise('enhancer_already_defined', {name: enhancer_name});
+         }
+         proj.enhancers[enhancer_name] = constructor;
      };
 
      // +---------------------------+
@@ -315,6 +328,7 @@
          }
          current_namespace = namespace;
          proj.widgets[namespace] = {};
+         proj.enhancers[namespace] = {};
          constructor(juice, proj, jQuery);
          current_namespace = null;
      };

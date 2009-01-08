@@ -1,7 +1,6 @@
 var jQuery = {};
 
 load('juice/web/prelude.js');
-load('juice/web/decorator.js');
 load('juice/web/error.js');
 load('juice/web/event.js');
 load('juice/web/layout.js');

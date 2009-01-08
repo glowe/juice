@@ -4,7 +4,7 @@
      self.juice = lib;
 
      self.proj = {
-         decorators: {},
+         enhancers:  {},
          layouts:    {},
          modifiers:  {},
          pages:      {},
