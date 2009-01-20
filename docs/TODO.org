@@ -13,10 +13,9 @@
 * IMPORTANT Move things back into core
   For example ignore_stale_calls
 * IMPORTANT Remove dead widgets
+* MAYBE automatically determine whether pages have overlapping urls (when possible)
 * MAYBE Consider creating decorator packages which are used by widget packages
 * MAYBE be consistent about event names (use present-tense everywhere?)
->>>>>>> f94497f39f8be1558ccbbd6aec08b61470efe288:docs/TODO.org
-=======
 * MAYBE Add a widget browser
 * MAYBE Cleanup core nav_item.js
                 // FIXME: this is heinous
@@ -41,9 +40,9 @@
 * MAYBE Add browser specific stack trace
 * MAYBE HTML tag generator
   so that we don't run into issues with quotes
-* MAYBE do another pass on error reporting; make sure we're using juice.error.raise correctly everywhere
 * MAYBE Change new-proj to be able to symlink or copy juice dir.
 * MAYBE Be consistent about functions that accept a single boolean to perform a toggle-action
+
 E.g. enable = function(b)... this function sounds like it should enable the thing even called w/o an argument.
 Sometimes this is what happens, sometimes it isn't. Either (1) rename to set_enabled or (2) create two functions,
 enable and disable, that accept zero arguments.
@@ -53,6 +52,7 @@ enable and disable, that accept zero arguments.
   - review docs for handle scope
   - test for memory leaks
 * WAITING Add build instructions for v8 shell
+* DONE do another pass on error reporting; make sure we're using juice.error.raise correctly everywhere
 * DONE revise the way decorators are defined and organized
 - Rename decorators to "enhancers". E.g. that.decorate would become that.enhance.
 - Enhancers should be defined within widget packages; eliminate the decorators directory.
