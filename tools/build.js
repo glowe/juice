@@ -127,7 +127,7 @@ load('juice/tools/proj_settings.js');
 	 ls: function(path, filter_re) {
 	     var visible_files = juice.filter(impl.ls(path),
 					     function(f) {
-						 return (/^[^.]/).test(f) && filter_re.test(f);
+						 return (/^[^.]/).test(f) && (!filter_re || filter_re.test(f));
 					     });
 	     return juice.map(visible_files,
 			     function(f) { return path + '/' + f; }).sort();
