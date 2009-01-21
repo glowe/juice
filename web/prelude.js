@@ -130,6 +130,11 @@
          return null;
      };
 
+     /* If a is undefined or null, returns b. Otherwise, returns a. */
+
+     lib.nvl = function(a, b) {
+         return (lib.is_undefined(a) || lib.is_null(a)) ? b : a;
+     };
 
      /* If a is an array, calls f(v) for each value v in a. If a is an object,
       calls f(k,v) for each key-value pair k:v in a. */
@@ -298,17 +303,6 @@
                       });
          return answer;
      };
-
-     // /* Returns an array containing two dictionaries: the first contains only
-     //  those key-value pairs from `dict` whose keys are in the array `keys`;
-     //  the second contains the rest of dict's key-value pairs. */
-
-     // lib.dict_split_keys = function(dict, keys) {
-     //     var a = {}, b = {}, m = {};
-     //     lib.foreach(keys, function(k) { m[k] = true; });
-     //     lib.foreach(dict, function(k, v) { if (m.hasOwnProperty(k)) { a[k] = v; } else { b[k] = v; } });
-     //     return [a, b];
-     // };
 
      /* Converts the value o to a reasonable string representation. */
 
