@@ -173,7 +173,7 @@
                  juice.event.subscribe(undefined,
                                        'service-failure',
                                        function(event) {
-                                           juice.util.message('Backend failure: ' + juice.dump(event));
+                                           juice.util.message.error('Backend failure: ' + juice.dump(event));
                                        });
                  juice.rpc.start();
          };

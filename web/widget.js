@@ -112,12 +112,12 @@
 
                   that.__remove_subscriber = function(subscriber_uuid) {
                       juice.foreach(subscribers,
-                                   function(event_name, pairs) {
-                                       pairs = juice.filter(pairs,
-                                                           function() {
-                                                               return pair.id !== subscriber_uuid;
-                                                           });
-                                   });
+                                    function(event_name, pairs) {
+                                        pairs = juice.filter(pairs,
+                                                             function(pair) {
+                                                                 return pair.id !== subscriber_uuid;
+                                                             });
+                                    });
                   };
               })();
 
