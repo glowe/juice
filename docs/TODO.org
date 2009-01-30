@@ -6,12 +6,7 @@
 * NEXT Ensure that the interface of the standard form widgets are consistent
   For example, the key-value ordering for radio group and select list are different
   and some widgets have a set_data method, while others have a set_options method.
-* STARTED automatically generate form html/template based on abstract description of form inputs
-  [X] Double-click protection
-  [ ] General form error label at top of form?
-  [X] RPC to load data? lazy-loaded form input?
-  [X] Is form input ready? and disable form until it is
-  [X] Preloading a form input with values. Is this different than with ref data from an RPC?
+* NEXT Change proj settings to just be a dictionary--that's way more flexible after all
 * IMPORTANT Add facility to ignore success or failure functions when rpc finishes
   This will be important when adding rpc-based form validation. If the user
   submits the form, we shouldn't honor the request.
@@ -199,3 +194,9 @@ Possible solution: build juice/web the same way we build widget packages.
 * DONE convert demo to have a regular project structure
   It must be a separate project under git.
   We would provide a script to symlink the juice directory to the regular juice.
+* DONE automatically generate form html/template based on abstract description of form inputs
+  [X] Double-click protection
+  [ ] General form error label at top of form?
+  [X] RPC to load data? lazy-loaded form input?
+  [X] Is form input ready? and disable form until it is
+  [X] Preloading a form input with values. Is this different than with ref data from an RPC?
