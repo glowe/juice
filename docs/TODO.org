@@ -1,6 +1,11 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
+* NEXT Add facility for adding external js urls on a per widget basis at compile time
+* NEXT Add facility for adding help to form inputs
+* NEXT Ensure that the interface of the standard form widgets are consistent
+  For example, the key-value ordering for radio group and select list are different
+  and some widgets have a set_data method, while others have a set_options method.
 * STARTED automatically generate form html/template based on abstract description of form inputs
   [X] Double-click protection
   [ ] General form error label at top of form?
