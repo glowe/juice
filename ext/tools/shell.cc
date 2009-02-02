@@ -47,6 +47,7 @@
     }
 
 static const char* FormatArgsError(const int num_expected, const v8::Arguments& args);
+static v8::Handle<v8::Value> SystemCallError(const char* syscall);
 
 static bool ExecuteString(v8::Handle<v8::String> source,
                              v8::Handle<v8::Value> name,
@@ -56,9 +57,10 @@ static v8::Handle<v8::Value> ReadFile(const char* name);
 static void RunShell(v8::Handle<v8::Context> context);
 
 static v8::Handle<v8::Value> Basename(const v8::Arguments& args);
-static v8::Handle<v8::Value> DirExists(const v8::Arguments& args);
 static v8::Handle<v8::Value> Dirname(const v8::Arguments& args);
+static v8::Handle<v8::Value> FileExists(const v8::Arguments& args);
 static v8::Handle<v8::Value> Getenv(const v8::Arguments& args);
+static v8::Handle<v8::Value> IsDir(const v8::Arguments& args);
 static v8::Handle<v8::Value> Load(const v8::Arguments& args);
 static v8::Handle<v8::Value> Ls(const v8::Arguments &args);
 static v8::Handle<v8::Value> Mkdir(const v8::Arguments &args);
@@ -66,6 +68,8 @@ static v8::Handle<v8::Value> Print(const v8::Arguments& args);
 static v8::Handle<v8::Value> Quit(const v8::Arguments& args);
 static v8::Handle<v8::Value> ReadFile(const v8::Arguments &args);
 static v8::Handle<v8::Value> Realpath(const v8::Arguments& args);
+static v8::Handle<v8::Value> System(const v8::Arguments& args);
+static v8::Handle<v8::Value> V8(const v8::Arguments& args);
 static v8::Handle<v8::Value> Version(const v8::Arguments& args);
 static v8::Handle<v8::Value> WriteFile(const v8::Arguments& args);
 
@@ -74,20 +78,27 @@ int main(int argc, char* argv[])
     v8::V8::SetFlagsFromCommandLine(&argc, argv, true);
     v8::HandleScope handle_scope;
 
+    // Put our custom functions (most of them) in a separate namespace.
+    v8::Handle<v8::ObjectTemplate> builtins = v8::ObjectTemplate::New();
+    builtins->Set(v8::String::New("basename"), v8::FunctionTemplate::New(Basename));
+    builtins->Set(v8::String::New("dirname"), v8::FunctionTemplate::New(Dirname));
+    builtins->Set(v8::String::New("file_exists"), v8::FunctionTemplate::New(FileExists));
+    builtins->Set(v8::String::New("getenv"), v8::FunctionTemplate::New(Getenv));
+    builtins->Set(v8::String::New("is_dir"), v8::FunctionTemplate::New(IsDir));
+    builtins->Set(v8::String::New("ls"), v8::FunctionTemplate::New(Ls));
+    builtins->Set(v8::String::New("mkdir"), v8::FunctionTemplate::New(Mkdir));
+    builtins->Set(v8::String::New("read_file"), v8::FunctionTemplate::New(ReadFile));
+    builtins->Set(v8::String::New("realpath"), v8::FunctionTemplate::New(Realpath));
+    builtins->Set(v8::String::New("system"), v8::FunctionTemplate::New(System));
+    builtins->Set(v8::String::New("write_file"), v8::FunctionTemplate::New(WriteFile));
+
     v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
-    global->Set(v8::String::New("basename"), v8::FunctionTemplate::New(Basename));
-    global->Set(v8::String::New("dir_exists"), v8::FunctionTemplate::New(DirExists));
-    global->Set(v8::String::New("dirname"), v8::FunctionTemplate::New(Dirname));
-    global->Set(v8::String::New("getenv"), v8::FunctionTemplate::New(Getenv));
     global->Set(v8::String::New("load"), v8::FunctionTemplate::New(Load));
-    global->Set(v8::String::New("ls"), v8::FunctionTemplate::New(Ls));
-    global->Set(v8::String::New("mkdir"), v8::FunctionTemplate::New(Mkdir));
     global->Set(v8::String::New("print"), v8::FunctionTemplate::New(Print));
     global->Set(v8::String::New("quit"), v8::FunctionTemplate::New(Quit));
-    global->Set(v8::String::New("read_file"), v8::FunctionTemplate::New(ReadFile));
-    global->Set(v8::String::New("realpath"), v8::FunctionTemplate::New(Realpath));
+    global->Set(v8::String::New("v8"), v8::FunctionTemplate::New(V8));
     global->Set(v8::String::New("version"), v8::FunctionTemplate::New(Version));
-    global->Set(v8::String::New("write_file"), v8::FunctionTemplate::New(WriteFile));
+    global->Set(v8::String::New("sys"), builtins);
 
     // Create a new execution environment containing the built-in
     // functions
@@ -146,8 +157,6 @@ static v8::Handle<v8::Value> Print(const v8::Arguments& args)
     return v8::Undefined();
 }
 
-
-
 // Loads, compiles and executes its argument JavaScript file.
 static v8::Handle<v8::Value> Load(const v8::Arguments& args) {
     for (int i = 0; i < args.Length(); i++) {
@@ -159,7 +168,6 @@ static v8::Handle<v8::Value> Load(const v8::Arguments& args) {
     return v8::Undefined();
 }
 
-
 // Quits.
 static v8::Handle<v8::Value> Quit(const v8::Arguments& args) {
     // If arguments are not supplied, args[0] will yield undefined, which
@@ -169,19 +177,21 @@ static v8::Handle<v8::Value> Quit(const v8::Arguments& args) {
     return v8::Undefined();
 }
 
+// Returns "v8". Used to test whether one is inside the v8 interpreter.
+static v8::Handle<v8::Value> V8(const v8::Arguments& args) {
+    return v8::String::New("v8");
+}
 
+// Returns the v8 version number.
 static v8::Handle<v8::Value> Version(const v8::Arguments& args) {
     return v8::String::New(v8::V8::GetVersion());
 }
-
 
 // Reads a file into a v8 string.
 static v8::Handle<v8::Value> ReadFile(const char* name) {
     FILE* file = fopen(name, "rb");
     if (file == NULL) {
-        std::string error("Error reading file: ");
-        error += name;
-        return v8::ThrowException(v8::String::New(error.c_str()));
+        return SystemCallError("fopen");
     }
 
     fseek(file, 0, SEEK_END);
@@ -223,7 +233,6 @@ static v8::Handle<v8::Value> Basename(const v8::Arguments& args) {
     return v8::String::New(basename(*path));
 }
 
-
 static v8::Handle<v8::Value> Realpath(const v8::Arguments& args) {
     ASSERT_NUM_ARGS(1);
     v8::String::AsciiValue path(args[0]);
@@ -243,36 +252,45 @@ static v8::Handle<v8::Value> WriteFile(const v8::Arguments& args) {
     v8::String::AsciiValue path(args[0]);
     FILE* file = fopen(*path, "w");
     if (file == NULL) {
-        std::string error("Error opening file: ");
-        error += *path;
-        return v8::ThrowException(v8::String::New(error.c_str()));
+        return SystemCallError("fopen");
     }
     v8::Local<v8::String> contents = v8::String::Cast(*args[1]);
     const int size = contents->Length();
     char* chars = new char[size];
     contents->WriteAscii(chars, 0, size);
-    fwrite(chars, 1, size, file);
+    if (fwrite(chars, 1, size, file) != size) {
+        return SystemCallError("fwrite");
+    }
     fclose(file);
     delete[] chars;
     return v8::Undefined();
 }
 
-static v8::Handle<v8::Value> DirExists(const v8::Arguments& args) {
+static v8::Handle<v8::Value> FileExists(const v8::Arguments& args) {
     ASSERT_NUM_ARGS(1);
-
     v8::String::AsciiValue path(args[0]);
     struct stat buf;
     if (stat(*path, &buf) == 0) {
         return v8::True();
     }
-
     if (errno == ENOENT) {
         return v8::False();
     }
-
-    return v8::ThrowException(v8::String::New(strerror(errno)));
+    return SystemCallError("stat");
 }
 
+static v8::Handle<v8::Value> IsDir(const v8::Arguments& args) {
+    ASSERT_NUM_ARGS(1);
+    v8::String::AsciiValue path(args[0]);
+    struct stat buf;
+    if (stat(*path, &buf) == 0) {
+        return S_ISDIR(buf.st_mode) ? v8::True() : v8::False();
+    }
+    if (errno == ENOENT) {
+        return v8::False();
+    }
+    return SystemCallError("stat");
+}
 
 static v8::Handle<v8::Value> Mkdir(const v8::Arguments& args) {
     if (args.Length() == 0) {
@@ -308,7 +326,7 @@ static v8::Handle<v8::Value> Ls(const v8::Arguments& args) {
     v8::String::AsciiValue path(args[0]);
     dp = opendir(*path);
     if (dp == NULL) {
-        return v8::ThrowException(v8::String::New("Error opening dir"));
+        return SystemCallError("opendir");
     }
 
     std::vector<const char*> dir_entries;
@@ -325,6 +343,15 @@ static v8::Handle<v8::Value> Ls(const v8::Arguments& args) {
     return entries;
 }
 
+static v8::Handle<v8::Value> System(const v8::Arguments& args) {
+    ASSERT_NUM_ARGS(1);
+    v8::String::AsciiValue command(args[0]);
+    int status = system(*command);
+    if (status == -1) {
+        return SystemCallError("system");
+    }
+    return v8::Number::New(WEXITSTATUS(status));
+}
 
 // The read-eval-execute loop of the shell.
 static void RunShell(v8::Handle<v8::Context> context) {
@@ -375,4 +402,12 @@ static bool ExecuteString(v8::Handle<v8::String> source,
             return true;
         }
     }
+}
+
+static v8::Handle<v8::Value> SystemCallError(const char* syscall)
+{
+    std::string msg(syscall);
+    msg += " failed: ";
+    msg += strerror(errno);
+    return v8::ThrowException(v8::String::New(msg.c_str()));
 }
