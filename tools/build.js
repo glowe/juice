@@ -12,7 +12,7 @@ load('juice/web/widget.js');
 load('juice/tools/proj_settings.js');
 
 (function(juice) {
-     var impl, interpreter_filename;
+     var impl, interpreter_filename, interpreter_tests;
 
      // Interface to interpreter
      impl = {
@@ -50,7 +50,7 @@ load('juice/tools/proj_settings.js');
 
      juice.build = {
          load_settings: function(prog_args) {
-             var args, filename, ubs;
+             var args, filename, bs;
              args = juice.args(prog_args);
              filename = args.shift();
 
@@ -61,36 +61,24 @@ load('juice/tools/proj_settings.js');
                  juice.error.raise("Can't load build settings file: " +filename);
              }
 
-             ubs = juice.build_settings;
-             ubs.args = args;
-             ubs.make_build_path = function(p) {
-                 var prefix = ubs.build_dir + '/';
+             bs = juice.build_settings;
+             bs.args = args;
+             bs.make_build_path = function(p) {
+                 var prefix = bs.build_dir + '/';
                  return prefix + p.replace(prefix, ''); // FIXME: pathjoin
              };
-             ubs.make_htdocs_path = function(p) {
-                 var prefix = ubs.build_dir + '/htdocs/';
-                 return prefix + p.replace(prefix, ''); // FIXME: pathjoin
-             };
-
-             ubs.make_htdocs_jspath = function(p) {
-                 var prefix = ubs.build_dir + '/htdocs/js/';
+             bs.make_htdocs_path = function(p) {
+                 var prefix = bs.build_dir + '/htdocs/';
                  return prefix + p.replace(prefix, ''); // FIXME: pathjoin
              };
 
-             load(ubs.proj_filename);
-             return ubs;
-         },
+             bs.make_htdocs_jspath = function(p) {
+                 var prefix = bs.build_dir + '/htdocs/js/';
+                 return prefix + p.replace(prefix, ''); // FIXME: pathjoin
+             };
 
-         is_v8: function() {
-             return typeof write_file !== 'undefined';
-         },
-
-         is_spidermonkey: function() {
-             return typeof File !== 'undefined';
-         },
-
-         is_rhino: function() {
-             return typeof java !== 'undefined';
+             load(bs.proj_filename);
+             return bs;
          },
 
          getenv: function(name) {
@@ -163,17 +151,36 @@ load('juice/tools/proj_settings.js');
 	 }
      };
 
+     //
+     // Determine which interpreter we're running inside of, and based on
+     // that, include a file that will install working implementations of the
+     // functions in the "impl" dictionary defined above.
+     //
+
      juice.build.install_interpreter = function(impl) {
          juice.error.raise('install_interpreter_not_implemented');
      };
-     if (juice.build.is_v8()) {
+
+     interpreter_tests = {
+         v8: function() {
+             return typeof v8 === 'function' && v8() === 'v8';
+         },
+         spidermonkey: function() {
+             return typeof File !== 'undefined';
+         },
+         rhino: function() {
+             return typeof java !== 'undefined';
+         }
+     };
+
+     if (interpreter_tests.v8()) {
          interpreter_filename = 'v8.js';
      }
-     else if (juice.build.is_spidermonkey()) {
-         interpreter_filename = 'spidermonkey.js';
+     else if (interpreter_tests.spidermonkey()) {
+	 interpreter_filename = 'spidermonkey.js';
      }
-     else if (juice.build.is_rhino()) {
-	 interpreter_filename =  'rhino.js';
+     else if (interpreter_tests.rhino()) {
+	 interpreter_filename = 'rhino.js';
      }
      else {
          juice.error.raise('unrecognized_interpreter');
