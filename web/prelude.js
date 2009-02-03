@@ -33,13 +33,13 @@
 
      lib.log = function(msg) {
          var dumped = lib.dump(msg);
-         if (self.repl && self.repl.print) {
-             repl.print(dumped);
-         }
-         else if (self.console && console.log) {
+
+         if (console && console.log) {
              console.log('%o', msg);
          }
-         else if (print && (typeof window === 'undefined' || (window && !window.print))) {
+         else if (print && (typeof window === 'undefined' ||
+                            (window && !window.print)))
+         {
              print(msg);
          }
          else {
