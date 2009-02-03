@@ -84,6 +84,9 @@
                  return o.toString();
              }
          }
+         else if (juice.is_null(o)) {
+             return null;
+         }
          s = o.toString();
          return s
              .replace(/&/g, '&amp;')
