@@ -269,8 +269,9 @@
          optional_modifier,    // : '|' modifier_invocation optional_modifier | epsilon
          modifier_invocation,  // : name modifier_params
          modifier_params,      // : expr modifier_params | epsilon
-         expr,                 // : literal expr_p | name expr_p | '(' expr ')' expr_p | prefix_operator expr expr_p
+         expr,                 // : literal expr_p | name expr_p | boolean_expr expr_p| 'null' expr_p | '(' expr ')' expr_p | prefix_operator expr expr_p
          expr_p,               // : infix_operator expr expr_p | invocation expr_p | refinement expr_p | epsilon
+         boolean_expr,         // : 'true' | 'false'
          literal,              // : 'number' | 'string' | array_literal | object_literal
          prefix_operator,      // : '+' | '-' | '!'
          infix_operator,       // : '*' | '/' | '%' | '+' | '-' | '>=' | '<=' | '>' | '<' | '===' | '!==' | '||' | '&&'
@@ -642,6 +643,13 @@
                  code.push(match('(').value);
                  expr();
                  code.push(match(')').value);
+             }
+             else if (peek('null')) {
+                 code.push(match('null').value);
+             }
+             else if (peek('true', 'false')) {
+                 // boolean
+                 code.push(match('true', 'false').value);
              }
              else if (peek('+', '-', '!')) {
                  prefix_operator();
