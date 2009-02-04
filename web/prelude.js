@@ -360,6 +360,12 @@
          return answer;
      };
 
+     lib.copy_object = function(obj) {
+         var copy = {};
+         juice.foreach(obj, function(k,v) { copy[k] = v; });
+         return copy;
+     };
+
      lib.delegate = function(delegator, implementation) {
          lib.foreach(implementation,
                      function(property) {
