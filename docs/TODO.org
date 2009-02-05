@@ -1,7 +1,6 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
-* NEXT Add facility for adding external js urls on a per widget basis at compile time
 * NEXT Add facility for adding help to form inputs
 * NEXT Ensure that the interface of the standard form widgets are consistent
   For example, the key-value ordering for radio group and select list are different
@@ -200,3 +199,4 @@ Possible solution: build juice/web the same way we build widget packages.
   [X] RPC to load data? lazy-loaded form input?
   [X] Is form input ready? and disable form until it is
   [X] Preloading a form input with values. Is this different than with ref data from an RPC?
+* DONE Add facility for adding external js urls on a per widget basis at compile time
