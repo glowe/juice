@@ -70,7 +70,7 @@ load('juice/tools/proj_settings.js');
              var deps;
 
              deps = (function() {
-                         load('proj/widgets/' + pkg + '/package');
+                         load('proj/widgets/' + pkg + '/package.js');
                          return dependencies;
                      })();
 
