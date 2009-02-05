@@ -12,6 +12,11 @@
 * IMPORTANT Move things back into core
   For example ignore_stale_calls
 * IMPORTANT Remove dead widgets
+* MAYBE Add support for singleton widgets
+  For example, only one recaptcha widget should appear on a page
+  at a time. This is more like reference counting than counting
+  the number of constructions, because once a widget is disposed,
+  it's ok to construct another one.
 * MAYBE automatically determine whether pages have overlapping urls (when possible)
 * MAYBE Consider creating decorator packages which are used by widget packages
 * MAYBE be consistent about event names (use present-tense everywhere?)
@@ -37,8 +42,6 @@
 * MAYBE widgets need to have a really good documentation system
 
 * MAYBE Add browser specific stack trace
-* MAYBE HTML tag generator
-  so that we don't run into issues with quotes
 * MAYBE Change new-proj to be able to symlink or copy juice dir.
 * MAYBE Be consistent about functions that accept a single boolean to perform a toggle-action
 
