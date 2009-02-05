@@ -2,8 +2,6 @@ Standard Project Directory layout
 
 proj/
 |-- SConscript
-|-- decorators         (decorators enhance widget functionality and presentation)
-|   `-- *.js
 |-- layouts.js         (layouts that are used by pages)
 |-- modifiers.js       (custom modifiers that are used in templates)
 |-- macros             (macros are interpolated into templates at compile time)
@@ -27,6 +25,6 @@ proj/
 `-- widgets
     `-- *              (widget package--collection of widgets)
         |-- *.js
-        |-- package    (dependencies for the package)
+        |-- package.js (dependencies for the package)
         `-- templates  (templates used by the widget package)
             `-- *.html
