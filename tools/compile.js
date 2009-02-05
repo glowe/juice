@@ -61,7 +61,9 @@ load('juice/tools/proj_settings.js');
          var answer, helper, merge;
 
          merge = function(a, b) {
-             return {r: juice.union(a.r, b.r), w: juice.union(a.w, b.w)};
+             return {r: juice.union(a.r, b.r),
+                     w: juice.union(a.w, b.w),
+                     script_urls: juice.union(a.script_urls, b.script_urls)};
          };
 
          helper = function(pkg, seen) {

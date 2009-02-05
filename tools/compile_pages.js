@@ -28,13 +28,14 @@ juice.foreach(proj.pages,
 
                  deps = juice.compile.read_widget_package_dependencies(page.widget_packages());
                  deps.w = juice.union(deps.w, page.widget_packages());
+                 deps.script_urls = juice.union(deps.script_urls, page.script_urls());
 
                  juice.build.write_file(
                      path,
                      page_template({name: name,
                                     title: page.title(),
                                     js_base_url: juice.proj_settings.js_base_url(),
-                                    script_urls: page.script_urls(),
+                                    script_urls: deps.script_urls,
                                     stylesheet_urls: page.stylesheet_urls(),
                                     widget_packages: deps.w,
                                     rpc_packages: deps.r}),
