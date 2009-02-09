@@ -311,10 +311,10 @@ static v8::Handle<v8::Value> Mkdir(const v8::Arguments& args) {
         oct_mode = 0777;
     }
 
-    if (mkdir(*path, oct_mode) == 0) {
-        return v8::True();
-    }
-    return v8::False();
+    mode_t old_umask = umask(0);
+    int result = mkdir(*path, oct_mode);
+    umask(old_umask);
+    return result==0 ? v8::True() : v8::False();
 }
 
 static v8::Handle<v8::Value> Ls(const v8::Arguments& args) {
