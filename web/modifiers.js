@@ -87,6 +87,9 @@
          else if (juice.is_null(o)) {
              return null;
          }
+         else if (juice.is_undefined(o)) {
+             return undefined;
+         }
          s = o.toString();
          return s
              .replace(/&/g, '&amp;')
