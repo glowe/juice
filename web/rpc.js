@@ -80,7 +80,7 @@
      // Returns true if the data matches the specification, false otherwise.
 
      validate_against_spec = function(spec, data) {
-         var add_error, errors = [], helper, i, k, keys;
+         var add_error, errors = [], helper;
 
          add_error = function(expected, data) {
              errors.push({expected_type: expected,
@@ -89,6 +89,8 @@
          };
 
          helper = function(spec, data) {
+             var i, k, keys;
+
              if (juice.is_string(spec)) {
                  if (spec[spec.length-1] === '?') {
                      if (juice.is_null(data)) {

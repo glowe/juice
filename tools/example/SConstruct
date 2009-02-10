@@ -204,7 +204,7 @@ def build_widget_package(env, package_name):
     package_sources = sorted(glob.glob('proj/widgets/%s/*.js' % package_name)) + template
     action = js_tool('compile_widget_package', package_name)
     package = env.Command(package_file, package_sources, action)
-    env.Depends(package, 'proj/widgets/%s/package' % package_name)
+    env.Depends(package, 'proj/widgets/%s/package.js' % package_name)
     env.Depends(package, 'juice/tools/compile_widget_package.js')
     return package
 

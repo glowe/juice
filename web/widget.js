@@ -199,18 +199,30 @@
 
              that.toString = that.render; // For convenience in templates
 
-             /* Provide shortcuts for the built-in "domify" event. */
-
              my.register_event('domify');
-             my.domified = function() { return my.state() === 'domified'; };
-             my.on_domify = function(f) { my.subscribe_self('domify', f); };
              that.fire_domify = function() { my.publish('domify'); };
 
-             my.after_domify = function(f) {
-                 if (my.domified()) {
+             // Calls f when the widget enters the domified state. Warning:
+             // has no effect if the widget is already domified.
+
+             my.on_domify = function(f) { my.subscribe_self('domify', f); };
+
+             // Calls f and return true if and only if the widget is in the
+             // domified state. Otherwise, returns false.
+
+             my.if_domified = function(f) {
+                 if (my.state() === 'domified') {
                      f();
+                     return true;
                  }
-                 else {
+                 return false;
+             };
+
+             // If the widget is in the domified state, calls f immediately.
+             // Otherwise, calls f when the widget becomes domified.
+
+             my.after_domify = function(f) {
+                 if (!my.if_domified(f)) {
                      my.on_domify(f);
                  }
              };

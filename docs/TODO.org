@@ -1,7 +1,6 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
-* NEXT Add facility for adding external js urls on a per widget basis at compile time
 * NEXT Add facility for adding help to form inputs
 * NEXT Ensure that the interface of the standard form widgets are consistent
   For example, the key-value ordering for radio group and select list are different
@@ -13,6 +12,11 @@
 * IMPORTANT Move things back into core
   For example ignore_stale_calls
 * IMPORTANT Remove dead widgets
+* MAYBE Add support for singleton widgets
+  For example, only one recaptcha widget should appear on a page
+  at a time. This is more like reference counting than counting
+  the number of constructions, because once a widget is disposed,
+  it's ok to construct another one.
 * MAYBE automatically determine whether pages have overlapping urls (when possible)
 * MAYBE Consider creating decorator packages which are used by widget packages
 * MAYBE be consistent about event names (use present-tense everywhere?)
@@ -38,8 +42,6 @@
 * MAYBE widgets need to have a really good documentation system
 
 * MAYBE Add browser specific stack trace
-* MAYBE HTML tag generator
-  so that we don't run into issues with quotes
 * MAYBE Change new-proj to be able to symlink or copy juice dir.
 * MAYBE Be consistent about functions that accept a single boolean to perform a toggle-action
 
@@ -200,3 +202,4 @@ Possible solution: build juice/web the same way we build widget packages.
   [X] RPC to load data? lazy-loaded form input?
   [X] Is form input ready? and disable form until it is
   [X] Preloading a form input with values. Is this different than with ref data from an RPC?
+* DONE Add facility for adding external js urls on a per widget basis at compile time

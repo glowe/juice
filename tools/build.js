@@ -123,6 +123,7 @@ load('juice/tools/proj_settings.js');
 
 	 mkdir: function(path, mode) {
 	     var dir, stat;
+
 	     // Because octal integer literals are deprecated and have been
 	     // removed from the ECMA-262, Edition 3 standard, mode must be a
 	     // string.
@@ -147,7 +148,7 @@ load('juice/tools/proj_settings.js');
 	     else if (!impl.is_dir(dir)) {
 		 juice.error.raise('overwrite_file', {path: dir});
 	     }
-	     impl.mkdir(dir + "/" + juice.build.basename(path), mode);
+	     impl.mkdir(path, mode);
 	 }
      };
 

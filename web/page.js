@@ -203,15 +203,6 @@
              global_script_urls.push(url);
          },
 
-         add_script_url: function(url) {
-             var head, script;
-             head = jQuery('head').get(0);
-             script = document.createElement('script');
-             script.src = url;
-             head.appendChild(script);
-         },
-
-
          add_global_stylesheet_url: function(url) {
              global_stylesheet_urls.push(url);
          },

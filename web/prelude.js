@@ -309,6 +309,9 @@
      lib.dump = function(o) {
          var parts = [];
 
+         if (lib.is_function(o)) {
+             return o.toSource();
+         }
          if (lib.is_array(o)) {
              lib.foreach(o, function(v) { parts.push(lib.dump(v)); });
              return '[' + parts.join(', ') + ']';
@@ -358,6 +361,12 @@
              }
          }
          return answer;
+     };
+
+     lib.copy_object = function(obj) {
+         var copy = {};
+         juice.foreach(obj, function(k,v) { copy[k] = v; });
+         return copy;
      };
 
      lib.delegate = function(delegator, implementation) {

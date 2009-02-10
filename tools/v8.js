@@ -9,11 +9,11 @@
              impl.is_dir = sys.is_dir;
              impl.ls = sys.ls;
              impl.mkdir = function(path, mode) {
-                 sys.mkdir(path, mode ? "0777" : String(mode));
+                 sys.mkdir(path, juice.is_undefined(mode) ? "0777" : String(mode));
              };
              impl.read_file = sys.read_file;
              impl.write_file = function(path, contents) {
-                 sys.mkdir(sys.dirname(path), "0777");
+                 sys.mkdir(sys.dirname(path));
                  return sys.write_file(path, contents);
              };
          };
