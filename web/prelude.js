@@ -34,7 +34,7 @@
      lib.log = function(msg) {
          var dumped = lib.dump(msg);
 
-         if (console && console.log) {
+         if (typeof console !== 'undefined' && console.log) {
              console.log('%o', msg);
          }
          else if (print && (typeof window === 'undefined' ||
