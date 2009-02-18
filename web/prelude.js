@@ -37,8 +37,8 @@
          if (typeof console !== 'undefined' && console.log) {
              console.log('%o', msg);
          }
-         else if (print && (typeof window === 'undefined' ||
-                            (window && !window.print)))
+         else if (typeof print !== 'undefined' &&
+                  (typeof window === 'undefined' || (window && !window.print)))
          {
              print(msg);
          }
