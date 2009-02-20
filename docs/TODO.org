@@ -1,7 +1,6 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
-* NEXT Add facility for adding help to form inputs
 * NEXT Ensure that the interface of the standard form widgets are consistent
   For example, the key-value ordering for radio group and select list are different
   and some widgets have a set_data method, while others have a set_options method.
@@ -12,13 +11,12 @@
 * IMPORTANT Move things back into core
   For example ignore_stale_calls
 * IMPORTANT Remove dead widgets
-* MAYBE Add support for singleton widgets
+* IMPORTANT Add support for singleton widgets
   For example, only one recaptcha widget should appear on a page
   at a time. This is more like reference counting than counting
   the number of constructions, because once a widget is disposed,
   it's ok to construct another one.
 * MAYBE automatically determine whether pages have overlapping urls (when possible)
-* MAYBE Consider creating decorator packages which are used by widget packages
 * MAYBE be consistent about event names (use present-tense everywhere?)
 * MAYBE Add a widget browser
 * MAYBE Cleanup core nav_item.js
@@ -48,7 +46,7 @@
 E.g. enable = function(b)... this function sounds like it should enable the thing even called w/o an argument.
 Sometimes this is what happens, sometimes it isn't. Either (1) rename to set_enabled or (2) create two functions,
 enable and disable, that accept zero arguments.
-* WAITING Fix issues with v8 shell
+* STARTED Fix issues with v8 shell
   - utf-16 write?
   - dir_exists has bug (doesn't differentiate between test for directory and file)--perhaps
   - review docs for handle scope
@@ -203,3 +201,5 @@ Possible solution: build juice/web the same way we build widget packages.
   [X] Is form input ready? and disable form until it is
   [X] Preloading a form input with values. Is this different than with ref data from an RPC?
 * DONE Add facility for adding external js urls on a per widget basis at compile time
+* DONE Add facility for adding help to form inputs
+* DONE Consider creating decorator packages which are used by widget packages
