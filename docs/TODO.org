@@ -1,6 +1,7 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
+* NEXT Move pages/*.js into pages.js
 * NEXT Ensure that the interface of the standard form widgets are consistent
   For example, the key-value ordering for radio group and select list are different
   and some widgets have a set_data method, while others have a set_options method.
