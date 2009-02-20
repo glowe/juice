@@ -12,12 +12,56 @@
 * IMPORTANT Move things back into core
   For example ignore_stale_calls
 * IMPORTANT Remove dead widgets
+* IMPORTANT support alternative page paths
+    It should be possible to specify alternative page paths. For example:
+
+        juice.page.define(
+            {name: 'user_profile',
+             path: '<<username>>/',
+             alternative_paths: {
+                 foo: 'users/<<username>>/',
+                 bar: ['profile/', {username: 'u'}]
+             },
+             parameters: {username: {re: '\\w+'}},
+             // ...
+            });
+
+    That defines a page named "user_profile" whose default path is a dynamic
+    path containing the username parameter (regexp must be specified in the
+    parameters attribute), and with two alternative paths, the second of which
+    expects a query string arg named "u" that will be passed to the page as
+    "username". The page's url() method will, by default, return the default
+    path, but can be passed a second argument naming an alternative path, e.g.
+    proj.pages.user_profile.url({username:"bob", "foo").
+
+* IMPORTANT support optional page parameters and default values
+    E.g. (pseudo-code):
+
+        juice.page.define(
+            {name: 'notes',
+             title: 'Notes',
+             path: ['notes/', {note_id: 'n, page: 'p}],
+             alternative_paths: {},
+             parameters: {note_id: {re: '\\d+', default_value: undefined},
+                          page: {re: '\\d+', default_value: 1}},
+             // ...
+            });
+
+    That defines a page named "notes" accessible via "notes/" that accepts two
+    optional query string arguments, "p" and "n". Both must match the regular
+    expression /^\d+$/. They are optional because they have default values (1
+    and undefined, respectively). When passed to the page, they will be named
+    "page" and "note_id".
+
+    Also: we should probably be more formal (or more robust) about slashes on
+    the end of paths. Suggestion: We should omit them from the beginning of
+    paths and require that they be explicitly put on the ends of paths.
+
 * MAYBE Add support for singleton widgets
   For example, only one recaptcha widget should appear on a page
   at a time. This is more like reference counting than counting
   the number of constructions, because once a widget is disposed,
   it's ok to construct another one.
-* MAYBE automatically determine whether pages have overlapping urls (when possible)
 * MAYBE Consider creating decorator packages which are used by widget packages
 * MAYBE be consistent about event names (use present-tense everywhere?)
 * MAYBE Add a widget browser
@@ -54,6 +98,7 @@ enable and disable, that accept zero arguments.
   - review docs for handle scope
   - test for memory leaks
 * WAITING Add build instructions for v8 shell
+* DONE automatically determine whether pages have overlapping urls (when possible)
 * DONE do another pass on error reporting; make sure we're using juice.error.raise correctly everywhere
 * DONE revise the way decorators are defined and organized
 - Rename decorators to "enhancers". E.g. that.decorate would become that.enhance.
