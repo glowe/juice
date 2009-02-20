@@ -42,12 +42,12 @@ echo "Setting up empty project..."
 rsync -ar tools/example/ $project_path
 
 echo "Renaming files"
-mv $project_path/project/settings/new_project.js $project_path/project/settings/${project_name}.js
+mv $project_path/proj/settings/new_proj.js $project_path/proj/settings/${project_name}.js
 
-replace="s/new_project/${project_name}/g"
-sed -i $replace $project_path/project/settings/${project_name}.js
-mv $project_path/project/style/new_project.ecss $project_path/project/style/$project_name.ecss
-sed -i $replace $project_path/project/SConscript
+replace="s/new_proj/${project_name}/g"
+sed -i $replace $project_path/proj/settings/${project_name}.js
+mv $project_path/proj/style/new_proj.ecss $project_path/proj/style/$project_name.ecss
+sed -i $replace $project_path/proj/SConscript
 
 
 echo "Creating symlink..."

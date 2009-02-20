@@ -98,6 +98,13 @@ env = Environment(variables = vars,
 Help(vars.GenerateHelpText(env))
 bs = BuildSettings(env)
 
+def check_v8(context):
+    context.Message('Checking for v8...')
+    cmd = 'js juice/tools/build_tests/v8.js'
+    result = os.system(cmd + ' >/dev/null 2>&1') == 0
+    context.Result(result)
+    return result
+
 def check_spidermonkey(context):
     context.Message('Checking for spidermonkey...')
     cmd = 'js juice/tools/build_tests/spidermonkey.js'
@@ -112,17 +119,24 @@ def check_rhino(context):
     context.Result(result)
     return result
 
-def js_rhino(cmd):
-    return 'java -jar juice/ext/tools/js.jar -version 150 %s' % cmd
+def js_v8(cmd):
+    return 'js %s' % cmd
 
 def js_spidermonkey(cmd):
     return 'js %s' % cmd
 
-conf = Configure(env, custom_tests = {'check_spidermonkey' : check_spidermonkey,
+def js_rhino(cmd):
+    return 'java -jar juice/ext/tools/js.jar -version 150 %s' % cmd
+
+conf = Configure(env, custom_tests = {'check_v8': check_v8,
+                                      'check_spidermonkey': check_spidermonkey,
                                       'check_rhino': check_rhino})
 
 should_lint = False
-if conf.check_spidermonkey():
+if conf.check_v8():
+    js = js_v8
+    should_lint = True
+elif conf.check_spidermonkey():
     js = js_spidermonkey
     should_lint = True
 elif conf.check_rhino():
@@ -170,6 +184,7 @@ env.Append(BUILDERS = {
     'pages_deps': Builder(action = js_tool('list_pages_deps', '$SOURCE > $TARGET')),
     'pages_log': Builder(action = js_tool('compile_pages', '$SOURCE $TARGET')),
     'lint_log': Builder(action = js_tool('lint', '$SOURCE > $TARGET')),
+    'lint_page_paths_log': Builder(action = js_tool('lint_page_paths', '$SOURCE > $TARGET')),
     'settings_js': Builder(action = create_settings_js),
     })
 
@@ -187,10 +202,14 @@ def compile_proj_settings(env):
 env.AddMethod(compile_proj_settings, 'proj_settings')
 
 def compile_proj_base(env):
+    templates = env.templates('var templates',
+                              bs.make_build_path('tmp/proj/web/prelude/templates.js'),
+                              glob.glob('proj/prelude/templates/*.html'))
     target = bs.make_htdocs_path('js/proj/base.js')
     cmd = js_tool('list_proj_base_files', bs.proj_filename)
     sources = os.popen(cmd).read().rstrip().split("\n")
     sources.append(bs.make_htdocs_path('js/proj/settings.js'))
+    sources.append(templates)
     return env.cat_scoped_js(target, sources)
 
 env.AddMethod(compile_proj_base, 'proj_base')
@@ -211,15 +230,15 @@ def build_widget_package(env, package_name):
 env.AddMethod(build_widget_package, 'widget_package')
 
 def compile_web(env, target, sources):
-    target_file = bs.make_htdocs_path(target)
-    template_file = bs.make_build_path('tmp/juice/web/builtin_templates.js')
     templates = env.templates('var templates',
-                              bs.make_build_path(template_file),
+                              bs.make_build_path('tmp/juice/web/builtin_templates.js'),
                               glob.glob('juice/web/templates/*.html'))
-    action_args = [target, template_file] + sources
+    action_args = [target, templates[0].get_abspath()] + sources
     action = js_tool('compile_web', " ".join(action_args))
-    web = env.Command(target_file, sources + [template_file], action)
+    web = env.Command(target, sources + templates, action)
+    env.Depends(web, templates)
     return web
+
 
 env.AddMethod(compile_web,'compile_web')
 
@@ -261,11 +280,13 @@ env.AddMethod(lint_js, 'lint_js')
 #
 #
 
-settings = env.settings_js(bs.filename, bs.proj_filename)
+
 
 ext_js = env.cat_js(bs.make_htdocs_path('js/ext/web.js'), glob_js('juice/ext/web'))
 
-web_js = env.compile_web(bs.make_htdocs_path('js/juice/web.js'), glob_js_prelude_first('juice/web'));
+web_js = env.compile_web(bs.make_htdocs_path('js/juice/web.js'), glob_js_prelude_first('juice/web'))
+
+settings = env.settings_js(bs.filename, bs.proj_filename)
 
 proj_js = env.proj_base()
 env.Depends(proj_js, settings)
@@ -287,5 +308,7 @@ for d in glob_dirs('proj/widgets/*'):
 for f in glob_js('proj/pages'):
     env.html_pages(str(f))
 
+env.lint_page_paths_log(bs.make_build_path('tmp/lint_page_paths.log'),
+                        glob_js('proj/pages'))
 
 SConscript('proj/SConscript', exports='env bs')

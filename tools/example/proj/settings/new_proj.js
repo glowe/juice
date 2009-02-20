@@ -4,10 +4,9 @@
      // Here's an example settings file to get your started.
      var build_url, s;
 
-     build_url =
-         juice.url.make({base: 'http://localhost:8000'});
+     build_url = juice.url.make({base: 'http://localhost:8000'});
 
-     s = juice.project_settings;
+     s = juice.proj_settings;
 
      s.set_site_base_url(build_url);
      s.set_js_base_url(build_url.append_path('/js'));
