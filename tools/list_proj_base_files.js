@@ -6,11 +6,11 @@ var files = [], proj_settings_filename;
 proj_settings_filename = arguments[1];
 load(proj_settings_filename);
 
-files.push('proj/layouts.js');
-juice.foreach(['proj/prelude', 'proj/pages'],
+juice.foreach(['proj/prelude'],
              function(dir) {
                  files = files.concat(juice.build.ls(dir, /[.]js$/));
              });
+files.push('proj/layouts.js', 'proj/pages.js');
 files.sort(
     function(a, b) {
         if (/\/prelude[.]js$/.test(a)) {
