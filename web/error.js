@@ -9,7 +9,7 @@
          // throwing raw objects.
 
          raise: function(message, info) {
-             var error = new Error(juice.dump(message));
+             var error = new Error(message);
              if (info) {
                  error.info = info;
              }
