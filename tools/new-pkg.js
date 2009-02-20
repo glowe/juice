@@ -64,7 +64,7 @@ try {
     quit(0);
 }
 catch (e) {
-    if (e.what === 'usage_error') {
+    if (e.message === 'usage_error') {
         print("Usage: js juice/tools/new_pkg.js <widget|rpc> PKG_NAME");
         quit(2);
     }

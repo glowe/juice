@@ -28,18 +28,24 @@
          my.title           = spec.title || 'untitled';
          my.widget_packages = spec.widget_packages || [];
 
+         // args is optional but must be an object if provided.
          extract_args = function(args) {
              var recognized = {}, missing = [];
 
-             juice.foreach(my.parameters,
-                          function(k) {
-                              if (args.hasOwnProperty(k)) {
-                                  recognized[k] = args[k];
-                              }
-                              else {
-                                  missing.push(k);
-                              }
-                          });
+             if (juice.is_object(args)) {
+                 juice.foreach(my.parameters,
+                               function(k) {
+                                   if (args.hasOwnProperty(k)) {
+                                       recognized[k] = args[k];
+                                   }
+                                   else {
+                                       missing.push(k);
+                                   }
+                               });
+             }
+             else if (!juice.is_undefined(args)) {
+                 juice.error.raise('page_args_bad_type', {expected: 'object', actual: typeof args});
+             }
 
              return {recognized: recognized, missing: missing};
          };
@@ -99,7 +105,7 @@
              return juice.url.make({path: path, args: query_args});
          };
 
-         // If this page's URL matches the request, return the dictionary of
+         // If this page's URL matches the request, returns the dictionary of
          // parameters expected by the page. Otherwise, returns null.
 
          that.match_url = function(req) {
@@ -146,20 +152,9 @@
                                                  juice.page.add_widget(panel, w);
                                              });
                            });
-
          };
 
          that.init = function(container) {
-             // Ensure that any unhandled errors still make it some where
-             // window.onerror = function(msg, url, linenumber) {
-             //     var e = new Error();
-             //     e.message = msg;
-             //     e.fileName = url;
-             //     e.lineNumber = linenumber;
-             //     juice.error.handle(e);
-             //     return true;
-             // };
-
              var args = that.match_url(juice.url.request());
              if (args) {
                      that.draw(container, args);

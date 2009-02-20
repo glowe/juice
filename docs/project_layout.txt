@@ -6,10 +6,7 @@ proj/
 |-- modifiers.js       (custom modifiers that are used in templates)
 |-- macros             (macros are interpolated into templates at compile time)
 |   `-- *.js
-|-- pages
-|   |-- pages.js       (application pages)
-|   |-- sandbox.js     (the sandbox page)
-|   `-- system.js      (the 404 page)
+|-- pages.js           (application pages, including the sandbox and 404 page)
 |-- prelude
 |   |-- events.js      (global application events)
 |   |-- prelude.js     (any application utility functions and objects)
