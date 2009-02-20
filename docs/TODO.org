@@ -57,6 +57,7 @@
     the end of paths. Suggestion: We should omit them from the beginning of
     paths and require that they be explicitly put on the ends of paths.
 
+* MAYBE Add hrefs to all links in standard library components + demo
 * MAYBE Add support for singleton widgets
   For example, only one recaptcha widget should appear on a page
   at a time. This is more like reference counting than counting
