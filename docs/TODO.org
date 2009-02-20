@@ -1,11 +1,11 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
-* NEXT Add facility for adding help to form inputs
 * NEXT Ensure that the interface of the standard form widgets are consistent
   For example, the key-value ordering for radio group and select list are different
   and some widgets have a set_data method, while others have a set_options method.
 * NEXT Change proj settings to just be a dictionary--that's way more flexible after all
+* NEXT Add server-side validation procedure
 * IMPORTANT Add facility to ignore success or failure functions when rpc finishes
   This will be important when adding rpc-based form validation. If the user
   submits the form, we shouldn't honor the request.
@@ -203,3 +203,4 @@ Possible solution: build juice/web the same way we build widget packages.
   [X] Is form input ready? and disable form until it is
   [X] Preloading a form input with values. Is this different than with ref data from an RPC?
 * DONE Add facility for adding external js urls on a per widget basis at compile time
+* DONE Add facility for adding help to form inputs
