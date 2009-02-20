@@ -1,7 +1,6 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
-* NEXT Move pages/*.js into pages.js
 * NEXT Ensure that the interface of the standard form widgets are consistent
   For example, the key-value ordering for radio group and select list are different
   and some widgets have a set_data method, while others have a set_options method.
@@ -205,3 +204,4 @@ Possible solution: build juice/web the same way we build widget packages.
   [X] Preloading a form input with values. Is this different than with ref data from an RPC?
 * DONE Add facility for adding external js urls on a per widget basis at compile time
 * DONE Add facility for adding help to form inputs
+* DONE Move pages/*.js into pages.js
