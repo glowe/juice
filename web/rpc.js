@@ -1,22 +1,51 @@
 (function(juice, proj, jQuery) {
 
-     var
-     assert_mocking_enabled,
-     assert_spec_is_valid,
-     bootstrap_mocking_cookie,
-     current_namespace,
-     default_proxy,
-     call_with_random_delay,
-     failure_mocking_proxy,
-     find_proxy,
-     how_to_mock_namespace,
-     is_mocking_enabled,
-     lib,
-     success_mocking_proxy,
-     proxy_map,
-     validate_against_spec;
+     var assert_mocking_enabled
+     ,   assert_spec_is_valid
+     ,   bootstrap_mocking_cookie
+     ,   call_with_random_delay
+     ,   current_namespace
+     ,   debug                      // if debugging is enabled, logs rpc info to the console
+     ,   default_proxy
+     ,   failure_mocking_proxy
+     ,   find_proxy
+     ,   how_to_mock_namespace
+     ,   is_mocking_enabled
+     ,   lib
+     ,   proxy_map
+     ,   success_mocking_proxy
+     ,   validate_against_spec
+     ;
 
      juice.rpc = lib = {};
+
+     debug = function() {
+         var executed = [], set;
+
+         set = function(on) {
+             if (on) {
+                 debug = function(rpc, args) {
+                     juice.log('[debug] rpc = '+rpc+'; args = '+juice.dump(args));
+                     executed.push({rpc: rpc, args: args});
+                 };
+             }
+             else {
+                 debug = function() {};
+             }
+         };
+
+         lib.set_debug = function(on) {
+             juice.cookie.set('rpc.debug', !!on);
+             set(on);
+         };
+
+         lib.executed = function() {
+             return executed;
+         };
+
+         set(juice.cookie.get('rpc.debug'));
+         debug.apply(this, juice.args(arguments));
+     };
 
      assert_spec_is_valid = function(spec) {
          var i;
@@ -192,6 +221,7 @@
              };
 
              do_validate('req_spec', args);
+             debug(my_namespace + '.' + spec.name, args);
 
              return find_proxy(rpc).execute(
                  {rpc: rpc,
@@ -247,8 +277,8 @@
      };
 
      bootstrap_mocking_cookie = function() {
-         if (!juice.cookie.has('mock')) {
-             juice.cookie.set('mock', {});
+         if (!juice.cookie.has('rpc.mock')) {
+             juice.cookie.set('rpc.mock', {});
          }
      };
 
@@ -258,7 +288,7 @@
              return null;
          }
          bootstrap_mocking_cookie();
-         mock = juice.cookie.get('mock');
+         mock = juice.cookie.get('rpc.mock');
          if (mock.hasOwnProperty(ns)) {
              return mock[ns];
          }
@@ -286,34 +316,33 @@
          failure = Boolean(failure);
          assert_mocking_enabled();
          bootstrap_mocking_cookie();
-         mock = juice.cookie.get('mock');
+         mock = juice.cookie.get('rpc.mock');
          if (mock.hasOwnProperty('*')) {
              // Only store contrasting setting
              if (mock['*'] !== failure) {
                  mock[namespace] = failure;
              }
          }
-         juice.cookie.set('mock', mock);
+         juice.cookie.set('rpc.mock', mock);
      };
 
      lib.mock_all = function(failure) {
          assert_mocking_enabled();
          bootstrap_mocking_cookie();
-         juice.cookie.set('mock', {'*': Boolean(failure)});
+         juice.cookie.set('rpc.mock', {'*': Boolean(failure)});
      };
 
      lib.mock_none = function() {
          assert_mocking_enabled();
          bootstrap_mocking_cookie();
-         juice.cookie.set('mock', {});
+         juice.cookie.set('rpc.mock', {});
      };
 
      lib.whats_mocked = function() {
          assert_mocking_enabled();
          bootstrap_mocking_cookie();
-         return juice.cookie.get('mock');
+         return juice.cookie.get('rpc.mock');
      };
-
 
      // +------------------+
      // | proxy management |
