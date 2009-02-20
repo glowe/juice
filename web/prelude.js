@@ -130,14 +130,14 @@
          return null;
      };
 
-     /* If a is undefined or null, returns b. Otherwise, returns a. */
+     // If a is undefined or null, returns b. Otherwise, returns a.
 
      lib.nvl = function(a, b) {
          return (lib.is_undefined(a) || lib.is_null(a)) ? b : a;
      };
 
-     /* If a is an array, calls f(v) for each value v in a. If a is an object,
-      calls f(k,v) for each key-value pair k:v in a. */
+     // If a is an array, calls f(v) for each value v in a. If a is an object,
+     // calls f(k,v) for each key-value pair k:v in a.
 
      lib.foreach = function(a, f) {
          var i;
@@ -155,9 +155,9 @@
          }
      };
 
-     /* If a is an array, returns a list containing f(v) for each value v in
-      a. If a is an array, returns an object containing a key-value pair
-      k:f(v) for each k:v pair in a. */
+     // If a is an array, returns a list containing f(v) for each value v in
+     // a. If a is an array, returns an object containing a key-value pair
+     // k:f(v) for each k:v pair in a.
 
      lib.map = function(a, f) {
          var answer;
