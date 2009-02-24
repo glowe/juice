@@ -305,8 +305,7 @@ for d in glob_dirs('proj/rpcs/*'):
 for d in glob_dirs('proj/widgets/*'):
     env.widget_package(os.path.basename(d))
 
-for f in glob_js('proj/pages'):
-    env.html_pages(str(f))
+env.html_pages('proj/pages.js')
 
 env.lint_page_paths_log(bs.make_build_path('tmp/lint_page_paths.log'),
                         glob_js('proj/pages'))
