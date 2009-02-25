@@ -32,6 +32,7 @@
          def = function(spec) {
              var
              call_linked_render,
+             container_attribs = {},
              container_element = 'div',
              destroy_event_system,
              domified_and_linked = [],
@@ -173,7 +174,10 @@
                  state = to;
              };
 
-             my.set_container_element = function(t) { container_element = t; };
+             my.set_container_element = function(t, attribs) {
+                 container_element = t;
+                 container_attribs = attribs;
+             };
 
              call_linked_render = function(f) {
                  var answer;
@@ -189,11 +193,33 @@
              that.render = function() {
                  return call_linked_render(
                      function() {
+                         var attribs = {
+                             'class': namespace + ' ' + name + ' widget',
+                             'id': id
+                         };
+                         juice.foreach(container_attribs,
+                                       function(k, v) {
+                                           if (juice.is_undefined(v)) {
+                                               return;
+                                           }
+                                           if (k == 'id') {
+                                               juice.error.raise("can't specify id as container attribute");
+                                           }
+                                           if (k == 'class') {
+                                               attribs[k] += ' ' + v;
+                                           }
+                                           else {
+                                               attribs[k] = v;
+                                           }
+                                       });
                          transition('initial', 'rendered');
-                         return ['<', container_element, ' class="',
-                                 namespace, ' ', name, ' widget" id="',
-                                 id, '">', my.render(), '</',
-                                 container_element, '>'].join('');
+                         return '<' +
+                             container_element + ' ' +
+                             juice.map_dict(attribs,
+                                            function(k, v) {
+                                                return k + '="' + v + '"';
+                                            }).join(' ') +
+                             '>' + my.render() + '</' + container_element + '>';
                      });
              };
 
