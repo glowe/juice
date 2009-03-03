@@ -7,6 +7,7 @@
   and some widgets have a set_data method, while others have a set_options method.
 * NEXT Change proj settings to just be a dictionary--that's way more flexible after all
 * NEXT Add server-side validation procedure
+* IMPORTANT Compiled script names should have something unique in them to thwart browser caching
 * IMPORTANT Add facility to ignore success or failure functions when rpc finishes
   This will be important when adding rpc-based form validation. If the user
   submits the form, we shouldn't honor the request.
