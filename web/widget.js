@@ -165,7 +165,7 @@
              my.expect_state = function() {
                  var args = juice.args(arguments);
                  if (!juice.any(args, function(arg) { return state === arg; })) {
-                     my.raise({what: 'bad_state', expected: args, actual: state});
+                     my.raise('bad_state', {expected: args, actual: state});
                  }
              };
 
