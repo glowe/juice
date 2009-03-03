@@ -229,6 +229,14 @@
          return lib.filter(a, function(y) { return x !== y; });
      };
 
+     lib.flatten = function(a) {
+         if (a.length === 0) {
+             return [];
+         }
+         var first = a[0];
+         return first.concat(lib.flatten(a.slice(1)));
+     };
+
      /* Returns true if and only if the predicate p(v) is true for any values
       v in a, or, if a is an object, the predicate p(k,v) is true for any
       key-value pairs k:v in a. */
