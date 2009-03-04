@@ -6,20 +6,18 @@ to use proj.widget.bar.link.
 * STARTED Ensure that the interface of the standard form widgets are consistent
   For example, the key-value ordering for radio group and select list are different
   and some widgets have a set_data method, while others have a set_options method.
+* STARTED Remove dead widgets
+<<<<<<< HEAD:docs/TODO.org
+* STARTED Add hrefs to all links in standard library components + demo
 * NEXT Change proj settings to just be a dictionary--that's way more flexible after all
 * NEXT Add server-side validation procedure
+* IMPORTANT Add support for singleton widgets
 * IMPORTANT Where should project specific external js files live?
   For example, the juice-bar uses jquery-ui.
 * IMPORTANT Compiled script names should have something unique in them to thwart browser caching
 * IMPORTANT Add facility to ignore success or failure functions when rpc finishes
   This will be important when adding rpc-based form validation. If the user
   submits the form, we shouldn't honor the request.
-* IMPORTANT Move things back into core
-  For example ignore_stale_calls
-* IMPORTANT Remove dead widgets
-<<<<<<< HEAD:docs/TODO.org
-* IMPORTANT Add support for singleton widgets
-=======
 * IMPORTANT support alternative page paths
     It should be possible to specify alternative page paths. For example:
 
@@ -65,7 +63,6 @@ to use proj.widget.bar.link.
     the end of paths. Suggestion: We should omit them from the beginning of
     paths and require that they be explicitly put on the ends of paths.
 
-* MAYBE Add hrefs to all links in standard library components + demo
 * MAYBE Add support for singleton widgets
   For example, only one recaptcha widget should appear on a page
   at a time. This is more like reference counting than counting
