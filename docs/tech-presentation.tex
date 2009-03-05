@@ -1,0 +1,221 @@
+\documentclass{beamer}
+
+
+\mode<presentation>
+{
+  \usetheme{Pittsburgh}
+}
+
+
+\usepackage[english]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{listings}
+
+\title{A Whirlwind Tour Of juice}
+
+
+\author{Graham Lowe}
+
+\date{\today}
+
+
+
+\beamerdefaultoverlayspecification{<+->}
+
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{What's In A Name?}
+
+  \begin{itemize}
+  \item
+    \textbf{j}avascript
+  \item
+    \textbf{u}ser
+  \item
+    \textbf{i}nterface
+  \item
+    \textbf{c}ompiled
+  \item
+    \textbf{e}nvironment
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Project Goals}
+  \begin{itemize}
+  \item
+    Decouple front-end and back-end development.
+  \item
+    Encourage component-based design.
+  \item
+    Make rich interface development easier.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Architecture}
+  \begin{centering}
+    \pgfimage[height=7.5cm]{architecture.png}
+    \par
+  \end{centering}
+\end{frame}
+
+\begin{frame}{Page}
+  \begin{itemize}
+  \item JavaScript object.
+  \item URL, layout, widgets, stylesheets, etc.
+  \item Defined using \texttt{juice.page.define}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Example Definition}
+\begin{verbatim}
+juice.page.define(
+    {name: 'front',
+     title: 'Login',
+     path: '/',
+     layout: proj.layouts.one_column,
+     widget_packages: ['front_page'],
+     init_widgets: function(args) {
+         return {a: [proj.widgets.front_page.login()]};
+     }
+    });
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Smart URL Argument Handling}
+
+Define what URL information your page requires
+
+\begin{verbatim}
+juice.page.define(
+    {name: 'profile',
+     path: '/[[username \\w+]]/',
+     parameters: ['username'],
+    // rest omitted
+\end{verbatim}
+
+and juice will enforce it
+
+\begin{verbatim}
+// Good
+good = proj.pages.profile.url({username: 'graham'});
+
+// Throws error!
+bad = proj.pages.user_profile.url();
+\end{verbatim}
+
+\end{frame}
+
+
+\begin{frame}{Layout}
+  \begin{itemize}
+  \item Describe the panels on page.
+  \item Widgets are placed into panels.
+  \item Rely on CSS for positioning of panels.
+  \item Defined using \texttt{juice.layout.define}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Example Definition}
+\begin{verbatim}
+juice.layout.define('one_column', {a: null});
+\end{verbatim}
+\end{frame}
+
+\begin{frame}{Widgets}
+  \begin{itemize}
+  \item Encapsulate behavior and presentation.
+  \item Related widgets are organized into packages.
+  \item Well-defined life-cycle.
+  \item Defined using \texttt{juice.page.define}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Example Definition}
+\begin{verbatim}
+juice.widget.define(
+    'hello',
+    function(that, my, spec) {
+        my.render = templates.hello({name: spec.name});
+    });
+\end{verbatim}
+\end{frame}
+
+\begin{frame}{Templates}
+  \begin{itemize}
+  \item Automatic safety.
+  \item Simple syntax: HTML, template tags, and modifiers.
+  \item May contain widgets and other templates.
+  \item Compiled to efficient JavaScript functions.
+  \item Detect syntax errors at compile time.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{A template definition}
+\begin{verbatim}
+<ul>
+  {%for tab in tabs%}
+  <li>
+    <a href="#{{tab.id}}"><span>{{tab.title}}</span></a>
+  </li>
+  {%endfor%}
+</ul>
+{%for tab in tabs%}
+<div id="{{tab.id}}">{{tab.widget}}</div>
+{%endfor%}
+\end{verbatim}
+\end{frame}
+
+\begin{frame}{RPCS}
+  \begin{itemize}
+  \item Represent a remote service.
+  \item Map local name to remote service name.
+  \item Request parameters and response parameters are validated.
+  \item Related RPCs are organized into packages.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Example}
+Here's an example RPC definition:
+\begin{verbatim}
+juice.rpc.define({name: 'delete_many',
+                  service_name: 'notes_delete_many',
+                  req_spec: {ids: ['string']},
+                  rsp_spec: null});
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Example invocation}
+
+Here's an example invocation of the RPC (note the callback):
+\begin{verbatim}
+proj.rpcs.notes.delete_many(
+    {ids: ['1', '2', '3', '4']},
+    function(response) {
+        // This will get executed when the RPC gets a
+        // response from the server
+        juice.util.message.notice(
+            'A bunch of notes were deleted');
+    });
+\end{verbatim}
+\end{frame}
+
+\begin{frame}{RPC Proxies}
+  \begin{itemize}
+  \item Layer of indirection adds flexibility.
+  \item Transports: json, xml, REST, jsonp.
+  \item Boxcarring.
+  \item Mocking.
+  \item Different service providers.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Q \& A}
+  Any questions before we start demo?
+\end{frame}
+
+\end{document}
