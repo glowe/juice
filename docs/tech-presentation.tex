@@ -128,10 +128,12 @@ juice.layout.define('one_column', {a: null});
 
 \begin{frame}{Widgets}
   \begin{itemize}
-  \item Encapsulate behavior and presentation.
+  \item Reusable UI components: encapsulate behavior and presentation.
+  \item Use RPCs to manipulate data, templates for display.
+  \item ``Set it and forget it'' component-style.
+  \item Composable.
   \item Related widgets are organized into packages.
-  \item Well-defined life-cycle.
-  \item Defined using \texttt{juice.page.define}
+  \item Defined using \texttt{juice.widget.define}
   \end{itemize}
 \end{frame}
 
@@ -149,7 +151,7 @@ juice.widget.define(
   \begin{itemize}
   \item Automatic safety.
   \item Simple syntax: HTML, template tags, and modifiers.
-  \item May contain widgets and other templates.
+  \item May contain widgets and even other templates.
   \item Compiled to efficient JavaScript functions.
   \item Detect syntax errors at compile time.
   \end{itemize}
@@ -172,9 +174,10 @@ juice.widget.define(
 
 \begin{frame}{RPCS}
   \begin{itemize}
-  \item Represent a remote service.
-  \item Map local name to remote service name.
+  \item Represents a remote service.
+  \item Maps local name to remote service name.
   \item Request parameters and response parameters are validated.
+  \item Asynchronous.
   \item Related RPCs are organized into packages.
   \end{itemize}
 \end{frame}
@@ -207,10 +210,24 @@ proj.rpcs.notes.delete_many(
 \begin{frame}{RPC Proxies}
   \begin{itemize}
   \item Layer of indirection adds flexibility.
-  \item Transports: json, xml, REST, jsonp.
+  \item Transports: JSON, XML, REST, JSONp.
   \item Boxcarring.
   \item Mocking.
   \item Different service providers.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Challenges}
+  Cons:
+  \begin{itemize}
+    \item Front-end development is more challenging.
+  \end{itemize}
+  Pros:
+  \begin{itemize}
+    \item Front-end development is more challenging.
+    \item JQuery
+    \item Back-end development is easier.
+    \item Changes to front-end and back-end are more independent.
   \end{itemize}
 \end{frame}
 
