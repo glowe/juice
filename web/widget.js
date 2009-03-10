@@ -199,9 +199,6 @@
                          };
                          juice.foreach(container_attribs,
                                        function(k, v) {
-                                           if (juice.is_undefined(v)) {
-                                               return;
-                                           }
                                            if (k == 'id') {
                                                juice.error.raise("can't specify id as container attribute");
                                            }
