@@ -31,23 +31,32 @@
         };
     };
 
-    lib.log = function(msg) {
-        var dumped = lib.dump(msg);
-
-        if (typeof console !== 'undefined' && console.log) {
-            console.log('%o', msg);
+    lib.log = (function() {
+        if (typeof console !== 'undefined' &&
+            console.log) {
+            return function(msg) {
+                console.log('%o', msg);
+            };
         }
-        else if (typeof print !== 'undefined' &&
-                 (typeof window === 'undefined' || (window && !window.print)))
-        {
-            print(msg);
+        if (typeof window !== 'undefined' && typeof
+            window.opera !== 'undefined') {
+            return function(msg) {
+                window.opera.postError(msg);
+            };
         }
-        else {
-            if (!proj.settings.smother_alerts) {
-                alert(dumped);
-            }
+        if (typeof print !== 'undefined' && (typeof
+                                             window === 'undefined' || (window && !window.print))) {
+            return function(msg) {
+                print(msg);
+            };
         }
-    };
+        if (!proj.settings.smother_alerts) {
+            return function(msg) {
+                alert(juice.dump(dumped));
+            };
+        }
+        return function() {};
+    })();
 
     lib.is_boolean = function(a) {
         return typeof a === 'boolean';
