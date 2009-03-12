@@ -5,19 +5,19 @@ digraph build_process
     center=true;
     rankdir=LR;
 
-build_settings[label="Create build settings file"];
-concatenate[label="Concatenate invariant JS"];
-external_pkg[label="Package ext JS "];
-juice_web[label="Compile and package juice web"];
-unique_pages[label="Ensure no duplicate page paths"];
-minify[label="Minify JS"];
-pages[label="Compile page definitions into HTML"];
-proj_base[label="Package proj base files"];
-proj_special[label="Run project specific build"];
-rpc_pkgs[label="Package RPCs"];
-start[label="start"];
-syntactically_valid_js[label="Lint all JS"];
-widget_pkgs[label="Package widgets (incl. compile templates)"];
+build_settings         [label="Create build settings file"];
+concatenate            [label="Concatenate invariant JS"];
+external_pkg           [label="Package ext JS "];
+juice_web              [label="Compile and package juice web"];
+unique_pages           [label="Ensure no duplicate page paths"];
+minify                 [label="Minify JS"];
+pages                  [label="Compile page definitions into HTML"];
+proj_base              [label="Package proj base files"];
+proj_special           [label="Run project specific build"];
+rpc_pkgs               [label="Package RPCs"];
+start                  [label="start"];
+syntactically_valid_js [label="Lint all JS"];
+widget_pkgs            [label="Package widgets (incl. compile templates)"];
 
 start                  -> build_settings;
 
