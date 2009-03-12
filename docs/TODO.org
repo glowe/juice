@@ -1,16 +1,9 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
-* STARTED Clean up paged_list code in bar. Checkable, filterable enhancers and then also change everything
-to use proj.widget.bar.link.
-* STARTED Ensure that the interface of the standard form widgets are consistent
-  For example, the key-value ordering for radio group and select list are different
-  and some widgets have a set_data method, while others have a set_options method.
-* STARTED Remove dead widgets
-<<<<<<< HEAD:docs/TODO.org
-* STARTED Add hrefs to all links in standard library components + demo
 * NEXT Change proj settings to just be a dictionary--that's way more flexible after all
-* NEXT Add server-side validation procedure
+* STARTED Add server-side validation procedure
+* IMPORTANT Create pagination component for SEO
 * IMPORTANT Add support for singleton widgets
 * IMPORTANT Where should project specific external js files live?
   For example, the juice-bar uses jquery-ui.
@@ -262,3 +255,12 @@ Possible solution: build juice/web the same way we build widget packages.
 * DONE Move pages/*.js into pages.js
 * DONE Consider creating decorator packages which are used by widget packages
 * DONE Consider replacing my.on_domify with my.after_domify
+* DONE Clean up paged_list code in bar. Checkable, filterable enhancers and then also change everything
+to use proj.widget.bar.link.
+
+* DONE Remove dead widgets
+* DONE Ensure that the interface of the standard form widgets are consistent
+  For example, the key-value ordering for radio group and select list are different
+  and some widgets have a set_data method, while others have a set_options method.
+
+* DONE Add hrefs to all links in standard library components + demo
