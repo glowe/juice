@@ -1,0 +1,61 @@
+// dot -Tps -O build_process.dot
+
+digraph build_process
+{
+    center=true;
+    rankdir=LR;
+
+build_settings         [label="Create build settings file"];
+concatenate            [label="Concatenate invariant JS"];
+external_pkg           [label="Package ext JS "];
+juice_web              [label="Compile and package juice web"];
+unique_pages           [label="Ensure no duplicate page paths"];
+minify                 [label="Minify JS"];
+pages                  [label="Compile page definitions into HTML"];
+proj_base              [label="Package proj base files"];
+proj_special           [label="Run project specific build"];
+rpc_pkgs               [label="Package RPCs"];
+start                  [label="start"];
+syntactically_valid_js [label="Lint all JS"];
+widget_pkgs            [label="Package widgets (incl. compile templates)"];
+
+start                  -> build_settings;
+
+build_settings         -> syntactically_valid_js;
+
+build_settings         -> juice_web;
+syntactically_valid_js -> juice_web;
+
+build_settings         -> external_pkg;
+syntactically_valid_js -> external_pkg;
+
+build_settings         -> proj_base;
+syntactically_valid_js -> proj_base;
+
+build_settings         -> rpc_pkgs;
+syntactically_valid_js -> rpc_pkgs;
+
+build_settings         -> widget_pkgs;
+syntactically_valid_js -> widget_pkgs;
+
+build_settings         -> unique_pages;
+syntactically_valid_js -> unique_pages;
+
+build_settings         -> pages;
+syntactically_valid_js -> pages;
+unique_pages           -> pages;
+
+build_settings         -> concatenate;
+external_pkg           -> concatenate;
+proj_base              -> concatenate;
+syntactically_valid_js -> pages;
+
+build_settings         -> minify;
+concatenate            -> minify;
+widget_pkgs            -> minify;
+rpc_pkgs               -> minify;
+syntactically_valid_js -> minify;
+
+build_settings         -> proj_special;
+
+}

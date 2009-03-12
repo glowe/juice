@@ -1,0 +1,28 @@
+* Start
+** mode
+*** debug: enable rpc mocking
+*** release: disable rpc mocking, concatenate, and minify
+** site/instance
+*** which settings file to use
+* Which interpreter?
+* Concatenate external JS files (e.g, jQuery, JSON, etc)
+* Compile juice web files
+** Compile templates
+** Concatenate juice web files together with template functions
+* Create JSON settings file from build settings (e.g., whether mocking is enabled, build path, etc)
+* Concatenate all project base files (e.g., proj/prelude/*, layouts, pages).
+* Lint all JS source
+* Create RPC packages
+** Invokes program to scope collection of rpc definitions with rpc.define_package
+* Create widget packages
+** Compile templates
+** Invokes program to scope collection of widget defs and associated templates with widget.define_package
+
+* Compile HTML pages from definitions in prog/pages.js
+
+* Invoke project specific build
+** Compile CSS
+** Copy images and jss to appropriate place
+* Test whether there are any duplicate page paths
+
+* DONE
