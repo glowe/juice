@@ -255,7 +255,7 @@ static v8::Handle<v8::Value> WriteFile(const v8::Arguments& args) {
         return SystemCallError("fopen");
     }
     v8::Local<v8::String> contents = v8::String::Cast(*args[1]);
-    const int size = contents->Length();
+    const unsigned int size = contents->Length();
     char* chars = new char[size];
     contents->WriteAscii(chars, 0, size);
     if (fwrite(chars, 1, size, file) != size) {
@@ -331,13 +331,13 @@ static v8::Handle<v8::Value> Ls(const v8::Arguments& args) {
 
     std::vector<const char*> dir_entries;
 
-    while (ep = readdir(dp)) {
+    while ((ep = readdir(dp))) {
         dir_entries.push_back(ep->d_name);
     }
     closedir(dp);
 
     v8::Handle<v8::Array> entries = v8::Array::New();
-    for (int i = 0; i < dir_entries.size(); i++) {
+    for (unsigned int i = 0; i < dir_entries.size(); i++) {
         entries->Set(v8::Number::New(i), v8::String::New(dir_entries[i]));
     }
     return entries;
