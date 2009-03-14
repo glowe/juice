@@ -389,7 +389,7 @@ static bool ExecuteString(v8::Handle<v8::String> source,
             v8::Local<v8::Message> message = try_catch.Message();
             v8::String::AsciiValue script(message->GetScriptResourceName());
             v8::String::AsciiValue line(message->GetSourceLine());
-            printf("%s\nOccured in %s line %i\n%s\n", *error, *script, message->GetLineNumber(), *line);
+            printf("%s\nOccurred in %s line %i\n%s\n", *error, *script, message->GetLineNumber(), *line);
             return false;
         }
         else {
