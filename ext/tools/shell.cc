@@ -33,6 +33,7 @@
 #include <cstring>
 #include <dirent.h>
 #include <libgen.h>
+#include <openssl/sha.h>
 #include <string>
 #include <sstream>
 #include <sys/stat.h>
@@ -52,7 +53,6 @@ static v8::Handle<v8::Value> SystemCallError(const char* syscall);
 static bool ExecuteString(v8::Handle<v8::String> source,
                              v8::Handle<v8::Value> name,
                              bool print_result);
-static void ProcessRuntimeFlags(int argc, char* argv[]);
 static v8::Handle<v8::Value> ReadFile(const char* name);
 static void RunShell(v8::Handle<v8::Context> context);
 
@@ -68,6 +68,7 @@ static v8::Handle<v8::Value> Print(const v8::Arguments& args);
 static v8::Handle<v8::Value> Quit(const v8::Arguments& args);
 static v8::Handle<v8::Value> ReadFile(const v8::Arguments &args);
 static v8::Handle<v8::Value> Realpath(const v8::Arguments& args);
+static v8::Handle<v8::Value> Sha1(const v8::Arguments& args);
 static v8::Handle<v8::Value> System(const v8::Arguments& args);
 static v8::Handle<v8::Value> V8(const v8::Arguments& args);
 static v8::Handle<v8::Value> Version(const v8::Arguments& args);
@@ -89,6 +90,7 @@ int main(int argc, char* argv[])
     builtins->Set(v8::String::New("mkdir"), v8::FunctionTemplate::New(Mkdir));
     builtins->Set(v8::String::New("read_file"), v8::FunctionTemplate::New(ReadFile));
     builtins->Set(v8::String::New("realpath"), v8::FunctionTemplate::New(Realpath));
+    builtins->Set(v8::String::New("sha1"), v8::FunctionTemplate::New(Sha1));
     builtins->Set(v8::String::New("system"), v8::FunctionTemplate::New(System));
     builtins->Set(v8::String::New("write_file"), v8::FunctionTemplate::New(WriteFile));
 
@@ -341,6 +343,25 @@ static v8::Handle<v8::Value> Ls(const v8::Arguments& args) {
         entries->Set(v8::Number::New(i), v8::String::New(dir_entries[i]));
     }
     return entries;
+}
+
+static v8::Handle<v8::Value> Sha1(const v8::Arguments& args) {
+    ASSERT_NUM_ARGS(1);
+
+    v8::String::AsciiValue s(args[0]);
+
+    unsigned char md[SHA_DIGEST_LENGTH];
+    SHA1(reinterpret_cast<unsigned char *>(*s), s.length(), md);
+
+    std::stringstream ss;
+    ss << std::hex << std::noshowbase;
+    for (int i = 0; i < SHA_DIGEST_LENGTH; i++)
+    {
+        ss.width(2);
+        ss.fill('0');
+        ss << static_cast<unsigned short>(md[i]);
+    }
+    return v8::String::New(ss.str().c_str());
 }
 
 static v8::Handle<v8::Value> System(const v8::Arguments& args) {

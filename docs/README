@@ -105,32 +105,12 @@ directory locations.
 
 COMPILING THE V8 SHELL (DO NOT USE)
 
-svn checkout http://v8.googlecode.com/svn/trunk/ v8-read-only
-cd v8-read-only
-scons mode=release snapshot=on library=shared
-
-produces
-
-libv8.so
-
-sudo cp libv8.so /usr/local/lib
-
-sudo cp include/v8.h /usr/local/include
-
-sudo /sbin/ldconfig
+Install lib v8 as a shared library.
 
 Now change directories to $JUICE_HOME/ext/tools and run make
 
 make
-
-Put v8 in your path.
-
-cp v8 ~/bin/
-
-v8
-V8 version 0.3.1
-> print("Hello World")
-Hello World
+sudo make install
 
 
 

@@ -3,36 +3,14 @@
 
 * NEXT Change proj settings to just be a dictionary--that's way more flexible after all
 * STARTED Add server-side validation procedure
+* STARTED Add a widget browser
 * IMPORTANT Create pagination component for SEO
-* IMPORTANT Add support for singleton widgets
 * IMPORTANT Where should project specific external js files live?
   For example, the juice-bar uses jquery-ui.
 * IMPORTANT Compiled script names should have something unique in them to thwart browser caching
 * IMPORTANT Add facility to ignore success or failure functions when rpc finishes
   This will be important when adding rpc-based form validation. If the user
   submits the form, we shouldn't honor the request.
-* IMPORTANT support alternative page paths
-    It should be possible to specify alternative page paths. For example:
-
-        juice.page.define(
-            {name: 'user_profile',
-             path: '<<username>>/',
-             alternative_paths: {
-                 foo: 'users/<<username>>/',
-                 bar: ['profile/', {username: 'u'}]
-             },
-             parameters: {username: {re: '\\w+'}},
-             // ...
-            });
-
-    That defines a page named "user_profile" whose default path is a dynamic
-    path containing the username parameter (regexp must be specified in the
-    parameters attribute), and with two alternative paths, the second of which
-    expects a query string arg named "u" that will be passed to the page as
-    "username". The page's url() method will, by default, return the default
-    path, but can be passed a second argument naming an alternative path, e.g.
-    proj.pages.user_profile.url({username:"bob", "foo").
-
 * IMPORTANT support optional page parameters and default values
     E.g. (pseudo-code):
 
@@ -64,7 +42,6 @@
 * MAYBE automatically determine whether pages have overlapping urls (when possible)
 =======
 * MAYBE be consistent about event names (use present-tense everywhere?)
-* MAYBE Add a widget browser
 * MAYBE Cleanup core nav_item.js
                 // FIXME: this is heinous
                 if (spec.url && spec.url.to_string() === window.location.href) {
@@ -264,3 +241,25 @@ to use proj.widget.bar.link.
   and some widgets have a set_data method, while others have a set_options method.
 
 * DONE Add hrefs to all links in standard library components + demo
+* DONE support alternative page paths
+    It should be possible to specify alternative page paths. For example:
+
+        juice.page.define(
+            {name: 'user_profile',
+             path: '<<username>>/',
+             alternative_paths: {
+                 foo: 'users/<<username>>/',
+                 bar: ['profile/', {username: 'u'}]
+             },
+             parameters: {username: {re: '\\w+'}},
+             // ...
+            });
+
+    That defines a page named "user_profile" whose default path is a dynamic
+    path containing the username parameter (regexp must be specified in the
+    parameters attribute), and with two alternative paths, the second of which
+    expects a query string arg named "u" that will be passed to the page as
+    "username". The page's url() method will, by default, return the default
+    path, but can be passed a second argument naming an alternative path, e.g.
+    proj.pages.user_profile.url({username:"bob", "foo").
+* DONE Add sha1 to juice v8 shell
