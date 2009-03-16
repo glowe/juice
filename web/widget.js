@@ -1,8 +1,3 @@
-//
-// TODO: consider queueing asynchronous UI events and processing them
-// serially, i.e. in another "thread".
-//
-
 (function(juice, proj, jQuery) {
     var
     constructed,
@@ -152,7 +147,11 @@
             that.show = function() { my.expect_state('domified'); my.$().show(); };
             that.hide = function() { my.expect_state('domified'); my.$().hide(); };
             that.remove = function() { my.expect_state('domified'); my.$().remove(); that.dispose(); };
-            that.dispose = function() { transition('domified', 'disposed'); destroy_event_system(); };
+            that.dispose = function() {
+                transition('domified', 'disposed');
+                my.publish('dispose');
+                destroy_event_system();
+            };
 
             my.render = function() {
                 return '';
@@ -225,13 +224,14 @@
             my.register_event('domify');
             that.fire_domify = function() { my.publish('domify'); };
 
-            // Calls f when the widget enters the domified state. Warning:
-            // has no effect if the widget is already domified.
+            // Calls f when the widget enters the domified state.
+            // Warning: has no effect if the widget is already
+            // domified.
 
             my.on_domify = function(f) { my.subscribe_self('domify', f); };
 
-            // Calls f and return true if and only if the widget is in the
-            // domified state. Otherwise, returns false.
+            // Calls f and return true if and only if the widget
+            // is in the domified state. Otherwise, returns false.
 
             my.if_domified = function(f) {
                 if (my.state() === 'domified') {
@@ -241,13 +241,23 @@
                 return false;
             };
 
-            // If the widget is in the domified state, calls f immediately.
-            // Otherwise, calls f when the widget becomes domified.
+            // If the widget is in the domified state, calls f
+            // immediately. Otherwise, calls f when the widget
+            // becomes domified.
 
             my.after_domify = function(f) {
                 if (!my.if_domified(f)) {
                     my.on_domify(f);
                 }
+            };
+
+            my.register_event('dispose');
+            my.after_dispose = function(f) {
+                if (my.state() === 'disposed') {
+                    f();
+                    return;
+                }
+                my.subscribe_self('dispose', f);
             };
 
             var fire_domify_for_linked_widgets = function() {
