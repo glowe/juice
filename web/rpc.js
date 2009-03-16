@@ -371,7 +371,7 @@
          if (is_mocking_enabled()) {
              bootstrap_mocking_cookie();
              mock = juice.cookie.get('rpc.mock');
-             if (mock.hasOwnProperty('*') || mock.hasOwnProperty(ns)) {
+             if (mock.hasOwnProperty('*') || mock.hasOwnProperty(rpc.namespace)) {
                  return mocking_proxy;
              }
          }
