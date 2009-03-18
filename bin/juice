@@ -1,0 +1,25 @@
+#!/usr/bin/perl -w
+
+use strict;
+use English;
+
+unless (defined $ENV{'JUICE_HOME'}) {
+    print "Error: JUICE_HOME environment variable not set\n";
+    exit 2;
+}
+
+if (@ARGV < 1) {
+    print "Usage: $PROGRAM_NAME CMD ARGS\n";
+    exit 1;
+}
+
+my $cmd = shift @ARGV;
+my $juice_home = $ENV{'JUICE_HOME'};
+my $program = "$juice_home/bin/$cmd.js";
+
+unless (-f $program) {
+    print "Bad command: $cmd\n";
+    exit 2;
+}
+exec("js", "$juice_home/tools/driver.js", $juice_home, $program, @ARGV);
+
