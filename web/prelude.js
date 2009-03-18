@@ -1,7 +1,12 @@
 (function(self) {
-     var lib = {}, id_seq = 0;
+     var lib, id_seq = 0;
 
-     self.juice = lib;
+     if (!self.hasOwnProperty('juice')) {
+         self.juice = lib = {};
+     }
+     else {
+         lib = self.juice;
+     }
 
      self.proj = {
          enhancers:  {},
@@ -346,7 +351,7 @@
      lib.dump = function(o) {
          var parts = [];
 
-         if (lib.is_function(o)) {
+         if (lib.is_function(o) && o.hasOwnProperty('toSource')) {
              return o.toSource();
          }
          if (lib.is_array(o)) {
@@ -506,7 +511,7 @@
                                          function(k, v) {
                                              if (juice.is_undefined(v)) { // Required args
                                                  if (!spec.hasOwnProperty(k)) {
-                                                     juice.error.raise('missing required argument: ' + k);
+                                                     throw 'missing required argument: ' + k;
                                                  }
                                                  copy_of_spec[k] = spec[k];
                                              }
@@ -516,6 +521,26 @@
                                          });
                        });
          return copy_of_spec;
+     };
+
+     // TODO: document me.
+
+     lib.module = function(namespace, library) {
+         var helper = function(parts, target) {
+             var first = parts[0];
+             if (parts.length === 1) {
+                 target[first] = library;
+                 return;
+             }
+             if (!target.hasOwnProperty(first)) {
+                 target[first] = {};
+             }
+             else if (!lib.is_object(target[first])) {
+                 throw 'unable to install library in namespace: ' + namespace;
+             }
+             helper(parts.slice(1), target[first]);
+         };
+         helper(namespace.split('.'), lib);
      };
 
  })(this);
