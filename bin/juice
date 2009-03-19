@@ -15,11 +15,17 @@ if (@ARGV < 1) {
 
 my $cmd = shift @ARGV;
 my $juice_home = $ENV{'JUICE_HOME'};
+my $juice_libpath = $ENV{'JUICE_LIBPATH'} || ".";
 my $program = "$juice_home/bin/$cmd.js";
 
 unless (-f $program) {
     print "Bad command: $cmd\n";
     exit 2;
 }
-exec("js", "$juice_home/tools/driver.js", $juice_home, $program, @ARGV);
 
+exec("js",
+     "$juice_home/build/driver.js",
+     $juice_home,
+     $juice_libpath,
+     $program,
+     @ARGV);
