@@ -39,12 +39,16 @@ options,
 site_lib_deps,          // recursive library dependencies for entire site
 site_lib_name,
 site_lib_path,
-lib_paths = {};
+lib_paths = {},
+libs_seen = {};
 
 find_library = function(name) {
-    var path;
-    if (options[name]) {
-        return options[name]; // user told us where to find it
+    var path = lib_paths[name];
+    if (path) {
+        if (juice.build.lib_name(path) !== name) {
+            juice.error.raise('library "'+name+'" not found in "'+path+'"');
+        }
+        return path;
     }
     path = juice.find(juice.sys.read_dir(juice.libpath(), {fullpath:true}),
                       function(path) {
@@ -86,11 +90,13 @@ do {
     juice.foreach(site_lib_deps,
                   function(name) {
                       var path;
-                      if (lib_paths[name]) {
+                      if (libs_seen[name]) {
                           return;
                       }
-                      lib_paths[name] = find_library(name);
-                      new_lib_deps.push(juice.build.library_dependencies(lib_paths[name]));
+                      path = lib_paths[name] = find_library(name);
+                      print('Found library '+name+' at "'+path+'".');
+                      new_lib_deps.push(juice.build.library_dependencies(path));
+                      libs_seen[name] = true;
                   });
 
     site_lib_deps =
@@ -100,4 +106,6 @@ do {
 
 } while (new_lib_deps.length != 0);
 
-print("DONE! lib_paths = " + juice.dump(lib_paths));
+print('Saving configuration.');
+print('Run "juice compile" to build your site.');
+juice.build.save_config({lib_paths: lib_paths});

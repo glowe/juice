@@ -1,42 +1,25 @@
 (function(juice) {
 
-     var config;
+     var config,
+     config_filename = '.juice-config.json';
 
      juice.build = {};
 
-     juice.build.configure = function(c) {
-         config = c;
-     };
-
-     juice.build.save_config = function() {
-         // write config to disk ("./.juice-config.json")
+     juice.build.save_config = function(c) {
+         juice.sys.write_file(config_filename, juice.dump(c), true);
      };
 
      juice.build.load_config = function() {
-         // read config to disk ("./.juice-config.json")
+         config = juice.build.read_file_json(config_filename);
      };
 
-     juice.build.find_library = function(libname) {
-         // search the libpath
-         return config.libraries[libname];
+     juice.build.find_library = function(name) {
+         var path = config.lib_paths[name];
+         if (path) { return path; }
+         return juice.error.raise('path to library "'+name+'" is unknown');
      };
 
-     // {
-     //     dependencies: [
-     //         "juice_bar.rpcs.bar",
-     //         "juice_bar.widgets.core",
-     //         "juice_bar.widgets.notes",
-     //         "someotherlib.widgets.foo"
-     //     ],
-     //     stylesheet_urls: [
-     //         "http://somesite.com/foo.css"
-     //     ],
-     //     script_urls: [
-     //         "..."
-     //     ]
-     // }
-
-     juice.build.load_json_file = function(filename) {
+     juice.build.read_file_json = function(filename) {
          var answer;
          eval('answer = ' + juice.sys.read_file(filename));
          return answer;
@@ -48,7 +31,7 @@
          if (juice.sys.file_exists(lib_json_path) != 'file') {
              return false;
          }
-         json = juice.build.load_json_file(lib_json_path);
+         json = juice.build.read_file_json(lib_json_path);
          return json.hasOwnProperty('name') ? json.name : undefined;
      };
 
@@ -63,7 +46,7 @@
          if (juice.sys.file_exists(pkg_filename) != 'file') {
              juice.error.raise('package metadata file not found: '+pkg_filename);
          }
-         json = juice.build.load_json_file(pkg_filename);
+         json = juice.build.read_file_json(pkg_filename);
 
          answer = {
              dependencies: {},
