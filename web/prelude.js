@@ -1,11 +1,11 @@
 (function(self) {
      var lib, id_seq = 0;
 
-     if (!self.hasOwnProperty('juice')) {
-         self.juice = lib = {};
+     if (self.hasOwnProperty('juice')) {
+         lib = self.juice;
      }
      else {
-         lib = self.juice;
+         self.juice = lib = {};
      }
 
      self.proj = {
@@ -167,27 +167,41 @@
          return (lib.is_undefined(a) || lib.is_null(a)) ? b : a;
      };
 
-     // If a is an array, calls f(v) for each value v in a. If a is an object,
-     // calls f(k,v) for each key-value pair k:v in a.
+     // If a is an array, calls f(v) for each value v in a until f(v) returns
+     // a non-undefined value, which is then returned. If a is an object,
+     // calls f(k,v) for each key-value pair k:v in a until f(k,v) returns a
+     // non-undefined value, which is then returned.
 
-     lib.foreach = function(a, f) {
-         var i;
+     lib.find = function(a, f) {
+         var i, v;
          if (lib.is_array(a)) {
              for (i = 0; i < a.length; i++) {
-                 f(a[i]);
+                 if (typeof (v = f(a[i])) !== 'undefined') {
+                     return v;
+                 }
              }
          }
          else if (lib.is_object(a)) {
              for (i in a) {
                  if (a.hasOwnProperty(i)) {
-                     f(i, a[i]);
+                     if (typeof (v = f(i, a[i])) !== 'undefined') {
+                         return v;
+                     }
                  }
              }
          }
+         return undefined;
+     };
+
+     // If a is an array, calls f(v) for each value v in a. If a is an object,
+     // calls f(k,v) for each key-value pair k:v in a.
+
+     lib.foreach = function(a, f) {
+         lib.find(a, function(k,v) { f(k,v); });
      };
 
      // If a is an array, returns a list containing f(v) for each value v in
-     // a. If a is an array, returns an object containing a key-value pair
+     // a. If a is an object, returns an object containing a key-value pair
      // k:f(v) for each k:v pair in a.
 
      lib.map = function(a, f) {
@@ -427,14 +441,19 @@
          return delegator;
      };
 
+     // Returns the array a with only its unique elements. Only works with
+     // items that can be used as associative array keys.
+
+     lib.unique = function(a) {
+         var s = {};
+         lib.foreach(a, function(k) { s[k] = 1; });
+         return lib.keys(s);
+     };
+
      // Returns the union of two arrays.
 
      lib.union = function(a, b) {
-         var s = {}, u = [];
-         lib.foreach(a, function(k) { s[k] = 1; });
-         lib.foreach(b, function(k) { s[k] = 1; });
-         lib.foreach(s, function(k) { u.push(k); });
-         return u;
+         return lib.unique(a.concat(b));
      };
 
      lib.date_to_unix = function(d) {
@@ -499,12 +518,13 @@
          return copy;
      };
 
-     lib.spec = function(spec, meta_spec) {
+     lib.spec = function(spec) {
          // Copy spec into a copy, defaulting values from meta_spec and
          // optionally extended_meta_spec.
 
          var copy_of_spec = {};
          var meta_specs = lib.args(arguments).slice(1);
+         spec = spec || {};
          juice.foreach(meta_specs,
                        function(meta_spec) {
                            juice.foreach(meta_spec,

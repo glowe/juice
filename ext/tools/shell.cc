@@ -60,12 +60,11 @@ static v8::Handle<v8::Value> Basename(const v8::Arguments& args);
 static v8::Handle<v8::Value> Dirname(const v8::Arguments& args);
 static v8::Handle<v8::Value> FileExists(const v8::Arguments& args);
 static v8::Handle<v8::Value> Getenv(const v8::Arguments& args);
-static v8::Handle<v8::Value> IsDir(const v8::Arguments& args);
 static v8::Handle<v8::Value> Load(const v8::Arguments& args);
-static v8::Handle<v8::Value> Ls(const v8::Arguments &args);
 static v8::Handle<v8::Value> Mkdir(const v8::Arguments &args);
 static v8::Handle<v8::Value> Print(const v8::Arguments& args);
 static v8::Handle<v8::Value> Quit(const v8::Arguments& args);
+static v8::Handle<v8::Value> ReadDir(const v8::Arguments &args);
 static v8::Handle<v8::Value> ReadFile(const v8::Arguments &args);
 static v8::Handle<v8::Value> Realpath(const v8::Arguments& args);
 static v8::Handle<v8::Value> Sha1(const v8::Arguments& args);
@@ -85,9 +84,8 @@ int main(int argc, char* argv[])
     builtins->Set(v8::String::New("dirname"), v8::FunctionTemplate::New(Dirname));
     builtins->Set(v8::String::New("file_exists"), v8::FunctionTemplate::New(FileExists));
     builtins->Set(v8::String::New("getenv"), v8::FunctionTemplate::New(Getenv));
-    builtins->Set(v8::String::New("is_dir"), v8::FunctionTemplate::New(IsDir));
-    builtins->Set(v8::String::New("ls"), v8::FunctionTemplate::New(Ls));
     builtins->Set(v8::String::New("mkdir"), v8::FunctionTemplate::New(Mkdir));
+    builtins->Set(v8::String::New("read_dir"), v8::FunctionTemplate::New(ReadDir));
     builtins->Set(v8::String::New("read_file"), v8::FunctionTemplate::New(ReadFile));
     builtins->Set(v8::String::New("realpath"), v8::FunctionTemplate::New(Realpath));
     builtins->Set(v8::String::New("sha1"), v8::FunctionTemplate::New(Sha1));
@@ -110,8 +108,8 @@ int main(int argc, char* argv[])
     if (argc > 1) {
         const char* str = argv[1];
         v8::Handle<v8::String> file_name = v8::String::New(str);
-        v8::Handle<v8::String> source = ReadFile(str)->ToString();
-        if (source.IsEmpty()) {
+        v8::Handle<v8::Value> source = ReadFile(str);
+        if (source == v8::Undefined()) {
             printf("Error reading '%s'\n", str);
             return 1;
         }
@@ -121,7 +119,7 @@ int main(int argc, char* argv[])
         }
         context->Global()->Set(v8::String::New("arguments"), arguments);
 
-        if (!ExecuteString(source, file_name, false)) {
+        if (!ExecuteString(source->ToString(), file_name, false)) {
             printf("Error executing '%s'\n", str);
             return 1;
         }
@@ -273,20 +271,7 @@ static v8::Handle<v8::Value> FileExists(const v8::Arguments& args) {
     v8::String::AsciiValue path(args[0]);
     struct stat buf;
     if (stat(*path, &buf) == 0) {
-        return v8::True();
-    }
-    if (errno == ENOENT) {
-        return v8::False();
-    }
-    return SystemCallError("stat");
-}
-
-static v8::Handle<v8::Value> IsDir(const v8::Arguments& args) {
-    ASSERT_NUM_ARGS(1);
-    v8::String::AsciiValue path(args[0]);
-    struct stat buf;
-    if (stat(*path, &buf) == 0) {
-        return S_ISDIR(buf.st_mode) ? v8::True() : v8::False();
+        return v8::String::New(S_ISDIR(buf.st_mode) ? "dir" : "file");
     }
     if (errno == ENOENT) {
         return v8::False();
@@ -319,7 +304,7 @@ static v8::Handle<v8::Value> Mkdir(const v8::Arguments& args) {
     return result==0 ? v8::True() : v8::False();
 }
 
-static v8::Handle<v8::Value> Ls(const v8::Arguments& args) {
+static v8::Handle<v8::Value> ReadDir(const v8::Arguments& args) {
     ASSERT_NUM_ARGS(1);
 
     DIR *dp;
