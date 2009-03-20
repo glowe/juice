@@ -167,10 +167,10 @@
          return (lib.is_undefined(a) || lib.is_null(a)) ? b : a;
      };
 
-     // If a is an array, calls f(v) for each value v in a until f(v) returns
-     // a non-undefined value, which is then returned. If a is an object,
-     // calls f(k,v) for each key-value pair k:v in a until f(k,v) returns a
-     // non-undefined value, which is then returned.
+     // If `a` is an array, calls `f(v)` for each value `v` in `a` until
+     // `f(v)` returns a non-undefined value, which is then returned. If `a`
+     // is an object, calls `f(k,v)` for each key-value pair `k`:`v` in a
+     // until `f(k,v)` returns a non-undefined value, which is then returned.
 
      lib.find = function(a, f) {
          var i, v;
@@ -252,10 +252,14 @@
 
      // If a is an array, returns an array containing only those values v
      // where p(v) is true. If a is an object, returns an object containing
-     // only those key-value pairs k:v where p(k,v) is true.
+     // only those key-value pairs k:v where p(k,v) is true. If p is not
+     // supplied, this function filters values that evaluate to false.
 
      lib.filter = function(a, p) {
          var answer;
+         if (!p) {
+             p = function(v) { return !!v; };
+         }
          if (lib.is_array(a)) {
              answer = [];
              lib.foreach(a, function(v) { if (p(v)) { answer.push(v); } });
@@ -541,6 +545,20 @@
                                          });
                        });
          return copy_of_spec;
+     };
+
+     // TODO: docs!
+
+     lib.mset = function(a, dims, v) {
+         var first = dims[0];
+         if (dims.length === 1) {
+             a[first] = v;
+             return;
+         }
+         if (!a.hasOwnProperty(first)) {
+             a[first] = {};
+         }
+         juice.mset(a[first], dims.slice(1), v);
      };
 
      // TODO: document me.

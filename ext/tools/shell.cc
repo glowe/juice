@@ -67,8 +67,10 @@ static v8::Handle<v8::Value> Quit(const v8::Arguments& args);
 static v8::Handle<v8::Value> ReadDir(const v8::Arguments &args);
 static v8::Handle<v8::Value> ReadFile(const v8::Arguments &args);
 static v8::Handle<v8::Value> Realpath(const v8::Arguments& args);
+static v8::Handle<v8::Value> Rmdir(const v8::Arguments& args);
 static v8::Handle<v8::Value> Sha1(const v8::Arguments& args);
 static v8::Handle<v8::Value> System(const v8::Arguments& args);
+static v8::Handle<v8::Value> Unlink(const v8::Arguments& args);
 static v8::Handle<v8::Value> V8(const v8::Arguments& args);
 static v8::Handle<v8::Value> Version(const v8::Arguments& args);
 static v8::Handle<v8::Value> WriteFile(const v8::Arguments& args);
@@ -88,8 +90,10 @@ int main(int argc, char* argv[])
     builtins->Set(v8::String::New("read_dir"), v8::FunctionTemplate::New(ReadDir));
     builtins->Set(v8::String::New("read_file"), v8::FunctionTemplate::New(ReadFile));
     builtins->Set(v8::String::New("realpath"), v8::FunctionTemplate::New(Realpath));
+    builtins->Set(v8::String::New("rmdir"), v8::FunctionTemplate::New(Rmdir));
     builtins->Set(v8::String::New("sha1"), v8::FunctionTemplate::New(Sha1));
     builtins->Set(v8::String::New("system"), v8::FunctionTemplate::New(System));
+    builtins->Set(v8::String::New("unlink"), v8::FunctionTemplate::New(Unlink));
     builtins->Set(v8::String::New("write_file"), v8::FunctionTemplate::New(WriteFile));
 
     v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
@@ -191,7 +195,9 @@ static v8::Handle<v8::Value> Version(const v8::Arguments& args) {
 static v8::Handle<v8::Value> ReadFile(const char* name) {
     FILE* file = fopen(name, "rb");
     if (file == NULL) {
-        return SystemCallError("fopen");
+        fprintf(stderr, "FATAL ERROR: fopen(%s) failed: %s\n", name, strerror(errno));
+        exit(2);
+        //return SystemCallError("fopen");
     }
 
     fseek(file, 0, SEEK_END);
@@ -243,6 +249,24 @@ static v8::Handle<v8::Value> ReadFile(const v8::Arguments& args) {
     ASSERT_NUM_ARGS(1);
     v8::String::AsciiValue file(args[0]);
         return ReadFile(*file)->ToString();
+    return v8::Undefined();
+}
+
+static v8::Handle<v8::Value> Rmdir(const v8::Arguments& args) {
+    ASSERT_NUM_ARGS(1);
+    v8::String::AsciiValue path(args[0]);
+    if (rmdir(*path) != 0 && errno != ENOENT) {
+        return SystemCallError("rmdir");
+    }
+    return v8::Undefined();
+}
+
+static v8::Handle<v8::Value> Unlink(const v8::Arguments& args) {
+    ASSERT_NUM_ARGS(1);
+    v8::String::AsciiValue path(args[0]);
+    if (unlink(*path) != 0 && errno != ENOENT) {
+        return SystemCallError("unlink");
+    }
     return v8::Undefined();
 }
 

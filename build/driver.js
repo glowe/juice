@@ -25,9 +25,13 @@ argv = Array.prototype.slice.apply(arguments, [0]);
 program = argv[2];
 argv = argv.slice(3);
 
+juice.load('ext/tools/fulljslint.js');
+juice.load('ext/web/json2.js');
 juice.load('web/prelude.js');
 juice.load('web/error.js');
 juice.load('build/build.js');
 juice.load('build/program_options.js');
 juice.load('build/sys.js');
+juice.load('build/template.js');
+
 load(program);

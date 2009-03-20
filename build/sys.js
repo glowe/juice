@@ -8,21 +8,27 @@
                            {basename:       undefined,
                             canonical_path: undefined,
                             dirname:        undefined,
+                            exit:           undefined,
                             file_exists:    undefined,
                             getenv:         undefined,
                             mkdir:          undefined,
                             read_dir:       undefined,
                             read_file:      undefined,
+                            rmdir:          undefined,
                             sha1:           undefined,
+                            unlink:         undefined,
                             write_file:     undefined});
 
          juice.sys.basename       = impl.basename;
          juice.sys.canonical_path = impl.canonical_path;
          juice.sys.dirname        = impl.dirname;
+         juice.sys.exit           = impl.exit;
          juice.sys.file_exists    = impl.file_exists;
          juice.sys.getenv         = impl.getenv;
          juice.sys.read_file      = impl.read_file;
+         juice.sys.rmdir          = impl.rmdir;
          juice.sys.sha1           = impl.sha1;
+         juice.sys.unlink         = impl.unlink;
 
          juice.sys.write_file = function(path, contents, overwrite) {
 	     juice.sys.mkdir(juice.sys.dirname(path));
@@ -33,6 +39,18 @@
                  contents = contents.join('\n');
              }
 	     return impl.write_file(path, contents);
+         };
+
+         juice.sys.rm_rf = function(path) {
+             var status = juice.sys.file_exists(path);
+             if (status == 'dir') {
+                 juice.foreach(juice.sys.read_dir(path, {fullpath:true}),
+                               juice.sys.rm);
+                 juice.sys.rmdir(path);
+             }
+             else if (status == 'file') {
+                 juice.sys.unlink(path);
+             }
          };
 
          // TODO: fully document read_dir. Note: read_dir does not return
