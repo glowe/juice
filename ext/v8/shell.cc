@@ -182,8 +182,8 @@ int main(int argc, char* argv[])
 
     v8::Local<v8::ObjectTemplate> sys = v8::ObjectTemplate::New();
     sys->Set(v8::String::New("crypt"), v8_juice::crypt_module());
-    sys->Set(v8::String::New("os"), v8_juice::os_module());
-
+    sys->Set(v8::String::New("os"),    v8_juice::os_module());
+    sys->Set(v8::String::New("v8"),    v8::Boolean::New(true));
     global->Set(v8::String::New("sys"), sys);
 
     v8::Handle<v8::Context> context = v8::Context::New(NULL, global);
