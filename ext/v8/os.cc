@@ -434,7 +434,44 @@ v8::Local<v8::ObjectTemplate> v8_juice::os_module()
     os->Set(v8::String::New("S_ISBLK"),  v8::FunctionTemplate::New(os_stat_S_ISBLK));
     os->Set(v8::String::New("S_ISFIFO"), v8::FunctionTemplate::New(os_stat_S_ISFIFO));
 
-    return os;
 
+    v8::Local<v8::ObjectTemplate> errnum = v8::ObjectTemplate::New();
+    errnum->Set(v8::String::New("EPERM"),   v8::Integer::New(EPERM));
+    errnum->Set(v8::String::New("ENOENT"),  v8::Integer::New(ENOENT));
+    errnum->Set(v8::String::New("ESRCH"),   v8::Integer::New(ESRCH));
+    errnum->Set(v8::String::New("EINTR"),   v8::Integer::New(EINTR));
+    errnum->Set(v8::String::New("EIO"),     v8::Integer::New(EIO));
+    errnum->Set(v8::String::New("ENXIO"),   v8::Integer::New(ENXIO));
+    errnum->Set(v8::String::New("E2BIG"),   v8::Integer::New(E2BIG));
+    errnum->Set(v8::String::New("ENOEXEC"), v8::Integer::New(ENOEXEC));
+    errnum->Set(v8::String::New("EBADF"),   v8::Integer::New(EBADF));
+    errnum->Set(v8::String::New("ECHILD"),  v8::Integer::New(ECHILD));
+    errnum->Set(v8::String::New("EAGAIN"),  v8::Integer::New(EAGAIN));
+    errnum->Set(v8::String::New("ENOMEM"),  v8::Integer::New(ENOMEM));
+    errnum->Set(v8::String::New("EACCES"),  v8::Integer::New(EACCES));
+    errnum->Set(v8::String::New("EFAULT"),  v8::Integer::New(EFAULT));
+    errnum->Set(v8::String::New("ENOTBLK"), v8::Integer::New(ENOTBLK));
+    errnum->Set(v8::String::New("EBUSY"),   v8::Integer::New(EBUSY));
+    errnum->Set(v8::String::New("EEXIST"),  v8::Integer::New(EEXIST));
+    errnum->Set(v8::String::New("EXDEV"),   v8::Integer::New(EXDEV));
+    errnum->Set(v8::String::New("ENODEV"),  v8::Integer::New(ENODEV));
+    errnum->Set(v8::String::New("ENOTDIR"), v8::Integer::New(ENOTDIR));
+    errnum->Set(v8::String::New("EISDIR"),  v8::Integer::New(EISDIR));
+    errnum->Set(v8::String::New("EINVAL"),  v8::Integer::New(EINVAL));
+    errnum->Set(v8::String::New("ENFILE"),  v8::Integer::New(ENFILE));
+    errnum->Set(v8::String::New("EMFILE"),  v8::Integer::New(EMFILE));
+    errnum->Set(v8::String::New("ENOTTY"),  v8::Integer::New(ENOTTY));
+    errnum->Set(v8::String::New("ETXTBSY"), v8::Integer::New(ETXTBSY));
+    errnum->Set(v8::String::New("EFBIG"),   v8::Integer::New(EFBIG));
+    errnum->Set(v8::String::New("ENOSPC"),  v8::Integer::New(ENOSPC));
+    errnum->Set(v8::String::New("ESPIPE"),  v8::Integer::New(ESPIPE));
+    errnum->Set(v8::String::New("EROFS"),   v8::Integer::New(EROFS));
+    errnum->Set(v8::String::New("EMLINK"),  v8::Integer::New(EMLINK));
+    errnum->Set(v8::String::New("EPIPE"),   v8::Integer::New(EPIPE));
+    errnum->Set(v8::String::New("EDOM"),    v8::Integer::New(EDOM));
+    errnum->Set(v8::String::New("ERANGE"),  v8::Integer::New(ERANGE));
+    os->Set(v8::String::New("errno"), errnum);
+
+    return os;
 }
 
