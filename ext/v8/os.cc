@@ -48,6 +48,7 @@ v8::Handle<v8::Object> convert_file_to_object(FILE* file)
     file_object->SetInternalFieldCount(1);
     v8::Handle<v8::Object> file_instance = file_object->NewInstance();
     file_instance->SetInternalField(0, v8::External::New((void*) file));
+    return file_instance;
 }
 
 v8::Handle<v8::Value> os_basename(const v8::Arguments& args)
@@ -109,7 +110,6 @@ v8::Handle<v8::Value> os_fopen(const v8::Arguments& args)
     FILE* file = fopen(*path, *mode);
 
     if (file == NULL) return os_error(errno);
-
 
     return convert_file_to_object(file);
 }
