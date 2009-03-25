@@ -10,6 +10,13 @@
 
      juice.build = {};
 
+     juice.build.fatal = function(msg) {
+         // TODO: possibly reformat msg when it's too long.
+         print('Fatal: ' + msg);
+         print('\nCompilation aborted.');
+         juice.sys.exit(2);
+     };
+
      juice.build.clean = function() {
          juice.sys.unlink(log_filename);
          juice.sys.rm_rf('./build');
@@ -236,7 +243,7 @@
      juice.build.lib_name = function(path) {
          var json, lib_json_path;
          lib_json_path = path + '/lib.json';
-         if (juice.sys.file_exists(lib_json_path) != 'file') {
+         if (juice.sys.file_exists(lib_json_path) !== 'file') {
              return false;
          }
          json = juice.build.read_file_json(lib_json_path);

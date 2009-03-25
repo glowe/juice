@@ -297,7 +297,7 @@ static v8::Handle<v8::Value> FileExists(const v8::Arguments& args) {
     if (stat(*path, &buf) == 0) {
         return v8::String::New(S_ISDIR(buf.st_mode) ? "dir" : "file");
     }
-    if (errno == ENOENT) {
+    if (errno == ENOENT || errno == ENOTDIR) {
         return v8::False();
     }
     return SystemCallError("stat");

@@ -51,8 +51,8 @@ find_library = function(name) {
         return path;
     }
     path = juice.find(juice.sys.read_dir(juice.libpath(), {fullpath:true}),
-                      function(path) {
-                          return (juice.build.lib_name(path) === name) ? path : undefined;
+                      function(filename) {
+                          return (juice.build.lib_name(filename) === name) ? filename : undefined;
                       });
     if (path) {
         return path;

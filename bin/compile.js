@@ -1,10 +1,12 @@
 var
-file_log,
 all_source_files,
 changed_source_files,
-targets,
+file_log,
+internal_lib_name,
+options,
 program_options,
-options;
+required_source_files,
+targets;
 
 program_options = juice.program_options(
     {"clean": "remove build targets"});
@@ -17,15 +19,29 @@ if (options.clean) {
     juice.sys.exit(0);
 }
 
+try {
+    juice.build.load_config();
+}
+catch (e) {
+    juice.build.fatal('Unable to load build configuration. Perhaps you need to run "juice config"?');
+}
 
-// TODO: if load_config throws an exception, print a helpful error message to the user.
-juice.build.load_config();
+// Make sure required source files exist. E.g. pages.js, layout.js.
+required_source_files = ['pages.js', 'layout.js'];
+juice.foreach(required_source_files,
+              function(filename) {
+                  if (juice.sys.file_exists(filename) !== 'file') {
+                      juice.error.raise('Missing a required source file: '+filename);
+                  }
+              });
 
-// TODO: make sure required source files exist. E.g. pages.js, layout.js, lib/lib.js.
+// Insure the site has an internal library.
+internal_lib_name = juice.build.lib_name('lib');
+if (!internal_lib_name) {
+    juice.error.raise('Site library not found (expected to find it in "./lib").');
+}
 
-// TODO: insure that all referenced packages exist, so we don't have to check all the time.
-
-all_source_files = juice.map(['pages.js', 'layout.js'], juice.build.source_file);
+all_source_files = juice.map(required_source_files, juice.build.source_file);
 juice.foreach(juice.build.lib_paths(),
               function(lib_name, path) {
                   all_source_files = all_source_files.concat(
@@ -38,6 +54,10 @@ juice.foreach(juice.build.lib_paths(),
                                 }));
               });
 
+//
+// TODO: insure that all referenced packages exist, so we don't have to check all the time.
+//
+
 file_log = juice.build.file_log(all_source_files);
 
 changed_source_files =
@@ -46,8 +66,7 @@ changed_source_files =
                      return file_log.has_file_changed(f.path);
                  });
 
-// lint source files
-
+// Lint source files.
 juice.foreach(changed_source_files,
               function(f) {
                   var errors = juice.build.lint_js(f.path);
@@ -59,8 +78,7 @@ juice.foreach(changed_source_files,
               });
 print('Lint: OK.');
 
-// compile widget packages
-
+// Determine which targets need to be recompiled.
 targets = {widgets: {}, rpcs: {}, global: false, pages: false};
 juice.foreach(changed_source_files,
               function(f) {
