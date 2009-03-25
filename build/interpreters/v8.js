@@ -6,7 +6,7 @@ juice.sys.install_interpreter(
          }
          catch (e) {
              e.message += " (" + path + ")";
-             juice.error.raise(e);
+             return juice.error.raise(e);
          }
      },
      dirname: sys.os.dirname,
