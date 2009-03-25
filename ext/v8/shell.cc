@@ -158,7 +158,7 @@ void run_shell(v8::Handle<v8::Context> context)
         if (try_catch.HasCaught())
             report_exception(try_catch);
         else if (!result.IsEmpty() && !result->IsUndefined())
-            std::cout << *v8::String::AsciiValue(result);
+            std::cout << *v8::String::AsciiValue(result) << std::endl;
     }
 
     std::cout << std::endl << "Goodbye!" << std::endl;
