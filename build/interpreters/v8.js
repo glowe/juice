@@ -20,7 +20,7 @@ juice.sys.install_interpreter(
              if ((e.errno == sys.os.errno.ENOENT) || e.errno != sys.os.errno.ENODIR) {
                  return false;
              }
-             throw e;
+             juice.error.raise(e.message);
          }
          if (sys.os.S_ISDIR(file_info.st_mode)) {
              return 'dir';
@@ -37,7 +37,7 @@ juice.sys.install_interpreter(
      read_file: function(path) {
          var contents = [], file;
          if (juice.sys.file_exists(path) !== "file") {
-             throw path + " is not a file";
+             juice.error.raise(path + " is not a file");
          }
          file = sys.os.fopen(path, "r");
          while (!sys.os.feof(file)) {
@@ -56,7 +56,9 @@ juice.sys.install_interpreter(
              sys.os.fclose(file);
          }
          catch (e) {
-             if (file) sys.os.fclose(file);
+             if (file) {
+                 sys.os.fclose(file);
+             }
              e.message += " when writing to " + path + "";
              juice.error.raise(e);
          }
