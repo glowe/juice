@@ -45,7 +45,7 @@
              var status = juice.sys.file_exists(path);
              if (status == 'dir') {
                  juice.foreach(juice.sys.read_dir(path, {fullpath:true}),
-                               juice.sys.rm);
+                               juice.sys.rm_rf);
                  juice.sys.rmdir(path);
              }
              else if (status == 'file') {
