@@ -26,8 +26,8 @@ catch (e) {
     juice.build.fatal('Unable to load build configuration. Perhaps you need to run "juice config"?');
 }
 
-// Make sure required source files exist. E.g. pages.js, layout.js.
-required_source_files = ['pages.js', 'layout.js'];
+// Make sure required source files exist. E.g. pages.js, layouts.js.
+required_source_files = ['pages.js', 'layouts.js'];
 juice.foreach(required_source_files,
               function(filename) {
                   if (juice.sys.file_exists(filename) !== 'file') {
