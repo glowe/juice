@@ -12,7 +12,7 @@
                             file_exists:    undefined,
                             getenv:         undefined,
                             mkdir:          undefined,
-                            read_dir:       undefined,
+                            list_dir:       undefined,
                             read_file:      undefined,
                             rmdir:          undefined,
                             sha1:           undefined,
@@ -44,7 +44,7 @@
          juice.sys.rm_rf = function(path) {
              var status = juice.sys.file_exists(path);
              if (status == 'dir') {
-                 juice.foreach(juice.sys.read_dir(path, {fullpath:true}),
+                 juice.foreach(juice.sys.list_dir(path, {fullpath:true}),
                                juice.sys.rm_rf);
                  juice.sys.rmdir(path);
              }
@@ -53,18 +53,18 @@
              }
          };
 
-         // TODO: fully document read_dir. Note: read_dir does not return
+         // TODO: fully document list_dir. Note: list_dir does not return
          // hidden files.
 
-         juice.sys.read_dir = function(path, spec) {
+         juice.sys.list_dir = function(path, spec) {
 	     var filenames;
              spec = juice.spec(spec, {filter_re: null, fullpath: false});
 
              try {
-                 filenames = impl.read_dir(path);
+                 filenames = impl.list_dir(path);
              }
              catch (e) {
-                 juice.error.raise("read_dir(" + path + ") failed: " + e);
+                 juice.error.raise("list_dir(" + path + ") failed: " + e);
              }
 
              filenames = juice.filter(filenames,
@@ -82,16 +82,6 @@
              }
 	     return filenames.sort();
          };
-
-         // FIXME: possibly eliminate this function.
-         // juice.sys.ls = function(path, filter_re) {
-	 //     var visible_files = juice.filter(impl.ls(path),
-	 //        			      function(f) {
-	 //        			          return (/^[^.]/).test(f) && (!filter_re || filter_re.test(f));
-	 //        			      });
-	 //     return juice.map(visible_files,
-	 //        	      function(f) { return path + '/' + f; }).sort();
-         // };
 
          juice.sys.mkdir = function(path, mode) {
 	     var dir, file_exists_error;

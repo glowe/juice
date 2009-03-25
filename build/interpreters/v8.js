@@ -32,7 +32,7 @@ juice.sys.install_interpreter(
          return juice.error.raise("Unknown file type");
      },
      getenv: sys.os.getenv,
-     read_dir: sys.os.listdir,
+     list_dir: sys.os.listdir,
      mkdir: sys.os.mkdir,
      read_file: function(path) {
          var contents = [], file;

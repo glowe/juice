@@ -98,7 +98,7 @@
      juice.build.file_find = function(top_dir, predicate) {
          var answer = [], helper;
          helper = function(path) {
-             juice.foreach(juice.sys.read_dir(path, {fullpath:true}),
+             juice.foreach(juice.sys.list_dir(path, {fullpath:true}),
                            function(filename) {
                                if (juice.sys.file_exists(filename) == 'dir') {
                                    helper(filename);
@@ -215,7 +215,7 @@
          lib_path = juice.build.find_library(lib_name);
          pkg_path = lib_path + '/widgets/' + pkg_name;
 
-         widgets = juice.map(juice.sys.read_dir(pkg_path, {filter_re: /[.]js$/}),
+         widgets = juice.map(juice.sys.list_dir(pkg_path, {filter_re: /[.]js$/}),
                              juice.build.read_file_and_scope_js);
 
          juice.build.write_to_docroot(
@@ -296,7 +296,7 @@
      juice.build.library_dependencies = function(libpath) {
          var answer = {};
 
-         juice.foreach(juice.sys.read_dir(libpath + '/widgets/'),
+         juice.foreach(juice.sys.list_dir(libpath + '/widgets/'),
                        function(pkg) {
                            var metadata = juice.build.read_widget_package_metadata(libpath, pkg);
                            answer = juice.build.merge_library_dependencies(answer, metadata.dependencies);
