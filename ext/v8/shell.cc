@@ -34,6 +34,36 @@ private:
     std::string msg;
 };
 
+// Stolen from GOOGLE
+void report_exception(const v8::TryCatch& try_catch)
+{
+    v8::HandleScope handle_scope;
+    v8::String::Utf8Value exception(try_catch.Exception());
+
+    v8::Handle<v8::Message> message = try_catch.Message();
+
+    if (message.IsEmpty()) {
+        std::cout << *exception << std::endl;
+        return;
+    }
+
+    v8::String::Utf8Value filename(message->GetScriptResourceName());
+    int linenum = message->GetLineNumber();
+    std::cout << *filename << ":" << linenum << ": " << *exception << std::endl;
+
+    v8::String::Utf8Value source_line(message->GetSourceLine());
+    std::cout << *source_line << std::endl;
+    const int start = message->GetStartColumn();
+    for (int i = 0; i < start; i++) {
+        std::cout << " ";
+    }
+    const int end = message->GetEndColumn();
+    for (int i = start; i < end; i++) {
+        std::cout << "^";
+    }
+    std::cout << std::endl;
+}
+
 std::string read_file(const char* filename) throw (FileIOError)
 {
     struct stat file_info;
@@ -121,14 +151,16 @@ void run_shell(v8::Handle<v8::Context> context)
         if (source.length() == 0) continue; // Empty line
 
         v8::HandleScope handle_scope;
+        v8::TryCatch try_catch;
         v8::Handle<v8::Value> result =
             compile_and_run(v8::String::New(source.c_str()),
                             v8::String::New("*shell*"));
-
-        if (!result.IsEmpty() && !result->IsUndefined())
-            std::cout << *v8::String::AsciiValue(result)
-                      << std::endl;
+        if (try_catch.HasCaught())
+            report_exception(try_catch);
+        else if (!result.IsEmpty() && !result->IsUndefined())
+            std::cout << *v8::String::AsciiValue(result) << std::endl;
     }
+
     std::cout << std::endl << "Goodbye!" << std::endl;
 }
 
@@ -182,8 +214,8 @@ int main(int argc, char* argv[])
 
     v8::Local<v8::ObjectTemplate> sys = v8::ObjectTemplate::New();
     sys->Set(v8::String::New("crypt"), v8_juice::crypt_module());
-    sys->Set(v8::String::New("os"), v8_juice::os_module());
-
+    sys->Set(v8::String::New("os"),    v8_juice::os_module());
+    sys->Set(v8::String::New("v8"),    v8::Boolean::New(true));
     global->Set(v8::String::New("sys"), sys);
 
     v8::Handle<v8::Context> context = v8::Context::New(NULL, global);
