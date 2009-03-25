@@ -240,7 +240,7 @@ v8::Handle<v8::Value> os_listdir(const v8::Arguments& args)
         dir_entries.push_back(ep->d_name);
     }
 
-    if (ep == NULL) {
+    if (ep == NULL && errno) {
         const int errnum = errno;
         closedir(dp);
         return os_error(errnum);
@@ -285,8 +285,6 @@ v8::Handle<v8::Value> os_mkdir(const v8::Arguments& args)
     return v8::Undefined();
 }
 
-
-
 v8::Handle<v8::Value> os_realpath(const v8::Arguments& args)
 {
     v8::HandleScope handle_scope;
@@ -302,6 +300,21 @@ v8::Handle<v8::Value> os_realpath(const v8::Arguments& args)
     free(real_path);
     return v8_real_path;
 }
+
+// Removes a directory if it exists.
+v8::Handle<v8::Value> os_rmdir(const v8::Arguments& args)
+{
+    v8::HandleScope handle_scope;
+
+    ASSERT_N_ARGS(1);
+
+    v8::String::AsciiValue path(args[0]);
+
+    if (rmdir(*path) != 0 && errno != ENOENT) return os_error(errno);
+
+    return v8::Undefined();
+}
+
 
 v8::Handle<v8::Value> os_stat(const v8::Arguments& args)
 {
@@ -421,6 +434,7 @@ v8::Local<v8::ObjectTemplate> v8_juice::os_module()
     os->Set(v8::String::New("listdir"),  v8::FunctionTemplate::New(os_listdir));
     os->Set(v8::String::New("mkdir"),    v8::FunctionTemplate::New(os_mkdir));
     os->Set(v8::String::New("realpath"), v8::FunctionTemplate::New(os_realpath));
+    os->Set(v8::String::New("rmdir"),    v8::FunctionTemplate::New(os_rmdir));
     os->Set(v8::String::New("stat"),     v8::FunctionTemplate::New(os_stat));
     os->Set(v8::String::New("system"),   v8::FunctionTemplate::New(os_system));
     os->Set(v8::String::New("unlink"),   v8::FunctionTemplate::New(os_unlink));
