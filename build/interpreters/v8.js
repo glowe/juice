@@ -1,6 +1,14 @@
 juice.sys.install_interpreter(
     {basename: sys.os.basename,
-     canonical_path: sys.os.realpath,
+     canonical_path: function(path) {
+         try {
+             return sys.os.realpath(path);
+         }
+         catch (e) {
+             e.message += " (" + path + ")";
+             juice.error.raise(e);
+         }
+     },
      dirname: sys.os.dirname,
      exit: quit,
      file_exists: function(path) {
@@ -41,12 +49,16 @@ juice.sys.install_interpreter(
      sha1: sys.crypt.sha1,
      unlink: sys.os.unlink,
      write_file: function(path, contents) {
-         var file = sys.os.fopen(path, "r");
+         var file;
          try {
-             fwrite(file, contents);
+             file = sys.os.fopen(path, "w");
+             sys.os.fwrite(file, contents);
+             sys.os.fclose(file);
          }
          catch (e) {
-             fclose(file);
+             if (file) sys.os.fclose(file);
+             e.message += " when writing to " + path + "";
+             juice.error.raise(e);
          }
      }
     });
