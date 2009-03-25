@@ -6,7 +6,7 @@
 * IMPORTANT Create pagination component for SEO
 * IMPORTANT Where should project specific external js files live?
   For example, the juice-bar uses jquery-ui.
-* IMPORTANT Compiled script names should have something unique in them to thwart browser caching
+* IMPORTANT Compiled script names should have something unique in them to thwart browser caching (i.e. we need url versioning)
 * IMPORTANT Add facility to ignore success or failure functions when rpc finishes
   This will be important when adding rpc-based form validation. If
   the user starts a validation RPC (e.g., check if username
@@ -35,6 +35,7 @@
     the end of paths. Suggestion: We should omit them from the beginning of
     paths and require that they be explicitly put on the ends of paths.
 
+* MAYBE Scope the juice.lib namespace passed to widget packages based on their stated dependencies.
 * MAYBE Change proj settings to just be a dictionary--that way more flexible after all
 * MAYBE be consistent about event names (use present-tense everywhere?)
 * MAYBE write test for templates and start on 2-pass fix

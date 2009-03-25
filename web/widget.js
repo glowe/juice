@@ -359,12 +359,7 @@
     // | package management system |
     // +---------------------------+
 
-    lib.define_package = function(namespace, rpc_deps, widget_deps, constructor) {
-        var
-        rpcs,
-        scoped,
-        widgets;
-
+    lib.define_package = function(namespace, constructor) {
         if (current_namespace) {
             juice.error.raise('nested_widget_package', {current_namespace: current_namespace, namespace: namespace});
         }
