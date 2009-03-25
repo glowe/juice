@@ -277,7 +277,7 @@ v8::Handle<v8::Value> os_mkdir(const v8::Arguments& args)
     if (mkdir(*path, oct_mode) != 0) {
         const int errnum = errno;
         umask(old_umask);
-        return os_error(errno);
+        return os_error(errnum);
     }
 
     umask(old_umask);
