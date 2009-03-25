@@ -17,10 +17,11 @@ namespace {
 
 v8::Handle<v8::Value> os_error(const int errnum)
 {
-    v8::Handle<v8::ObjectTemplate> exception = v8::ObjectTemplate::New();
-    exception->Set(v8::String::New("message"), v8::String::New(strerror(errno)));
-    exception->Set(v8::String::New("errno"), v8::Integer::New(errnum));
-    return v8::ThrowException(exception->NewInstance());
+    v8::Local<v8::Value> exception =
+        v8::Exception::Error(v8::String::New(strerror(errno)));
+    v8::Local<v8::Object> exception_object = exception->ToObject();
+    exception_object->Set(v8::String::New("errno"), v8::Integer::New(errnum));
+    return v8::ThrowException(exception_object);
 }
 
 FILE* convert_arg_to_file(v8::Handle<v8::Value> arg)
