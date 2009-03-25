@@ -1,3 +1,16 @@
+// Give us stack traces in v8
+sys.add_debug_event_listener(
+    function(event, exec_state, event_data, data) {
+        var frame, i, prop;
+        print(event_data.exception());
+        if (event == 2) {
+            for (i = 0; i < exec_state.frameCount(); i++) {
+                print(exec_state.frame(i).sourceAndPositionText());
+            }
+        }
+        print();
+    });
+
 juice.sys.install_interpreter(
     {basename: sys.os.basename,
      canonical_path: function(path) {
