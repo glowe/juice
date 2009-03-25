@@ -28,6 +28,6 @@ v8::Handle<v8::Value> sha1(const v8::Arguments& args)
 v8::Local<v8::ObjectTemplate> v8_juice::crypt_module()
 {
     v8::Local<v8::ObjectTemplate> crypt = v8::ObjectTemplate::New();
-    crypt->Set(v8::String::New("basename"), v8::FunctionTemplate::New(sha1));
+    crypt->Set(v8::String::New("sha1"), v8::FunctionTemplate::New(sha1));
     return crypt;
 }
