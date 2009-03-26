@@ -240,7 +240,7 @@ v8::Handle<v8::Value> os_listdir(const v8::Arguments& args)
         dir_entries.push_back(ep->d_name);
     }
 
-    if (ep == NULL && errno) {
+    if (ep == NULL && errno == EBADF) {
         const int errnum = errno;
         closedir(dp);
         return os_error(errnum);
