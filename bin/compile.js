@@ -90,7 +90,28 @@ juice.foreach(changed_source_files,
                   }
               });
 
+
+// Package up dirty widgets
+
+juice.foreach(targets.widgets,
+              function(lib_name, pkgs) {
+                  juice.foreach(pkgs, function(pkg_name) {
+                      juice.build.compile_widget_package(lib_name, pkg_name);
+                      print("Compile widget package (" + lib_name + ":" + pkg_name + "): OK");
+                  });
+              });
+
+juice.foreach(targets.rpcs,
+              function(lib_name, pkgs) {
+                  juice.foreach(pkgs, function(pkg_name) {
+                      juice.build.compile_rpc_package(lib_name, pkg_name);
+                      print("Compile rpc package (" + lib_name + ":" + pkg_name + "): OK");
+                  });
+              });
+
+
 print(juice.dump(targets));
 
 juice.foreach(all_source_files, function(f) { file_log.update_file(f.path); });
+
 file_log.save();

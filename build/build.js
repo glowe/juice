@@ -4,157 +4,157 @@
 
 (function(juice) {
 
-     var config,
-     config_filename = '.juice-config.json',
-     log_filename    = '.juice-file-log.json';
+    var config,
+    config_filename = '.juice-config.json',
+    log_filename    = '.juice-file-log.json';
 
-     juice.build = {};
+    juice.build = {};
 
-     juice.build.fatal = function(msg) {
-         // TODO: possibly reformat msg when it's too long.
-         print('Fatal: ' + msg);
-         print('\nCompilation aborted.');
-         juice.sys.exit(2);
-     };
+    juice.build.fatal = function(msg) {
+        // TODO: possibly reformat msg when it's too long.
+        print('Fatal: ' + msg);
+        print('\nCompilation aborted.');
+        juice.sys.exit(2);
+    };
 
-     juice.build.clean = function() {
-         juice.sys.unlink(log_filename);
-         juice.sys.rm_rf('./build');
-     };
+    juice.build.clean = function() {
+        juice.sys.unlink(log_filename);
+        juice.sys.rm_rf('./build');
+    };
 
-     juice.build.save_config = function(c) {
-         juice.sys.write_file(config_filename, JSON.stringify(c), true);
-     };
+    juice.build.save_config = function(c) {
+        juice.sys.write_file(config_filename, JSON.stringify(c), true);
+    };
 
-     juice.build.load_config = function() {
-         config = juice.build.read_file_json(config_filename);
-     };
+    juice.build.load_config = function() {
+        config = juice.build.read_file_json(config_filename);
+    };
 
-     juice.build.lib_paths = function() {
-         // TODO: assert config has been loaded.
-         return config.lib_paths;
-     };
+    juice.build.lib_paths = function() {
+        // TODO: assert config has been loaded.
+        return config.lib_paths;
+    };
 
-     juice.build.source_file = function(rel_path, lib_name) {
-         var match, path, pkg_name, target_type;
+    juice.build.source_file = function(rel_path, lib_name) {
+        var match, path, pkg_name, target_type;
 
-         if (lib_name) {
-             path = juice.build.find_library(lib_name) + '/' + rel_path;
-         }
-         else {
-             path = rel_path;
-         }
+        if (lib_name) {
+            path = juice.build.find_library(lib_name) + '/' + rel_path;
+        }
+        else {
+            path = rel_path;
+        }
 
-         if ((match = /^(widgets|rpcs)\/([^\/]+)\//.exec(rel_path))) {
-             target_type = match[1];
-             pkg_name = match[2];
-         }
-         else if (rel_path === 'pages.js') {
-             target_type = 'pages';
-         }
-         else {
-             target_type = 'global';
-         }
+        if ((match = /^(widgets|rpcs)\/([^\/]+)\//.exec(rel_path))) {
+            target_type = match[1];
+            pkg_name = match[2];
+        }
+        else if (rel_path === 'pages.js') {
+            target_type = 'pages';
+        }
+        else {
+            target_type = 'global';
+        }
 
-         return {
-             lib_name: lib_name,
-             path: path,
-             target_type: target_type,
-             pkg_name: pkg_name
-         };
-     };
+        return {
+            lib_name: lib_name,
+            path: path,
+            target_type: target_type,
+            pkg_name: pkg_name
+        };
+    };
 
-     juice.build.file_log = function(source_files) {
-         var cache = {}, log, sha1_file;
+    juice.build.file_log = function(source_files) {
+        var cache = {}, log, sha1_file;
 
-         if (juice.sys.file_exists(log_filename)) {
-             log = juice.dict_intersect_keys(juice.build.read_file_json(log_filename),
-                                             juice.map(source_files, function(f) { return f.path; }));
-         }
-         else {
-             log = {};
-         }
+        if (juice.sys.file_exists(log_filename)) {
+            log = juice.dict_intersect_keys(juice.build.read_file_json(log_filename),
+                                            juice.map(source_files, function(f) { return f.path; }));
+        }
+        else {
+            log = {};
+        }
 
-         sha1_file = function(filename) {
-             if (!cache[filename]) {
-                 cache[filename] = juice.sys.sha1(juice.sys.read_file(filename));
-             }
-             return cache[filename];
-         };
+        sha1_file = function(filename) {
+            if (!cache[filename]) {
+                cache[filename] = juice.sys.sha1(juice.sys.read_file(filename));
+            }
+            return cache[filename];
+        };
 
-         return {
-             has_file_changed: function(filename) {
-                 return sha1_file(filename) !== log[filename];
-             },
-             update_file: function(filename) {
-                 log[filename] = sha1_file(filename);
-             },
-             save: function() {
-                 juice.sys.write_file(log_filename, JSON.stringify(log), true);
-             }
-         };
-     };
+        return {
+            has_file_changed: function(filename) {
+                return sha1_file(filename) !== log[filename];
+            },
+            update_file: function(filename) {
+                log[filename] = sha1_file(filename);
+            },
+            save: function() {
+                juice.sys.write_file(log_filename, JSON.stringify(log), true);
+            }
+        };
+    };
 
-     juice.build.file_find = function(top_dir, predicate) {
-         var answer = [], helper;
-         helper = function(path) {
-             juice.foreach(juice.sys.list_dir(path, {fullpath:true}),
-                           function(filename) {
-                               if (juice.sys.file_exists(filename) == 'dir') {
-                                   helper(filename);
-                               }
-                               else if (!predicate || predicate(filename)) {
-                                   answer.push(filename);
-                               }
-                           });
-         };
-         helper(top_dir);
-         return juice.map(answer, function(f) { return f.slice(top_dir.length + 1); });
-     };
+    juice.build.file_find = function(top_dir, predicate) {
+        var answer = [], helper;
+        helper = function(path) {
+            juice.foreach(juice.sys.list_dir(path, {fullpath:true}),
+                          function(filename) {
+                              if (juice.sys.file_exists(filename) == 'dir') {
+                                  helper(filename);
+                              }
+                              else if (!predicate || predicate(filename)) {
+                                  answer.push(filename);
+                              }
+                          });
+        };
+        helper(top_dir);
+        return juice.map(answer, function(f) { return f.slice(top_dir.length + 1); });
+    };
 
-     juice.build.lint_js = function(filename) {
-         var arrow = function(column) {
-             var a = [], j;
-             for (j = 0; j < column; j++) {
-                 a.push('.');
-             }
-             a.push('^');
-             return a.join('');
-         };
+    juice.build.lint_js = function(filename) {
+        var arrow = function(column) {
+            var a = [], j;
+            for (j = 0; j < column; j++) {
+                a.push('.');
+            }
+            a.push('^');
+            return a.join('');
+        };
 
-         if (!JSLINT(juice.sys.read_file(filename),
-                     {evil: true,
-                      forin: true,
-                      laxbreak: true,
-                      rhino: false,
-                      white: false}))
-         {
-             return juice.map(JSLINT.errors,
-                              function(e) {
-                                  return '"' + e.reason + '" in file ' + filename + ' at line '
-                                      + (e.line + 1) + ' character ' + e.character + "\n"
-                                      + e.evidence + "\n" + arrow(e.character) + "\n\n";
-                              });
-         }
-         return [];
-     };
+        if (!JSLINT(juice.sys.read_file(filename),
+                    {evil: true,
+                     forin: true,
+                     laxbreak: true,
+                     rhino: false,
+                     white: false}))
+        {
+            return juice.map(JSLINT.errors,
+                             function(e) {
+                                 return '"' + e.reason + '" in file ' + filename + ' at line '
+                                     + (e.line + 1) + ' character ' + e.character + "\n"
+                                     + e.evidence + "\n" + arrow(e.character) + "\n\n";
+                             });
+        }
+        return [];
+    };
 
-     juice.build.write_target_file = function(relpath, contents) {
-         juice.sys.write_file('build/target/' + relpath, contents, true); // FIXME: add site name and mode (e.g. "bp/release")
-     };
+    juice.build.write_target_file = function(relpath, contents) {
+        juice.sys.write_file('build/target/' + relpath, contents, true); // FIXME: add site name and mode (e.g. "bp/release")
+    };
 
-     juice.build.write_intermediate_file = function(relpath, contents) {
-         juice.sys.write_file('build/intermediate/' + relpath, contents, true);
-     };
+    juice.build.write_intermediate_file = function(relpath, contents) {
+        juice.sys.write_file('build/intermediate/' + relpath, contents, true);
+    };
 
-     juice.build.scope_js = function(contents) {
-         return '(function(juice, proj, jQuery) {'
-             + contents + '})(juice, proj, jQuery);';
-     };
+    juice.build.scope_js = function(contents) {
+        return '(function(juice, proj, jQuery) {'
+            + contents + '})(juice, proj, jQuery);';
+    };
 
-     juice.build.read_file_and_scope_js = function(filename) {
-         return juice.build.scope_js(juice.sys.read_file(filename));
-     };
+    juice.build.read_file_and_scope_js = function(filename) {
+        return juice.build.scope_js(juice.sys.read_file(filename));
+    };
 
     //  juice.build.compile_templates = function() {
     //      var
@@ -209,126 +209,144 @@
 
     // };
 
-     juice.build.compile_widget_package = function(lib_name, pkg_name) {
-         var lib_path, pkg_path, widgets;
+    juice.build.compile_widget_package = function(lib_name, pkg_name) {
+        var lib_path, pkg_path, widgets;
 
-         lib_path = juice.build.find_library(lib_name);
-         pkg_path = lib_path + '/widgets/' + pkg_name;
+        lib_path = juice.build.find_library(lib_name);
+        pkg_path = lib_path + '/widgets/' + pkg_name;
 
-         widgets = juice.map(juice.sys.list_dir(pkg_path, {filter_re: /[.]js$/, fullpath: true}),
-                             juice.build.read_file_and_scope_js);
+        widgets = juice.map(juice.sys.list_dir(pkg_path, {filter_re: /[.]js$/, fullpath: true}),
+                            juice.build.read_file_and_scope_js);
 
-         juice.build.write_target_file(
-             'js/site/' + lib_name + '/widgets/' + pkg_name + '.js',
-             ['juice.widget.define_package("' + pkg_name + '", function(juice, jQuery) {',
-              'try {',
-              //templates,
-              widgets.join('\n'),
-              '} catch (e) { juice.error.handle(e); }',
-              '});'].join("\n"));
-     };
+        juice.build.write_target_file(
+            'js/site/' + lib_name + '/widgets/' + pkg_name + '.js',
+            ['juice.widget.define_package("' + pkg_name + '", function(juice, jQuery) {',
+             'try {',
+             //templates,
+             widgets.join('\n'),
+             '} catch (e) { juice.error.handle(e); }',
+             '});'].join("\n"));
+    };
 
-     juice.build.find_library = function(name) {
-         var path = config.lib_paths[name];
-         if (path) { return path; }
-         return juice.error.raise('path to library "'+name+'" is unknown');
-     };
+    juice.build.compile_rpc_package = function(lib_name, pkg_name) {
+        var lib_path, pkg_path, rpcs;
 
-     juice.build.read_file_json = function(filename) {
-         var answer;
-         eval('answer = ' + juice.sys.read_file(filename));
-         return answer;
-     };
+        lib_path = juice.build.find_library(lib_name);
+        pkg_path = lib_path + '/rpcs/' + pkg_name;
 
-     juice.build.lib_name = function(path) {
-         var json, lib_json_path;
-         lib_json_path = path + '/lib.json';
-         if (juice.sys.file_exists(lib_json_path) !== 'file') {
-             return false;
-         }
-         json = juice.build.read_file_json(lib_json_path);
-         return json.hasOwnProperty('name') ? json.name : undefined;
-     };
+        rpcs = juice.map(juice.sys.list_dir(pkg_path, {filter_re: /[.]js$/, fullpath: true}),
+                         juice.build.read_file_and_scope_js);
 
-     juice.build.lib_exists = function(name, path) {
-         return juice.build.lib_name(path) === name;
-     };
+        juice.build.write_target_file(
+            'js/site/' + lib_name + '/rpcs/' + pkg_name + '.js',
+            ['juice.rpc.define_package("' + pkg_name + '", function(juice) {',
+             'try {',
+             rpcs.join('\n'),
+             '} catch (e) { juice.error.handle(e); }',
+             '});'].join("\n"));
+    };
 
-     juice.build.read_widget_package_metadata = function(libpath, pkg) {
-         var answer, json, pkg_filename;
+    juice.build.find_library = function(name) {
+        var path = config.lib_paths[name];
+        if (path) { return path; }
+        return juice.error.raise('path to library "'+name+'" is unknown');
+    };
 
-         pkg_filename = libpath + '/widgets/' + pkg + '/package.json';
-         if (juice.sys.file_exists(pkg_filename) != 'file') {
-             juice.error.raise('package metadata file not found: '+pkg_filename);
-         }
-         json = juice.build.read_file_json(pkg_filename);
+    juice.build.read_file_json = function(filename) {
+        var answer;
+        eval('answer = ' + juice.sys.read_file(filename));
+        return answer;
+    };
 
-         answer = {
-             dependencies: {},
-             stylesheet_urls: juice.nvl(json.stylesheet_urls, []),
-             script_urls: juice.nvl(json.script_urls, [])
-         };
+    juice.build.lib_name = function(path) {
+        var json, lib_json_path;
+        lib_json_path = path + '/lib.json';
+        if (juice.sys.file_exists(lib_json_path) !== 'file') {
+            return false;
+        }
+        json = juice.build.read_file_json(lib_json_path);
+        return json.hasOwnProperty('name') ? json.name : undefined;
+    };
 
-         // TODO: perform some defensive checks on the package metadata
-         juice.foreach(json.dependencies,
-                       function(dep) {
-                           var
-                           library_name,
-                           package_name,
-                           package_type,
-                           parts,
-                           target;
+    juice.build.lib_exists = function(name, path) {
+        return juice.build.lib_name(path) === name;
+    };
 
-                           parts = dep.split('.');
-                           library_name = parts[0];
-                           package_type = parts[1];
-                           package_name = parts[2];
+    juice.build.read_widget_package_metadata = function(libpath, pkg) {
+        var answer, json, pkg_filename;
 
-                           if (!answer.dependencies.hasOwnProperty(library_name)) {
-                               answer.dependencies[library_name] = {widgets: [], rpcs: []};
-                           }
-                           answer.dependencies[library_name][package_type].push(package_name);
-                       });
+        pkg_filename = libpath + '/widgets/' + pkg + '/package.json';
+        if (juice.sys.file_exists(pkg_filename) != 'file') {
+            juice.error.raise('package metadata file not found: '+pkg_filename);
+        }
+        json = juice.build.read_file_json(pkg_filename);
 
-         return answer;
-     };
+        answer = {
+            dependencies: {},
+            stylesheet_urls: juice.nvl(json.stylesheet_urls, []),
+            script_urls: juice.nvl(json.script_urls, [])
+        };
 
-     juice.build.library_dependencies = function(libpath) {
-         var answer = {};
+        // TODO: perform some defensive checks on the package metadata
+        juice.foreach(json.dependencies,
+                      function(dep) {
+                          var
+                          library_name,
+                          package_name,
+                          package_type,
+                          parts,
+                          target;
 
-         juice.foreach(juice.sys.list_dir(libpath + '/widgets/'),
-                       function(pkg) {
-                           var metadata = juice.build.read_widget_package_metadata(libpath, pkg);
-                           answer = juice.build.merge_library_dependencies(answer, metadata.dependencies);
-                       });
+                          parts = dep.split('.');
+                          library_name = parts[0];
+                          package_type = parts[1];
+                          package_name = parts[2];
 
-         return answer;
-     };
+                          if (!answer.dependencies.hasOwnProperty(library_name)) {
+                              answer.dependencies[library_name] = {widgets: [], rpcs: []};
+                          }
+                          answer.dependencies[library_name][package_type].push(package_name);
+                      });
 
-     juice.build.merge_library_dependencies = function() {
-         var answer = {}, helper;
+        return answer;
+    };
 
-         helper = function(deps) {
-             juice.foreach(deps,
-                           function(libname, libdeps) {
-                               if (!answer.hasOwnProperty(libname)) {
-                                   answer[libname] = {widgets: [], rpcs: []};
-                               }
-                               juice.foreach(libdeps,
-                                             function(pkgtype, pkgnames) {
-                                                 answer[libname][pkgtype] = answer[libname][pkgtype].concat(pkgnames);
-                                             });
-                           });
-         };
+    juice.build.library_dependencies = function(libpath) {
+        var answer = {};
 
-         juice.foreach(juice.args(arguments), helper);
+        juice.foreach(juice.sys.list_dir(libpath + '/widgets/'),
+                      function(pkg) {
+                          var metadata = juice.build.read_widget_package_metadata(libpath, pkg);
+                          answer = juice.build.merge_library_dependencies(answer, metadata.dependencies);
+                      });
 
-         juice.foreach(answer,
-                       function(k, libdeps) {
-                           answer[k] = juice.map(libdeps, juice.unique);
-                       });
+        return answer;
+    };
 
-         return answer;
-     };
+    juice.build.merge_library_dependencies = function() {
+        var answer = {}, helper;
 
- })(juice);
+        helper = function(deps) {
+            juice.foreach(deps,
+                          function(libname, libdeps) {
+                              if (!answer.hasOwnProperty(libname)) {
+                                  answer[libname] = {widgets: [], rpcs: []};
+                              }
+                              juice.foreach(libdeps,
+                                            function(pkgtype, pkgnames) {
+                                                answer[libname][pkgtype] = answer[libname][pkgtype].concat(pkgnames);
+                                            });
+                          });
+        };
+
+        juice.foreach(juice.args(arguments), helper);
+
+        juice.foreach(answer,
+                      function(k, libdeps) {
+                          answer[k] = juice.map(libdeps, juice.unique);
+                      });
+
+        return answer;
+    };
+
+})(juice);
