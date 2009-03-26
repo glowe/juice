@@ -79,7 +79,7 @@ v8::Handle<v8::Value> os_fclose(const v8::Arguments& args)
         return v8::Undefined();
     }
 
-    if (fclose(file) == 0) return os_error(errno);
+    if (fclose(file) != 0) return os_error(errno);
 
     return v8::Undefined();
 }
@@ -181,7 +181,7 @@ v8::Handle<v8::Value> os_fwrite(const v8::Arguments& args)
 {
     v8::HandleScope handle_scope;
 
-    ASSERT_N_ARGS(3);
+    ASSERT_N_ARGS(2);
 
     FILE* file = convert_arg_to_file(args[0]);
 

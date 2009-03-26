@@ -9,7 +9,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <v8.h>
-
+#include <v8-debug.h>
 #include "crypt.h"
 #include "os.h"
 
@@ -17,22 +17,34 @@ namespace {
 
 class FileIOError : std::exception {
 public:
-    FileIOError(const char* filename, const char* err)
-    {
-        std::ostringstream buf;
-        buf << "file IO error (" << filename << ") : " << err;
-        msg = buf.str();
-    }
+    FileIOError(const std::string& filename, const std::string& err)
+    : msg_("file IO error (" + filename + ") : " + err)
+    {}
 
     virtual ~FileIOError() throw() {}
 
     virtual const char* what() throw()
     {
-        return msg.c_str();
+        return msg_.c_str();
     }
 private:
-    std::string msg;
+    const std::string msg_;
 };
+
+v8::Handle<v8::Value> add_debug_event_listener(const v8::Arguments& args)
+{
+    v8::HandleScope handle_scope;
+    v8::Handle<v8::Function> callback(v8::Function::Cast(*args[0]));
+    return v8::Boolean::New(v8::Debug::AddDebugEventListener(callback));
+}
+
+v8::Handle<v8::Value> remove_debug_event_listener(const v8::Arguments& args)
+{
+    v8::HandleScope handle_scope;
+    v8::Handle<v8::Function> callback(v8::Function::Cast(*args[0]));
+    v8::Debug::RemoveDebugEventListener(callback);
+    return v8::Undefined();
+}
 
 // Stolen from GOOGLE
 void report_exception(const v8::TryCatch& try_catch)
@@ -75,9 +87,9 @@ std::string read_file(const char* filename) throw (FileIOError)
     else if (errno == ENOENT)
         throw FileIOError(filename, "file not found");
     else {
-        std::ostringstream err;
-        err << "error no: " << errno;
-        throw FileIOError(filename, err.str().c_str());
+        std::string err("err no: ");
+        err += errno;
+        throw FileIOError(filename, err);
     }
 
     std::ifstream file;
@@ -151,13 +163,10 @@ void run_shell(v8::Handle<v8::Context> context)
         if (source.length() == 0) continue; // Empty line
 
         v8::HandleScope handle_scope;
-        v8::TryCatch try_catch;
         v8::Handle<v8::Value> result =
             compile_and_run(v8::String::New(source.c_str()),
                             v8::String::New("*shell*"));
-        if (try_catch.HasCaught())
-            report_exception(try_catch);
-        else if (!result.IsEmpty() && !result->IsUndefined())
+        if (!result.IsEmpty() && !result->IsUndefined())
             std::cout << *v8::String::AsciiValue(result) << std::endl;
     }
 
@@ -216,7 +225,10 @@ int main(int argc, char* argv[])
     sys->Set(v8::String::New("crypt"), v8_juice::crypt_module());
     sys->Set(v8::String::New("os"),    v8_juice::os_module());
     sys->Set(v8::String::New("v8"),    v8::Boolean::New(true));
+    sys->Set(v8::String::New("add_debug_event_listener"), v8::FunctionTemplate::New(add_debug_event_listener));
+    sys->Set(v8::String::New("remove_debug_event_listener"), v8::FunctionTemplate::New(remove_debug_event_listener));
     global->Set(v8::String::New("sys"), sys);
+
 
     v8::Handle<v8::Context> context = v8::Context::New(NULL, global);
     v8::Context::Scope context_scope(context);
@@ -230,7 +242,6 @@ int main(int argc, char* argv[])
         }
         context->Global()->Set(v8::String::New("arguments"), arguments);
 
-
         v8::Local<v8::String> source;
         try {
             source = v8::String::New(read_file(*v8::String::AsciiValue(filename)).c_str());
@@ -240,10 +251,8 @@ int main(int argc, char* argv[])
             return 1;
         }
 
-        v8::TryCatch try_catch;
         v8::Handle<v8::Value> result = compile_and_run(source, filename);
-        if (try_catch.HasCaught()) {
-            report_exception(try_catch);
+        if (result.IsEmpty()) {
             return 1;
         }
         return 0;
