@@ -221,6 +221,34 @@ int main(int argc, char* argv[])
     v8::Handle<v8::Context> context = v8::Context::New(NULL, global);
     v8::Context::Scope context_scope(context);
 
+    if (argc > 1) {
+        v8::Local<v8::String> filename = v8::String::New(argv[1]);
+
+        v8::Local<v8::Array> arguments = v8::Array::New(argc-2);
+        for (int i = 0; i < argc-2; i++) {
+            arguments->Set(v8::Number::New(i), v8::String::New(argv[i+2]));
+        }
+        context->Global()->Set(v8::String::New("arguments"), arguments);
+
+
+        v8::Local<v8::String> source;
+        try {
+            source = v8::String::New(read_file(*v8::String::AsciiValue(filename)).c_str());
+        }
+        catch (FileIOError &e) {
+            std::cout << e.what() << std::endl;
+            return 1;
+        }
+
+        v8::TryCatch try_catch;
+        v8::Handle<v8::Value> result = compile_and_run(source, filename);
+        if (try_catch.HasCaught()) {
+            report_exception(try_catch);
+            return 1;
+        }
+        return 0;
+    }
+
     run_shell(context);
 
     return 0;
