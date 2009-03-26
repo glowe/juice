@@ -1,7 +1,11 @@
+CC := g++
+CPPFLAGS := -Wall -g -O3
+LIBS :=
+
 all: v8
 
 v8: shell.cc crypt.o os.o util.o
-	g++ -g -Wall -o $@ -lv8 -lssl -pthread $^
+	$(CC) $(CPPFLAGS) -o $@ $(LIBS) -lv8 -lssl $^
 
 install: v8
 	install $^ /usr/local/bin
