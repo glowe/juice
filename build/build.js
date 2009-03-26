@@ -53,7 +53,7 @@
             target_type = 'pages';
         }
         else {
-            target_type = 'global';
+            target_type = 'base';
         }
 
         return {
@@ -208,6 +208,40 @@
     //      juice.build.write_file(target_filename, output);
 
     // };
+
+    juice.build.compile_project_base = function(base_source_files) {
+        var base;
+
+        // Sort by library name first (undefined last) and then by path name
+        base_source_files.sort(function(a, b) {
+            if (a.library_name < b.library_name) {
+                return -1;
+            }
+
+            if (a.library_name > b.library_name) {
+                return 1;
+            }
+
+            if (a.path < b.path) {
+                return -1;
+            }
+
+            if (a.path > b.path) {
+                return 1;
+            }
+
+            return 0;
+        });
+
+        base = juice.map(base_source_files,
+                         function(source) {
+                             return juice.build.read_file_and_scope_js(source.path);
+                         });
+
+        juice.build.write_target_file(
+            'js/site/base.js',
+            base.join("\n"));
+    };
 
     juice.build.compile_widget_package = function(lib_name, pkg_name) {
         var lib_path, pkg_path, widgets;

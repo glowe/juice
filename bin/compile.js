@@ -1,5 +1,6 @@
 var
 all_source_files,
+base_source_files,
 changed_source_files,
 file_log,
 internal_lib_name,
@@ -79,7 +80,7 @@ juice.foreach(changed_source_files,
 print('Lint: OK.');
 
 // Determine which targets need to be recompiled.
-targets = {widgets: {}, rpcs: {}, global: false, pages: false};
+targets = {widgets: {}, rpcs: {}, base: false, pages: false};
 juice.foreach(changed_source_files,
               function(f) {
                   if (f.target_type == 'widgets' || f.target_type == 'rpcs') {
@@ -90,25 +91,41 @@ juice.foreach(changed_source_files,
                   }
               });
 
+// Package up project base files
+if (targets.base) {
+    base_source_files = juice.filter(all_source_files,
+                                     function(source_file) {
+                                         return source_file.target_type === "base";
+                                     });
 
-// Package up dirty widgets
+    juice.build.compile_project_base(base_source_files);
+    print("Compile project base: OK");
+}
 
-juice.foreach(targets.widgets,
-              function(lib_name, pkgs) {
-                  juice.foreach(pkgs, function(pkg_name) {
-                      juice.build.compile_widget_package(lib_name, pkg_name);
-                      print("Compile widget package (" + lib_name + ":" + pkg_name + "): OK");
+
+if (!juice.empty(targets.widgets)) {
+    // Package up dirty widgets
+    juice.foreach(targets.widgets,
+                  function(lib_name, pkgs) {
+                      juice.foreach(pkgs, function(pkg_name) {
+                          juice.build.compile_widget_package(lib_name, pkg_name);
+                      });
                   });
-              });
+    print("Compile widget packages: OK");
+}
 
-juice.foreach(targets.rpcs,
-              function(lib_name, pkgs) {
-                  juice.foreach(pkgs, function(pkg_name) {
-                      juice.build.compile_rpc_package(lib_name, pkg_name);
-                      print("Compile rpc package (" + lib_name + ":" + pkg_name + "): OK");
+// Package up dirty rpcs
+
+if (!juice.empty(targets.rpcs)) {
+    juice.foreach(targets.rpcs,
+                  function(lib_name, pkgs) {
+                      juice.foreach(pkgs, function(pkg_name) {
+                          juice.build.compile_rpc_package(lib_name, pkg_name);
+                      });
                   });
-              });
 
+    print("Compile rpc packages: OK");
+}
 
 print(juice.dump(targets));
 
