@@ -4,9 +4,18 @@
 
 (function(juice) {
 
-     var config,
+     var make_source_file,
+     config,
      config_filename = '.juice-config.json',
      log_filename    = '.juice-file-log.json';
+
+     make_source_file = function(spec) {
+         return juice.spec(spec,
+                           {lib_name: undefined,
+                            path: undefined,
+                            target_type: undefined,
+                            pkg_name: undefined});
+     };
 
      juice.build = {};
 
@@ -35,6 +44,13 @@
          return config.lib_paths;
      };
 
+     juice.build.juice_source_file = function(path, is_ext) {
+         return make_source_file({lib_name: undefined,
+                                  path: path,
+                                  target_type: is_ext ? 'juice_ext_web' : 'juice_web',
+                                  pkg_name: undefined});
+     };
+
      juice.build.source_file = function(rel_path, lib_name) {
          var match, path, pkg_name, target_type;
 
@@ -56,12 +72,10 @@
              target_type = 'base';
          }
 
-         return {
-             lib_name: lib_name,
-             path: path,
-             target_type: target_type,
-             pkg_name: pkg_name
-         };
+         return make_source_file({lib_name: lib_name,
+                                  path: path,
+                                  target_type: target_type,
+                                  pkg_name: pkg_name});
      };
 
      juice.build.file_log = function(source_files) {
@@ -133,7 +147,8 @@
                       rhino: false,
                       white: false}))
          {
-             return juice.map(JSLINT.errors,
+             // For some reason JSLINT.errors contains null values
+             return juice.map(juice.filter(JSLINT.errors),
                               function(e) {
                                   return '"' + e.reason + '" in file ' + filename + ' at line '
                                       + (e.line + 1) + ' character ' + e.character + "\n"
@@ -159,6 +174,8 @@
      juice.build.read_file_and_scope_js = function(filename) {
          return juice.build.scope_js(juice.sys.read_file(filename));
      };
+
+
 
      //  juice.build.compile_templates = function() {
      //      var
@@ -212,6 +229,25 @@
      //      juice.build.write_file(target_filename, output);
 
      // };
+
+     juice.build.compile_juice_web = function(files) {
+         juice.build.write_target_file(
+             'js/juice/web.js',
+             juice.map(files,
+                       function(source) {
+                           return juice.sys.read_file(source.path);
+                       }).join("\n"));
+     };
+
+     juice.build.compile_juice_ext_web = function(files) {
+         juice.build.write_target_file(
+             'js/juice/ext/web.js',
+             juice.map(files,
+                       function(source) {
+                           return juice.sys.read_file(source.path);
+                       }).join("\n"));
+     };
+
 
      juice.build.compile_project_base = function(base_source_files) {
          var base;

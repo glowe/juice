@@ -4,6 +4,8 @@ base_source_files,
 changed_source_files,
 file_log,
 internal_lib_name,
+juice_ext_web,
+juice_web,
 options,
 program_options,
 required_source_files,
@@ -43,6 +45,7 @@ if (!internal_lib_name) {
 }
 
 all_source_files = juice.map(required_source_files, juice.build.source_file);
+// Add source files in other libraries
 juice.foreach(juice.build.lib_paths(),
               function(lib_name, path) {
                   all_source_files = all_source_files.concat(
@@ -54,6 +57,22 @@ juice.foreach(juice.build.lib_paths(),
                                     return juice.build.source_file(path, lib_name);
                                 }));
               });
+
+// Add juice/web
+all_source_files = all_source_files.concat(
+    juice.map(juice.sys.list_dir('juice/web', {filter_re:/[.]js$/, fullpath:true}),
+              function(path) {
+                  return juice.build.juice_source_file(path, false);
+              }));
+
+
+// Add juice ext files
+all_source_files = all_source_files.concat(
+    juice.map(juice.sys.list_dir('juice/ext/web', {filter_re:/[.]js$/, fullpath:true}),
+              function(path) {
+                  return juice.build.juice_source_file(path, true);
+              }));
+
 
 //
 // TODO: insure that all referenced packages exist, so we don't have to check all the time.
@@ -67,20 +86,29 @@ changed_source_files =
                      return file_log.has_file_changed(f.path);
                  });
 
-// Lint source files.
-juice.foreach(changed_source_files,
-              function(f) {
-                  var errors = juice.build.lint_js(f.path);
-                  if (errors.length) {
-                      juice.foreach(errors, function(e) { print(e); });
-                      print('JSLINT failed. Aborting.');
-                      juice.sys.exit(2);
-                  }
-              });
-print('Lint: OK.');
+// Lint all non juice source files.
+(function() {
+     var has_linted = false;
+     juice.foreach(changed_source_files,
+                   function(f) {
+                       if (f.target_type == 'juice_web' || f.target_type == 'juice_ext_web') {
+                           return;
+                       }
+                       has_linted = true;
+                       var errors = juice.build.lint_js(f.path);
+                       if (errors.length) {
+                           juice.foreach(errors, function(e) { print(e); });
+                           print('JSLINT failed. Aborting.');
+                           juice.sys.exit(2);
+                       }
+                   });
+     if (has_linted) {
+         print('Lint: OK.');
+     }
+ })();
 
 // Determine which targets need to be recompiled.
-targets = {widgets: {}, rpcs: {}, base: false, pages: false};
+targets = {widgets: {}, rpcs: {}, base: false, pages: false, 'juice_web': false, 'juice_ext_web': false};
 juice.foreach(changed_source_files,
               function(f) {
                   if (f.target_type == 'widgets' || f.target_type == 'rpcs') {
@@ -91,7 +119,7 @@ juice.foreach(changed_source_files,
                   }
               });
 
-// Package up project base files
+
 if (targets.base) {
     base_source_files = juice.filter(all_source_files,
                                      function(source_file) {
@@ -104,7 +132,6 @@ if (targets.base) {
 
 
 if (!juice.empty(targets.widgets)) {
-    // Package up dirty widgets
     juice.foreach(targets.widgets,
                   function(lib_name, pkgs) {
                       juice.foreach(pkgs, function(pkg_name) {
@@ -113,8 +140,6 @@ if (!juice.empty(targets.widgets)) {
                   });
     print("Compile widget packages: OK");
 }
-
-// Package up dirty rpcs
 
 if (!juice.empty(targets.rpcs)) {
     juice.foreach(targets.rpcs,
@@ -126,6 +151,32 @@ if (!juice.empty(targets.rpcs)) {
 
     print("Compile rpc packages: OK");
 }
+
+if (targets.juice_web) {
+    juice_web = juice.filter(all_source_files,
+                             function(source_file) {
+                                 return source_file.target_type === "juice_web";
+                             });
+
+    juice.build.compile_juice_web(juice_web);
+    print("Compile juice web: OK");
+}
+
+if (targets.juice_ext_web) {
+    juice_ext_web = juice.filter(all_source_files,
+                             function(source_file) {
+                                 return source_file.target_type === "juice_ext_web";
+                             });
+
+    juice.build.compile_juice_ext_web(juice_ext_web);
+    print("Compile juice ext web: OK");
+}
+
+if (targets.pages) {
+    // Ensure page paths are unique
+    // Compile pages
+}
+
 
 print(juice.dump(targets));
 
