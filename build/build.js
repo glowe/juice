@@ -91,6 +91,10 @@
              },
              save: function() {
                  juice.sys.write_file(log_filename, JSON.stringify(log), true);
+             },
+             clear: function() {
+                 juice.sys.unlink(log_filename);
+                 log = {};
              }
          };
      };

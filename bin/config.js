@@ -107,5 +107,6 @@ do {
 } while (new_lib_deps.length != 0);
 
 print('Saving configuration.');
-print('Run "juice compile" to build your site.');
 juice.build.save_config({lib_paths: lib_paths});
+juice.build.file_log().clear();
+print('Run "juice compile" to build your site.');
