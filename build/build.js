@@ -215,10 +215,10 @@
          lib_path = juice.build.find_library(lib_name);
          pkg_path = lib_path + '/widgets/' + pkg_name;
 
-         widgets = juice.map(juice.sys.list_dir(pkg_path, {filter_re: /[.]js$/}),
+         widgets = juice.map(juice.sys.list_dir(pkg_path, {filter_re: /[.]js$/, fullpath: true}),
                              juice.build.read_file_and_scope_js);
 
-         juice.build.write_to_docroot(
+         juice.build.write_target_file(
              'js/site/' + lib_name + '/widgets/' + pkg_name + '.js',
              ['juice.widget.define_package("' + pkg_name + '", function(juice, jQuery) {',
               'try {',
