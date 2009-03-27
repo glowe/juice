@@ -1,3 +1,10 @@
+//
+// FIXME: crawling source trees for all js files isn't going to work: it picks
+// up too much random crap, makes the placement of js files in the tree too
+// error-prone. Modify the various calls to file_find to look in specific,
+// highly structures sub-trees.
+//
+
 var
 all_source_files,
 base_source_files,
@@ -126,8 +133,8 @@ if (targets.base) {
                                          return source_file.target_type === "base";
                                      });
 
-    juice.build.compile_project_base(base_source_files);
-    print("Compile project base: OK");
+    juice.build.compile_site_base(base_source_files);
+    print("Compile site base: OK");
 }
 
 

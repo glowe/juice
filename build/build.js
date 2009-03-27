@@ -32,7 +32,13 @@
      };
 
      juice.build.set_site_settings = function(s) {
-         config.site_settings = s;
+         config.site_settings = juice.spec(s, {base_url: undefined,
+                                               js_base_url: undefined,
+                                               global_script_urls: [],
+                                               global_stylesheet_urls: [],
+                                               global_widget_packages: [],
+                                               proxies_file: undefined,
+                                               user: {}});
      };
      juice.build.site_settings = function() {
          return config.site_settings;
@@ -260,7 +266,7 @@
      };
 
 
-     juice.build.compile_project_base = function(base_source_files) {
+     juice.build.compile_site_base = function(base_source_files) {
          var base, runtime_settings;
 
          // Sort by library name first (undefined last) and then by path name
@@ -268,21 +274,19 @@
                                     if (a.library_name < b.library_name) {
                                         return -1;
                                     }
-
                                     if (a.library_name > b.library_name) {
                                         return 1;
                                     }
-
                                     if (a.path < b.path) {
                                         return -1;
                                     }
-
                                     if (a.path > b.path) {
                                         return 1;
                                     }
-
                                     return 0;
                                 });
+
+         base_source_files.push(juice.build.source_file(config.site_settings.proxies_file));
 
          base = juice.map(base_source_files,
                           function(source) {
