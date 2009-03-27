@@ -242,7 +242,7 @@
      // };
 
      juice.build.compile_juice_web = function(files) {
-         juice.build.write_target_file(
+         juice.build.write_final_file(
              'js/juice-web.js',
              juice.map(files,
                        function(source) {
@@ -251,7 +251,7 @@
      };
 
      juice.build.compile_juice_ext_web = function(files) {
-         juice.build.write_target_file(
+         juice.build.write_final_file(
              'js/juice-ext.js',
              juice.map(files,
                        function(source) {
@@ -261,7 +261,7 @@
 
 
      juice.build.compile_project_base = function(base_source_files) {
-         var base;
+         var base, runtime_settings;
 
          // Sort by library name first (undefined last) and then by path name
          base_source_files.sort(function(a, b) {
@@ -289,8 +289,11 @@
                               return juice.build.read_file_and_scope_js(source.path);
                           });
 
-         juice.build.write_target_file(
-             'js/site/base.js',
+         runtime_settings = juice.dict_intersect_keys(config.site_settings, ['base_url', 'user']);
+         base.push('juice.install_settings(' + JSON.stringify(runtime_settings) + ');');
+
+         juice.build.write_final_file(
+             'js/base.js',
              base.join("\n"));
      };
 
@@ -303,8 +306,8 @@
          widgets = juice.map(juice.sys.list_dir(pkg_path, {filter_re: /[.]js$/, fullpath: true}),
                              juice.build.read_file_and_scope_js);
 
-         juice.build.write_target_file(
-             'js/site/' + lib_name + '/widgets/' + pkg_name + '.js',
+         juice.build.write_final_file(
+             'js/libs/' + lib_name + '/widgets/' + pkg_name + '.js',
              ['juice.widget.define_package("' + pkg_name + '", function(juice, jQuery) {',
               'try {',
               //templates,
@@ -322,8 +325,8 @@
          rpcs = juice.map(juice.sys.list_dir(pkg_path, {filter_re: /[.]js$/, fullpath: true}),
                           juice.build.read_file_and_scope_js);
 
-         juice.build.write_target_file(
-             'js/site/' + lib_name + '/rpcs/' + pkg_name + '.js',
+         juice.build.write_final_file(
+             'js/libs/' + lib_name + '/rpcs/' + pkg_name + '.js',
              ['juice.rpc.define_package("' + pkg_name + '", function(juice) {',
               'try {',
               rpcs.join('\n'),

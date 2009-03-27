@@ -4,14 +4,18 @@ argv = Array.prototype.slice.apply(arguments, [0]);
 
 (function() {
 
-     var juice_home, juice_libpath;
+     var append_path, juice_home, juice_libpath;
+
+     append_path = function(a, b) {
+         return b ? (a + '/' + b) : a;
+     };
 
      this.juice = {
-         home: function() {
-             return juice_home;
+         home: function(path) {
+             return append_path(juice_home, path);
          },
-         libpath: function() {
-             return juice_libpath;
+         libpath: function(path) {
+             return append_path(juice_libpath, path);
          },
          load: function(path) {
              load(juice_home + '/' + path);

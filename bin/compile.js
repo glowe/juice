@@ -60,7 +60,7 @@ juice.foreach(juice.build.lib_paths(),
 
 // Add juice/web
 all_source_files = all_source_files.concat(
-    juice.map(juice.sys.list_dir('juice/web', {filter_re:/[.]js$/, fullpath:true}),
+    juice.map(juice.sys.list_dir(juice.home('web'), {filter_re:/[.]js$/, fullpath:true}),
               function(path) {
                   return juice.build.juice_source_file(path, false);
               }));
@@ -68,7 +68,7 @@ all_source_files = all_source_files.concat(
 
 // Add juice ext files
 all_source_files = all_source_files.concat(
-    juice.map(juice.sys.list_dir('juice/ext/web', {filter_re:/[.]js$/, fullpath:true}),
+    juice.map(juice.sys.list_dir(juice.home('ext/web'), {filter_re:/[.]js$/, fullpath:true}),
               function(path) {
                   return juice.build.juice_source_file(path, true);
               }));

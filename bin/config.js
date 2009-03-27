@@ -70,15 +70,18 @@ options = program_options.parse_arguments(argv);
 //
 // SETTINGS
 //
+// Possible TODOs:
+// - Confirm that all settings keys are valid.
+// - Check for required settings.
+// - Maybe even check types of values (e.g. user must point to an object).
+//
 
 settings_filename = options['settings'];
 if (juice.sys.file_exists(settings_filename) !== 'file') {
     juice.build.fatal('Settings file "'+settings_filename+'" not found.');
 }
 load(settings_filename);
-juice.build.write_intermediate_file(
-    'runtime_settings.js',
-    'juice.install_settings('+JSON.stringify(juice.dict_intersect_keys(juice.build.site_settings(), ['base_url', 'user']))+')');
+// TODO: settings-related checks would go here.
 
 // Parse the --with-lib command line option.
 juice.foreach(options['with-lib'],
