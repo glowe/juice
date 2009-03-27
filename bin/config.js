@@ -39,6 +39,7 @@ options,
 site_lib_deps,          // recursive library dependencies for entire site
 site_lib_name,
 site_lib_path,
+settings_filename,
 lib_paths = {},
 libs_seen = {};
 
@@ -50,7 +51,7 @@ find_library = function(name) {
         }
         return path;
     }
-    path = juice.find(juice.sys.read_dir(juice.libpath(), {fullpath:true}),
+    path = juice.find(juice.sys.list_dir(juice.libpath(), {fullpath:true}),
                       function(filename) {
                           return (juice.build.lib_name(filename) === name) ? filename : undefined;
                       });
@@ -61,9 +62,23 @@ find_library = function(name) {
 };
 
 program_options = juice.program_options(
-    {"with-lib=[]": ["specify path to an external library", []]});
+    {"settings=": "path to site setting file",
+     "with-lib=[]": ["specify path to an external library", []]});
 
 options = program_options.parse_arguments(argv);
+
+//
+// SETTINGS
+//
+
+settings_filename = options['settings'];
+if (juice.sys.file_exists(settings_filename) !== 'file') {
+    juice.build.fatal('Settings file "'+settings_filename+'" not found.');
+}
+load(settings_filename);
+juice.build.write_intermediate_file(
+    'runtime_settings.js',
+    'juice.install_settings('+JSON.stringify(juice.dict_intersect_keys(juice.build.site_settings(), ['base_url', 'user']))+')');
 
 // Parse the --with-lib command line option.
 juice.foreach(options['with-lib'],
@@ -107,6 +122,7 @@ do {
 } while (new_lib_deps.length != 0);
 
 print('Saving configuration.');
-juice.build.save_config({lib_paths: lib_paths});
+juice.build.set_lib_paths(lib_paths);
+juice.build.save_config();
 juice.build.file_log().clear();
 print('Run "juice compile" to build your site.');

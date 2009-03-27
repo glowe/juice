@@ -5,7 +5,7 @@
 (function(juice) {
 
      var make_source_file,
-     config,
+     config = {},
      config_filename = '.juice-config.json',
      log_filename    = '.juice-file-log.json';
 
@@ -31,17 +31,23 @@
          juice.sys.rm_rf('./build');
      };
 
-     juice.build.save_config = function(c) {
-         juice.sys.write_file(config_filename, JSON.stringify(c), true);
+     juice.build.set_site_settings = function(s) {
+         config.site_settings = s;
      };
-
+     juice.build.site_settings = function() {
+         return config.site_settings;
+     };
+     juice.build.set_lib_paths = function(p) {
+         config.lib_paths = p;
+     };
+     juice.build.lib_paths = function() {
+         return config.lib_paths;
+     };
+     juice.build.save_config = function() {
+         juice.sys.write_file(config_filename, JSON.stringify(config), true);
+     };
      juice.build.load_config = function() {
          config = juice.build.read_file_json(config_filename);
-     };
-
-     juice.build.lib_paths = function() {
-         // TODO: assert config has been loaded.
-         return config.lib_paths;
      };
 
      juice.build.juice_source_file = function(path, is_ext) {
@@ -158,12 +164,17 @@
          return [];
      };
 
-     juice.build.write_target_file = function(relpath, contents) {
-         juice.sys.write_file('build/target/' + relpath, contents, true); // FIXME: add site name and mode (e.g. "bp/release")
+     juice.build.final_file_path = function(relpath) {
+         return 'build/final/' + relpath; // FIXME: add site name and mode (e.g. "bp/release")
      };
-
+     juice.build.intermediate_file_path = function(relpath) {
+         return 'build/intermediate/' + relpath;
+     };
+     juice.build.write_final_file = function(relpath, contents) {
+         juice.sys.write_file(juice.build.final_file_path(relpath), contents, true);
+     };
      juice.build.write_intermediate_file = function(relpath, contents) {
-         juice.sys.write_file('build/intermediate/' + relpath, contents, true);
+         juice.sys.write_file(juice.build.intermediate_file_path(relpath), contents, true);
      };
 
      juice.build.scope_js = function(contents) {
@@ -232,7 +243,7 @@
 
      juice.build.compile_juice_web = function(files) {
          juice.build.write_target_file(
-             'js/juice/web.js',
+             'js/juice-web.js',
              juice.map(files,
                        function(source) {
                            return juice.sys.read_file(source.path);
@@ -241,7 +252,7 @@
 
      juice.build.compile_juice_ext_web = function(files) {
          juice.build.write_target_file(
-             'js/juice/ext/web.js',
+             'js/juice-ext.js',
              juice.map(files,
                        function(source) {
                            return juice.sys.read_file(source.path);
