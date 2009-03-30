@@ -4,18 +4,9 @@
 
 (function(juice) {
 
-     var make_source_file,
-     config = {},
+     var config = {},
      config_filename = '.juice-config.json',
      log_filename    = '.juice-file-log.json';
-
-     make_source_file = function(spec) {
-         return juice.spec(spec,
-                           {lib_name: undefined,
-                            path: undefined,
-                            target_type: undefined,
-                            pkg_name: undefined});
-     };
 
      juice.build = {};
 
@@ -55,38 +46,131 @@
          config = juice.build.read_file_json(config_filename);
      };
 
-     juice.build.juice_source_file = function(path, is_ext) {
-         return make_source_file({lib_name: undefined,
-                                  path: path,
-                                  target_type: is_ext ? 'juice_ext_web' : 'juice_web',
-                                  pkg_name: undefined});
+     juice.build.source_file = function(spec) {
+         return juice.spec(spec,
+                           {lib_name: null,
+                            path: undefined,
+                            pkg_name: null,
+                            target_type: undefined});
      };
 
-     juice.build.source_file = function(rel_path, lib_name) {
-         var match, path, pkg_name, target_type;
+     juice.build.find_widget_source_files = function(lib_name) {
+         var widgets_path = juice.build.find_library(lib_name) + "/widgets/",
+         pkgs,
+         source_files = [];
 
-         if (lib_name) {
-             path = juice.build.find_library(lib_name) + '/' + rel_path;
+         // Each sub-directory contains a widget package.
+         pkgs = juice.filter(juice.sys.list_dir(widgets_path),
+                             function(pkg) {
+                                 return juice.sys.file_exists(widgets_path + pkg) === "dir";
+                             });
+
+         juice.foreach(pkgs,
+                       function(pkg_name) {
+                           var widget_pkg_path = widgets_path + pkg_name,
+                           package_json_path   = widget_pkg_path + "/package.json",
+                           templates_path      = widget_pkg_path + "/templates/";
+
+                           // Ensure that the package.json file
+                           // exists and tag it with the "widgets"
+                           // target type.
+                           if (juice.sys.file_exists(package_json_path) != "file") {
+                               juice.build.fatal("Missing required package file: "
+                                                 + package_json_path);
+                           }
+
+                           source_files.push(juice.build.source_file({lib_name: lib_name,
+                                                                      path: package_json_path,
+                                                                      pkg_name: pkg_name,
+                                                                      target_type: "widgets"}));
+
+                           // Tag each .js file with the "widgets"
+                           // target type.
+                           juice.foreach(juice.sys.list_dir(widget_pkg_path, {filter_re: /[.]js$/,
+                                                                              fullpath: true}),
+                                         function(path) {
+                                             source_files.push(
+                                                 juice.build.source_file({lib_name: lib_name,
+                                                                          path: path,
+                                                                          pkg_name: pkg_name,
+                                                                          target_type: "widgets"}));
+                                         });
+
+                           // Look in the templates directory and
+                           // tag each .html file with the
+                           // "widgets" target type
+                           if (juice.sys.file_exists(templates_path)) {
+                               juice.foreach(juice.sys.list_dir(templates_path,
+                                                                {filter_re: /[.]html$/,
+                                                                 fullpath: true}),
+                                             function(path) {
+                                                 source_files.push(
+                                                     juice.build.source_file({lib_name: lib_name,
+                                                                              path: path,
+                                                                              pkg_name: pkg_name,
+                                                                              target_type: "widgets"}));
+                                             });
+                           }
+                       });
+         return source_files;
+     };
+
+     juice.build.find_rpc_source_files = function(lib_name) {
+         var rpcs_path = juice.build.find_library(lib_name) + "/rpcs/",
+         pkgs,
+         proxies_path = rpcs_path + "proxies.js",
+         source_files = [];
+
+         // Look within the rpc directory for the proxies.js file
+         // and tag it with type "base".
+         if (juice.sys.file_exists(proxies_path) != "file") {
+             juice.build.fatal("Missing required proxies file: " + proxies_path);
          }
-         else {
-             path = rel_path;
+         source_files.push(
+             juice.build.source_file({lib_name: lib_name,
+                                      path: proxies_path,
+                                      target_type: "base"}));
+
+         pkgs = juice.filter(juice.sys.list_dir(rpcs_path),
+                             function(pkg) {
+                                 return juice.sys.file_exists(rpcs_path + pkg) === "dir";
+                             });
+
+         juice.foreach(pkgs,
+                       function(pkg_name) {
+                           // Tag each .js file with the "rpcs" target type.
+                           juice.foreach(juice.sys.list_dir(rpcs_path + pkg_name,
+                                                            {filter_re: /[.]js$/,
+                                                             fullpath: true}),
+                                         function(path) {
+                                             source_files.push(
+                                                 juice.build.source_file({lib_name: lib_name,
+                                                                          path: path,
+                                                                          pkg_name: pkg_name,
+                                                                          target_type: "rpcs"}));
+                                         });
+                       });
+
+         return source_files;
+     };
+
+
+     juice.build.find_util_source_files = function(lib_name) {
+         var util_path = juice.build.find_library(lib_name) + "/util/";
+         if (!juice.sys.file_exists(util_path)) {
+             return [];
          }
 
-         if ((match = /^(widgets|rpcs)\/([^\/]+)\//.exec(rel_path))) {
-             target_type = match[1];
-             pkg_name = match[2];
-         }
-         else if (rel_path === 'pages.js') {
-             target_type = 'pages';
-         }
-         else {
-             target_type = 'base';
-         }
-
-         return make_source_file({lib_name: lib_name,
-                                  path: path,
-                                  target_type: target_type,
-                                  pkg_name: pkg_name});
+         // Tag each .js file with the "base" target type.
+         return juice.map(juice.sys.list_dir(util_path,
+                                             {filter_re: /[.]js$/,
+                                              fullpath: true}),
+                          function(path) {
+                              return juice.build.source_file({lib_name: lib_name,
+                                                              path: path,
+                                                              pkg_name: pkg_name,
+                                                              target_type: "base"});
+                          });
      };
 
      juice.build.file_log = function(source_files) {

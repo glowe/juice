@@ -1,10 +1,3 @@
-//
-// FIXME: crawling source trees for all js files isn't going to work: it picks
-// up too much random crap, makes the placement of js files in the tree too
-// error-prone. Modify the various calls to file_find to look in specific,
-// highly structures sub-trees.
-//
-
 var
 all_source_files,
 base_source_files,
@@ -51,31 +44,29 @@ if (!internal_lib_name) {
     juice.build.fatal('Site library not found (expected to find it in "./lib").');
 }
 
-all_source_files = juice.map(required_source_files, juice.build.source_file);
-// Add source files in other libraries
-juice.foreach(juice.build.lib_paths(),
-              function(lib_name, path) {
-                  // 1.) Look for widget packages
-                  // 2.) Look for rpc packages
-                  // 3.) Look for util
-                  // 4.) Look for style
-                  // 5.) Look for proxies files in each library and tag them as global
+all_source_files = juice.map(required_source_files,
+                             function(path) {
+                                 return juice.build.source_file({path: path,
+                                                                 target_type: "base"});
+                             });
 
-                  all_source_files = all_source_files.concat(
-                      juice.map(juice.build.file_find(path,
-                                                      function(path) {
-                                                          return /[.]js$/.test(path);
-                                                      }),
-                                function(path) {
-                                    return juice.build.source_file(path, lib_name);
-                                }));
+
+// FIXME: May want to error if we find a file that doesn't fit
+
+// Add source files in libraries
+juice.foreach(juice.build.lib_paths(),
+              function(lib_name) {
+                  all_source_files = all_source_files.concat(juice.build.find_widget_source_files(lib_name));
+                  all_source_files = all_source_files.concat(juice.build.find_rpc_source_files(lib_name));
+                  all_source_files = all_source_files.concat(juice.build.find_util_source_files(lib_name));
+                  // FIXME: How do we handle style files?
               });
 
 // Add juice/web
 all_source_files = all_source_files.concat(
     juice.map(juice.sys.list_dir(juice.home('web'), {filter_re:/[.]js$/, fullpath:true}),
               function(path) {
-                  return juice.build.juice_source_file(path, false);
+                  return juice.build.source_file({path: path, target_type: "juice_web"});
               }));
 
 
@@ -83,7 +74,7 @@ all_source_files = all_source_files.concat(
 all_source_files = all_source_files.concat(
     juice.map(juice.sys.list_dir(juice.home('ext/web'), {filter_re:/[.]js$/, fullpath:true}),
               function(path) {
-                  return juice.build.juice_source_file(path, true);
+                  return juice.build.source_file({path: path, target_type: "juice_ext_web"});
               }));
 
 
@@ -104,7 +95,9 @@ changed_source_files =
      var has_linted = false;
      juice.foreach(changed_source_files,
                    function(f) {
-                       if (f.target_type == 'juice_web' || f.target_type == 'juice_ext_web') {
+                       if (f.target_type == 'juice_web' ||
+                           f.target_type == 'juice_ext_web' ||
+                           (f.path.slice(-3) != ".js" && f.path.slice(-5) != ".json")) {
                            return;
                        }
                        has_linted = true;
