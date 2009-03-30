@@ -37,7 +37,7 @@ catch (e) {
 }
 
 // Make sure required source files exist. E.g. pages.js, layouts.js.
-required_source_files = ['pages.js', 'layouts.js'];
+required_source_files = ['macros.json', 'pages.js', 'layouts.js'];
 juice.foreach(required_source_files,
               function(filename) {
                   if (juice.sys.file_exists(filename) !== 'file') {
@@ -55,6 +55,12 @@ all_source_files = juice.map(required_source_files, juice.build.source_file);
 // Add source files in other libraries
 juice.foreach(juice.build.lib_paths(),
               function(lib_name, path) {
+                  // 1.) Look for widget packages
+                  // 2.) Look for rpc packages
+                  // 3.) Look for util
+                  // 4.) Look for style
+                  // 5.) Look for proxies files in each library and tag them as global
+
                   all_source_files = all_source_files.concat(
                       juice.map(juice.build.file_find(path,
                                                       function(path) {
@@ -197,9 +203,6 @@ if (targets.pages) {
      })();
 
 
-    //
-    //
-    //
     // Compile pages
 }
 

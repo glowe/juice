@@ -37,7 +37,6 @@
                                                global_script_urls: [],
                                                global_stylesheet_urls: [],
                                                global_widget_packages: [],
-                                               proxies_file: undefined,
                                                user: {}});
      };
      juice.build.site_settings = function() {
@@ -194,58 +193,47 @@
 
 
 
-     //  juice.build.compile_templates = function() {
-     //      var
-     //      context_var_name,
-     //      get_canonical_path,
-     //      get_template_name,
-     //      output,
-     //      parser,
-     //      templates;
+     juice.build.compile_templates = function(template_filenames) {
+         var
+         context_var_name,
+         get_template_name,
+         macros,
+         parser,
+         templates;
 
-     //      get_template_name = function(filename) {
-     //          return juice.sys.basename(filename).replace('.html', '');
-     //      };
+         get_template_name = function(filename) {
+             return juice.sys.basename(filename).replace('.html', '');
+         };
 
-     //      load(juice.proj_settings.macros_filename());
-     //      parser = juice.template.parser(macros);
-     //      templates = {};
-     //      juice.foreach(settings.args,
-     //                    function(source_filename) {
-     //                        // Get rid of surrounding whitespace (e.g., trailing new lines).
-     //                        var file_contents, template_name;
-     //                        template_name = get_template_name(source_filename);
-     //                        try {
-     //                            file_contents = juice.build.read_file(source_filename).replace(/^\s\s*/, '').replace(/\s\s*$/, '');
-     //                            templates['_' + template_name] = parser.parse_src(file_contents, 'templates._');
-     //                            templates[template_name] = 'function(_o) { return function() { return templates._' + template_name + '(_o); }; }';
-     //                        }
-     //                        catch (e) {
-     //                            if (e.info && e.info.what === 'syntax_error') {
+         macros = juice.build.read_file_json("macros.json");
+         parser = juice.template.parser(macros);
+         templates = {};
+         juice.foreach(template_files,
+                       function(source_filename) {
+                           var contents, template_name;
+                           template_name = get_template_name(source_filename);
+                           try {
+                               // Get rid of surrounding whitespace (e.g., trailing new lines).
+                               contents =
+                                   juice.sys.read_file(source_filename).replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+                               templates['_' + template_name] = parser.parse_src(file_contents, 'templates._');
+                               templates[template_name] = 'function(_o) { return function() { return templates._' + template_name + '(_o); }; }';
+                           }
+                           catch (e) {
+                               if (e.info && e.info.what === 'syntax_error') {
+                                   juice.error.raise(
+                                       juice.template.formatted_error(e,
+                                                                      file_contents,
+                                                                      juice.sys.canonical_path(source_filename)));
+                               }
+                               else {
+                                   throw e;
+                               }
+                           }
+                       });
 
-     //                                print(juice.template.formatted_error(e, file_contents, juice.build.canonical_path(source_filename)));
-     //                                quit(2);
-     //                            }
-     //                            else {
-     //                                throw e;
-     //                            }
-     //                        }
-     //                    });
-
-     //      output = ' ';
-     //      if (juice.keys(templates).length > 0) {
-     //          output =
-     //              lhs + ' = { ' +
-     //              juice.map_dict(templates,
-     //                             function(k, v) {
-     //                                 return k + ': ' + v;
-     //                             }).join(',\n') +
-     //              '};';
-     //      }
-
-     //      juice.build.write_file(target_filename, output);
-
-     // };
+         return templates;
+     };
 
      juice.build.compile_juice_web = function(files) {
          juice.build.write_final_file(
@@ -285,8 +273,6 @@
                                     }
                                     return 0;
                                 });
-
-         base_source_files.push(juice.build.source_file(config.site_settings.proxies_file));
 
          base = juice.map(base_source_files,
                           function(source) {
