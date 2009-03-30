@@ -275,8 +275,6 @@
          return juice.build.scope_js(juice.sys.read_file(filename));
      };
 
-
-
      juice.build.compile_templates = function(template_filenames) {
          var
          context_var_name,
@@ -292,7 +290,7 @@
          macros = juice.build.read_file_json("macros.json");
          parser = juice.template.parser(macros);
          templates = {};
-         juice.foreach(template_files,
+         juice.foreach(template_filenames,
                        function(source_filename) {
                            var contents, template_name;
                            template_name = get_template_name(source_filename);
@@ -300,8 +298,9 @@
                                // Get rid of surrounding whitespace (e.g., trailing new lines).
                                contents =
                                    juice.sys.read_file(source_filename).replace(/^\s\s*/, '').replace(/\s\s*$/, '');
-                               templates['_' + template_name] = parser.parse_src(file_contents, 'templates._');
-                               templates[template_name] = 'function(_o) { return function() { return templates._' + template_name + '(_o); }; }';
+                               templates['_' + template_name] = parser.parse_src(contents, 'templates._');
+                               templates[template_name] =
+                                   'function(_o) { return function() { return templates._' + template_name + '(_o); }; }';
                            }
                            catch (e) {
                                if (e.info && e.info.what === 'syntax_error') {
@@ -316,7 +315,11 @@
                            }
                        });
 
-         return templates;
+         return "{" +
+             juice.map_dict(templates,
+                            function(template_name, template_src) {
+                                return '"' + template_name + '":' + template_src;
+                            }).join(",") + "}";
      };
 
      juice.build.compile_juice_web = function(all_files) {
@@ -324,7 +327,6 @@
                                   function(source_file) {
                                       return source_file.target_type === "juice_web";
                                   });
-
          juice.build.write_final_file(
              'js/juice-web.js',
              juice.map(files,
@@ -387,25 +389,43 @@
      };
 
      juice.build.compile_widget_package = function(lib_name, pkg_name, all_source_files) {
-         var source_files, widgets;
+         var js_source_files, template_source_files, source_files, widgets;
 
+         // These three loops can be optimized into a single loop if required
          source_files = juice.filter(all_source_files,
                                      function(source_file) {
                                          return source_file.lib_name === lib_name
                                              && source_file.pkg_name === pkg_name
                                              && source_file.target_type === "widgets";
-                                     });
+                                        });
 
-         widgets = juice.map(source_files,
+         js_source_files = juice.filter(source_files,
+                                        function(source_file) {
+                                            return source_file.path.slice(-3) === ".js";
+                                        });
+
+         // FOR NOW WE RECOMPILE ALL TEMPLATES
+         template_source_files = juice.filter(source_files,
+                                              function(source_file) {
+                                                  return source_file.path.slice(-5) == ".html";
+                                              });
+
+         widgets = juice.map(js_source_files,
                              function(source_file) {
                                  return juice.build.read_file_and_scope_js(source_file.path);
                              });
+
+         var templates = juice.build.compile_templates(
+             juice.map(template_source_files,
+                       function(source_file) {
+                           return source_file.path;
+                       }));
 
          juice.build.write_final_file(
              'js/libs/' + lib_name + '/widgets/' + pkg_name + '.js',
              ['juice.widget.define_package("' + pkg_name + '", function(juice, jQuery) {',
               'try {',
-              //templates,
+              'var templates = ' + templates,
               widgets.join('\n'),
               '} catch (e) { juice.error.handle(e); }',
               '});'].join("\n"));
