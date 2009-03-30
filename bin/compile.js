@@ -41,14 +41,14 @@ required_source_files = ['pages.js', 'layouts.js'];
 juice.foreach(required_source_files,
               function(filename) {
                   if (juice.sys.file_exists(filename) !== 'file') {
-                      juice.error.raise('Missing a required source file: '+filename);
+                      juice.build.fatal('Missing a required source file: '+filename);
                   }
               });
 
 // Insure the site has an internal library.
 internal_lib_name = juice.build.lib_name('lib');
 if (!internal_lib_name) {
-    juice.error.raise('Site library not found (expected to find it in "./lib").');
+    juice.build.fatal('Site library not found (expected to find it in "./lib").');
 }
 
 all_source_files = juice.map(required_source_files, juice.build.source_file);
@@ -105,8 +105,7 @@ changed_source_files =
                        var errors = juice.build.lint_js(f.path);
                        if (errors.length) {
                            juice.foreach(errors, function(e) { print(e); });
-                           print('JSLINT failed. Aborting.');
-                           juice.sys.exit(2);
+                           juice.build.fatal('JSLINT failed. Aborting.');
                        }
                    });
      if (has_linted) {
@@ -181,6 +180,26 @@ if (targets.juice_ext_web) {
 
 if (targets.pages) {
     // Ensure page paths are unique
+    (function() {
+         var seen = {};
+         load("pages.js");
+
+         juice.foreach(proj.pages,
+                       function(name, page) {
+                           if (!page.path_is_dynamic()) {
+                               if (seen.hasOwnProperty(page.path())) {
+                                   juice.build.fatal("Duplicate page path: " + page.path());
+                               }
+                               seen[page.path()] = true;
+                           }
+                       });
+         print("Page paths unique: OK");
+     })();
+
+
+    //
+    //
+    //
     // Compile pages
 }
 
