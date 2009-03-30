@@ -319,7 +319,12 @@
          return templates;
      };
 
-     juice.build.compile_juice_web = function(files) {
+     juice.build.compile_juice_web = function(all_files) {
+         var files = juice.filter(all_files,
+                                  function(source_file) {
+                                      return source_file.target_type === "juice_web";
+                                  });
+
          juice.build.write_final_file(
              'js/juice-web.js',
              juice.map(files,
@@ -328,7 +333,12 @@
                        }).join("\n"));
      };
 
-     juice.build.compile_juice_ext_web = function(files) {
+     juice.build.compile_juice_ext_web = function(all_files) {
+         var files = juice.filter(all_files,
+                                  function(source_file) {
+                                      return source_file.target_type === "juice_ext_web";
+                                  });
+
          juice.build.write_final_file(
              'js/juice-ext.js',
              juice.map(files,
@@ -338,8 +348,13 @@
      };
 
 
-     juice.build.compile_site_base = function(base_source_files) {
-         var base, runtime_settings;
+     juice.build.compile_site_base = function(all_files) {
+         var base, base_source_files, runtime_settings;
+
+         base_source_files = juice.filter(all_files,
+                                          function(source_file) {
+                                              return source_file.target_type === "base";
+                                          });
 
          // Sort by library name first (undefined last) and then by path name
          base_source_files.sort(function(a, b) {
@@ -371,14 +386,20 @@
              base.join("\n"));
      };
 
-     juice.build.compile_widget_package = function(lib_name, pkg_name) {
-         var lib_path, pkg_path, widgets;
+     juice.build.compile_widget_package = function(lib_name, pkg_name, all_source_files) {
+         var source_files, widgets;
 
-         lib_path = juice.build.find_library(lib_name);
-         pkg_path = lib_path + '/widgets/' + pkg_name;
+         source_files = juice.filter(all_source_files,
+                                     function(source_file) {
+                                         return source_file.lib_name === lib_name
+                                             && source_file.pkg_name === pkg_name
+                                             && source_file.target_type === "widgets";
+                                     });
 
-         widgets = juice.map(juice.sys.list_dir(pkg_path, {filter_re: /[.]js$/, fullpath: true}),
-                             juice.build.read_file_and_scope_js);
+         widgets = juice.map(source_files,
+                             function(source_file) {
+                                 return juice.build.read_file_and_scope_js(source_file.path);
+                             });
 
          juice.build.write_final_file(
              'js/libs/' + lib_name + '/widgets/' + pkg_name + '.js',
@@ -390,14 +411,20 @@
               '});'].join("\n"));
      };
 
-     juice.build.compile_rpc_package = function(lib_name, pkg_name) {
-         var lib_path, pkg_path, rpcs;
+     juice.build.compile_rpc_package = function(lib_name, pkg_name, all_source_files) {
+         var source_files, rpcs;
 
-         lib_path = juice.build.find_library(lib_name);
-         pkg_path = lib_path + '/rpcs/' + pkg_name;
+         source_files = juice.filter(all_source_files,
+                                     function(source_file) {
+                                         return source_file.lib_name === lib_name
+                                             && source_file.pkg_name === pkg_name
+                                             && source_file.target_type === "rpcs";
+                                     });
 
-         rpcs = juice.map(juice.sys.list_dir(pkg_path, {filter_re: /[.]js$/, fullpath: true}),
-                          juice.build.read_file_and_scope_js);
+         rpcs = juice.map(source_files,
+                          function(source_file) {
+                              return juice.build.read_file_and_scope_js(source_file.path);
+                          });
 
          juice.build.write_final_file(
              'js/libs/' + lib_name + '/rpcs/' + pkg_name + '.js',

@@ -4,8 +4,6 @@ base_source_files,
 changed_source_files,
 file_log,
 internal_lib_name,
-juice_ext_web,
-juice_web,
 options,
 program_options,
 required_source_files,
@@ -126,22 +124,17 @@ juice.foreach(changed_source_files,
 
 
 if (targets.base) {
-    base_source_files = juice.filter(all_source_files,
-                                     function(source_file) {
-                                         return source_file.target_type === "base";
-                                     });
-
-    juice.build.compile_site_base(base_source_files);
+    juice.build.compile_site_base(all_source_files);
     print("Compile site base: OK");
 }
-
 
 if (!juice.empty(targets.widgets)) {
     juice.foreach(targets.widgets,
                   function(lib_name, pkgs) {
-                      juice.foreach(pkgs, function(pkg_name) {
-                          juice.build.compile_widget_package(lib_name, pkg_name);
-                      });
+                      juice.foreach(pkgs,
+                                    function(pkg_name) {
+                                        juice.build.compile_widget_package(lib_name, pkg_name, all_source_files);
+                                    });
                   });
     print("Compile widget packages: OK");
 }
@@ -149,31 +142,21 @@ if (!juice.empty(targets.widgets)) {
 if (!juice.empty(targets.rpcs)) {
     juice.foreach(targets.rpcs,
                   function(lib_name, pkgs) {
-                      juice.foreach(pkgs, function(pkg_name) {
-                          juice.build.compile_rpc_package(lib_name, pkg_name);
-                      });
+                      juice.foreach(pkgs,
+                                    function(pkg_name) {
+                                        juice.build.compile_rpc_package(lib_name, pkg_name, all_source_files);
+                                    });
                   });
-
     print("Compile rpc packages: OK");
 }
 
 if (targets.juice_web) {
-    juice_web = juice.filter(all_source_files,
-                             function(source_file) {
-                                 return source_file.target_type === "juice_web";
-                             });
-
-    juice.build.compile_juice_web(juice_web);
+    juice.build.compile_juice_web(all_source_files);
     print("Compile juice web: OK");
 }
 
 if (targets.juice_ext_web) {
-    juice_ext_web = juice.filter(all_source_files,
-                             function(source_file) {
-                                 return source_file.target_type === "juice_ext_web";
-                             });
-
-    juice.build.compile_juice_ext_web(juice_ext_web);
+    juice.build.compile_juice_ext_web(all_source_files);
     print("Compile juice ext web: OK");
 }
 
