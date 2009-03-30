@@ -1,4 +1,4 @@
-(function(juice, proj, jQuery) {
+(function(juice, proj) {
 
      var
      active_layout,
@@ -207,4 +207,4 @@
          }
      };
 
- })(juice, proj, jQuery);
+ })(juice, proj);
