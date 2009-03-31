@@ -275,6 +275,19 @@
          return juice.build.scope_js(juice.sys.read_file(filename));
      };
 
+     juice.build.compile_template_file = function(filename, options) {
+         var contents, macros, parser;
+         options = juice.spec(options, {macros: null,
+                                        templates_prefix: null});
+
+         macros = options.macros || juice.build.read_file_json("macros.json");
+         parser = juice.template.parser(macros);
+
+         // Eliminate surrounding whitespace
+         contents = juice.sys.read_file(filename).replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+         return parser.parse_src(contents, options.templates_prefix);
+     };
+
      juice.build.compile_templates = function(template_filenames) {
          var
          context_var_name,
@@ -288,17 +301,16 @@
          };
 
          macros = juice.build.read_file_json("macros.json");
-         parser = juice.template.parser(macros);
          templates = {};
          juice.foreach(template_filenames,
                        function(source_filename) {
-                           var contents, template_name;
-                           template_name = get_template_name(source_filename);
+                           var contents, template_name = get_template_name(source_filename);
                            try {
                                // Get rid of surrounding whitespace (e.g., trailing new lines).
-                               contents =
-                                   juice.sys.read_file(source_filename).replace(/^\s\s*/, '').replace(/\s\s*$/, '');
-                               templates['_' + template_name] = parser.parse_src(contents, 'templates._');
+                               templates['_' + template_name] =
+                                   juice.build.compile_template_file(source_filename,
+                                                                     {macros: macros,
+                                                                      templates_prefix: 'templates._'});
                                templates[template_name] =
                                    'function(_o) { return function() { return templates._' + template_name + '(_o); }; }';
                            }
@@ -386,6 +398,59 @@
          juice.build.write_final_file(
              'js/base.js',
              base.join("\n"));
+     };
+
+     juice.build.lint_page_paths = function(pages_filename) {
+         var seen = {};
+         load(pages_filename);
+
+         juice.foreach(proj.pages,
+                       function(name, page) {
+                           if (!page.path_is_dynamic()) {
+                               if (seen.hasOwnProperty(page.path())) {
+                                   juice.build.fatal("Duplicate page path: " + page.path());
+                               }
+                               seen[page.path()] = true;
+                           }
+                       });
+     };
+
+
+     juice.build.compile_pages = function(pages_filename) {
+         // Ensure page paths are unique
+         var page_template;
+         load(pages_filename);
+
+         page_template = eval(juice.build.compile_template_file(juice.home() + '/build/templates/page.html'));
+         juice.foreach(proj.pages,
+                       function(name, page) {
+                           var dependencies, path;
+                           if (page.path_is_dynamic()) {
+                               path = '/__' + name + '.html';
+                           }
+                           else {
+                               path = page.path();
+                           }
+                           if (path.charAt(path.length - 1) === '/') {
+                               path += 'index.html';
+                           }
+
+                           dependencies = juice.build.collect_dependencies(page.widget_packages());
+                           dependencies.script_urls = juice.union(dependencies.script_urls, page.script_urls());
+                           dependencies.stylesheet_urls =
+                               juice.union(dependencies.stylesheet_urls, page.stylesheet_urls());
+
+                           juice.build.write_final_file(
+                               path,
+                               page_template({name: name,
+                                              title: page.title(),
+                                              js_base_url: juice.build.site_settings().js_base_url,
+                                              script_urls: dependencies.script_urls,
+                                              stylesheet_urls: dependencies.stylesheet_urls,
+                                              widget_packages: dependencies.widget_pkgs,
+                                              rpc_packages: dependencies.rpc_pkgs}));
+
+                       });
      };
 
      juice.build.compile_widget_package = function(lib_name, pkg_name, all_source_files) {
@@ -479,6 +544,53 @@
 
      juice.build.lib_exists = function(name, path) {
          return juice.build.lib_name(path) === name;
+     };
+
+     juice.build.parse_dependency = function(dependency) {
+         var parts = dependency.split(".");
+         return {lib_name: parts[0],
+                 type: parts[1],
+                 pkg_name: parts[2]};
+     };
+
+     juice.build.collect_dependencies = function(unexplored) {
+         var explored = {},
+         dependency,
+         metadata,
+         parsed,
+         rpc_pkgs = [],
+         script_urls = [],
+         stylesheet_urls = [],
+         widget_pkgs = [];
+
+         while (unexplored.length > 0) {
+             dependency = unexplored.pop();
+             if (explored.hasOwnProperty(dependency)) {
+                 juice.error.raise("circular widget package dependency (" + dependency + ")",
+                                   {explored: explored});
+             }
+             parsed = juice.build.parse_dependency(dependency);
+             widget_pkgs.push(parsed);
+             metadata = juice.build.read_widget_package_metadata(juice.build.find_library(parsed.lib_name),
+                                                                 parsed.pkg_name);
+             script_urls = script_urls.concat(metadata.script_urls);
+             stylesheet_urls = stylesheet_urls.concat(metadata.stylesheet_urls);
+             juice.foreach(metadata.dependencies,
+                           function(dep) {
+                               var p = juice.build.parse_dependency(dep);
+                               if (p.type === "widgets") {
+                                   unexplored.push(dep);
+                               }
+                               else {
+                                   rpc_pkgs.push(p);
+                               }
+                           });
+             explored[dependency] = true;
+         }
+         return {widget_pkgs: widget_pkgs,
+                 rpc_pkgs: rpc_pkgs,
+                 script_urls: script_urls,
+                 stylesheet_urls: stylesheet_urls};
      };
 
      juice.build.read_widget_package_metadata = function(libpath, pkg) {

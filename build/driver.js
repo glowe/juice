@@ -33,6 +33,7 @@ juice.load('ext/tools/fulljslint.js');
 juice.load('ext/web/json2.js');
 juice.load('web/prelude.js');
 juice.load('web/error.js');
+juice.load('web/modifiers.js');
 juice.load('web/page.js');
 juice.load('web/url.js');
 juice.load('build/build.js');

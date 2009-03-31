@@ -44,8 +44,9 @@ if (!internal_lib_name) {
 
 all_source_files = juice.map(required_source_files,
                              function(path) {
+                                 var target_type = path !== "pages.js" ? "base" : "pages";
                                  return juice.build.source_file({path: path,
-                                                                 target_type: "base"});
+                                                                 target_type: target_type});
                              });
 
 
@@ -161,25 +162,10 @@ if (targets.juice_ext_web) {
 }
 
 if (targets.pages) {
-    // Ensure page paths are unique
-    (function() {
-         var seen = {};
-         load("pages.js");
-
-         juice.foreach(proj.pages,
-                       function(name, page) {
-                           if (!page.path_is_dynamic()) {
-                               if (seen.hasOwnProperty(page.path())) {
-                                   juice.build.fatal("Duplicate page path: " + page.path());
-                               }
-                               seen[page.path()] = true;
-                           }
-                       });
-         print("Page paths unique: OK");
-     })();
-
-
-    // Compile pages
+    juice.build.lint_page_paths('pages.js');
+    print("Lint pages: OK");
+    juice.build.compile_pages('pages.js');
+    print("Compile pages: OK");
 }
 
 
