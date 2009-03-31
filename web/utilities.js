@@ -1,4 +1,4 @@
-(function(juice, proj, jQuery) {
+(function(juice, jQuery) {
 
      juice.util = {
 
@@ -104,4 +104,4 @@
                    })()
      };
 
- })(juice, proj, jQuery);
+ })(juice, jQuery);

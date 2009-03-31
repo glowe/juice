@@ -1,4 +1,4 @@
-(function(juice, proj, jQuery) {
+(function(juice, site, jQuery) {
 
      var assert_mocking_enabled
      ,   assert_spec_is_valid       // throws an exception if a specification is improperly formatted
@@ -200,7 +200,7 @@
      // +----------------+
 
      lib.define = function(spec) {
-         var my_namespace = current_namespace;
+         var my_namespace = juice.copy_object(current_namespace);
 
          assert_spec_is_valid(spec.req_spec);
          assert_spec_is_valid(spec.rsp_spec);
@@ -213,7 +213,8 @@
              do_validate = function(spec_type, my_args) {
                  var errors = validate_against_spec(spec[spec_type], my_args);
                  if (errors.length > 0) {
-                     juice.error.raise(spec_type + '_mismatch', {rpc: my_namespace + '.' + spec.name,
+                     juice.error.raise(spec_type + '_mismatch', {namespace: my_namespace,
+                                                                 rpc_name: spec.name,
                                                                  spec: juice.dump(spec[spec_type]),
                                                                  errors: juice.dump(errors),
                                                                  data: juice.dump(my_args)});
@@ -261,11 +262,12 @@
          rpc.req_spec = spec.req_spec;
          rpc.rsp_spec = spec.rsp_spec;
 
-         proj.rpcs[rpc.namespace] = proj.rpcs[rpc.namespace] || {};
-         if (proj.rpcs[rpc.namespace][rpc.name]) {
+         juice.mdef(site.lib, {}, current_namespace);
+
+         if (juice.mget(site.lib, current_namespace).hasOwnProperty(rpc.name)) {
              juice.error.raise('rpc_already_defined', {namespace: rpc.namespace, name: rpc.name});
          }
-         proj.rpcs[rpc.namespace][rpc.name] = rpc;
+         juice.mget(site.lib, current_namespace)[rpc.name] = rpc;
      };
 
 
@@ -513,22 +515,28 @@
      // | package management system |
      // +---------------------------+
 
-     lib.define_package = function(namespace, constructor) {
+     lib.define_package = function(lib_name, pkg_name, constructor) {
+         var namespace;
          if (current_namespace) {
-             juice.error.raise('nested_rpc_package', {current_namespace: current_namespace, namespace: namespace});
+             juice.error.raise('nested rpc package', {current_namespace: current_namespace,
+                                                      lib_name: lib_name,
+                                                      pkg_name: pkg_name});
          }
-         if (proj.rpcs.hasOwnProperty(namespace)) {
-             juice.error.raise('rpc_package_already_declared', {namespace: namespace});
+         namespace = [lib_name, 'rpcs', pkg_name];
+         if (juice.mhas(site.lib, namespace.concat([pkg_name]))) {
+             juice.error.raise('rpc package already declared', {namespace: namespace,
+                                                                pkg_name: pkg_name});
          }
          current_namespace = namespace;
-         proj.rpcs[namespace] = {};
-         constructor(juice, proj, jQuery);
+         juice.init_library(site, lib_name);
+         juice.mdef(site.lib, {}, namespace);
+         constructor(juice, site, jQuery);
          current_namespace = null;
      };
 
- })(juice, proj, jQuery);
+ })(juice, site, jQuery);
 
-(function(juice, proj, jQuery) {
+(function(juice, site, jQuery) {
      var make_boxcar_helper;
 
      juice.event.register('service-failure');
@@ -594,4 +602,4 @@
          };
      };
 
- })(juice, proj, jQuery);
+ })(juice, site, jQuery);

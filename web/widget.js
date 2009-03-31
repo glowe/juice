@@ -1,380 +1,381 @@
-(function(juice, proj, jQuery) {
-    var
-    constructed,
-    current_namespace,
-    lib,
-    render_stack;
+(function(juice, site, jQuery) {
+     var
+     current_namespace,
+     lib,
+     render_stack;
 
-    render_stack = [];
+     render_stack = [];
 
-    juice.widget = lib = {};
+     juice.widget = lib = {};
 
-    constructed = {}; // Number of widgets constructed per page load
+     lib.define = function(name, constructor) {
 
-    lib.define = function(name, constructor) {
+         var def, namespace, pkg;
 
-        var def, namespace, pkg, unique_name;
+         namespace = juice.copy_object(current_namespace);
+         pkg = juice.mget(site.lib, namespace);
 
-        namespace = current_namespace;
-        pkg = proj.widgets[namespace];
+         if (pkg[name]) {
+             juice.error.raise('widget_already_defined', {namespace: current_namespace, name: name});
+         }
 
-        if (pkg[name]) {
-            juice.error.raise('widget_already_defined', {namespace: current_namespace, name: name});
-        }
+         def = function(spec) {
+             var
+             call_linked_render,
+             container_attribs = {},
+             container_element = 'div',
+             destroy_event_system,
+             domified_and_linked = [],
+             enhancements = {},
+             id = juice.newid(),
+             linked = [],
+             my = {},
+             state = 'initial',
+             that = {},
+             transition;
 
-        unique_name = namespace + '.' + name;
+             (function() {
+                  var
+                  assert_registered,
+                  publishers = {},
+                  subscribers = {};
 
-        def = function(spec) {
-            var
-            call_linked_render,
-            container_attribs = {},
-            container_element = 'div',
-            destroy_event_system,
-            domified_and_linked = [],
-            enhancements = {},
-            id = juice.newid(),
-            linked = [],
-            my = {},
-            state = 'initial',
-            that = {},
-            transition;
+                  assert_registered = function(name, where) {
+                      if (!juice.is_array(subscribers[name])) {
+                          juice.error.raise('event_not_registered', {name: name, where: where});
+                      }
+                  };
 
-            (function() {
-                var
-                assert_registered,
-                publishers = {},
-                subscribers = {};
+                  destroy_event_system = function() {
+                      subscribers = {};
+                      juice.event.cancel_subscriptions(that.uuid());
+                      juice.foreach(publishers,
+                                    function(id, publisher) {
+                                        publisher.__remove_subscriber(that.uuid());
+                                    });
+                  };
 
-                assert_registered = function(name, where) {
-                    if (!juice.is_array(subscribers[name])) {
-                        juice.error.raise('event_not_registered', {name: name, where: where});
-                    }
-                };
+                  my.register_event = function() {
+                      juice.foreach(juice.args(arguments),
+                                    function(name) {
+                                        if (subscribers[name]) {
+                                            juice.error.raise('event_already_registered', {event_name: name});
+                                        }
+                                        else {
+                                            subscribers[name] = [];
+                                        }
+                                    });
+                  };
 
-                destroy_event_system = function() {
-                    subscribers = {};
-                    juice.event.cancel_subscriptions(that.uuid());
-                    juice.foreach(publishers,
-                                  function(id, publisher) {
-                                      publisher.__remove_subscriber(that.uuid());
-                                  });
-                };
+                  my.publish = function(event_name, payload) {
+                      assert_registered(event_name, 'publish');
+                      juice.foreach(subscribers[event_name],
+                                    function(pair) {
+                                        try {
+                                            pair.fn(payload);
+                                        }
+                                        catch (e) {
+                                            juice.error.handle(e);
+                                        }
+                                    });
+                  };
 
-                my.register_event = function() {
-                    juice.foreach(juice.args(arguments),
-                                  function(name) {
-                                      if (subscribers[name]) {
-                                          juice.error.raise('event_already_registered', {event_name: name});
-                                      }
-                                      else {
-                                          subscribers[name] = [];
-                                      }
-                                  });
-                };
+                  my.subscribe = function(publisher, event_name, fn) {
+                      publisher.__add_subscriber(that.uuid(), event_name, fn);
+                      publishers[publisher.uuid()] = publisher;
+                  };
 
-                my.publish = function(event_name, payload) {
-                    assert_registered(event_name, 'publish');
-                    juice.foreach(subscribers[event_name],
-                                  function(pair) {
-                                      try {
-                                          pair.fn(payload);
-                                      }
-                                      catch (e) {
-                                          juice.error.handle(e);
-                                      }
-                                  });
-                };
+                  my.subscribe_self = function(event_name, fn) {
+                      my.subscribe(that, event_name, fn);
+                  };
 
-                my.subscribe = function(publisher, event_name, fn) {
-                    publisher.__add_subscriber(that.uuid(), event_name, fn);
-                    publishers[publisher.uuid()] = publisher;
-                };
+                  my.propagate_event = function(publisher, event_name, new_event_name) {
+                      my.subscribe(publisher, event_name,
+                                   function(e) {
+                                       my.publish(new_event_name || event_name, e);
+                                   });
+                  };
 
-                my.subscribe_self = function(event_name, fn) {
-                    my.subscribe(that, event_name, fn);
-                };
+                  that.__add_subscriber = function(subscriber_uuid, event_name, fn) {
+                      assert_registered(event_name, '__add_subscriber');
+                      subscribers[event_name].push({id: subscriber_uuid, fn: fn});
+                  };
 
-                my.propagate_event = function(publisher, event_name, new_event_name) {
-                    my.subscribe(publisher, event_name,
-                                 function(e) {
-                                     my.publish(new_event_name || event_name, e);
-                                 });
-                };
+                  that.__remove_subscriber = function(subscriber_uuid) {
+                      juice.foreach(subscribers,
+                                    function(event_name, pairs) {
+                                        pairs = juice.filter(pairs,
+                                                             function(pair) {
+                                                                 return pair.id !== subscriber_uuid;
+                                                             });
+                                    });
+                  };
+              })();
 
-                that.__add_subscriber = function(subscriber_uuid, event_name, fn) {
-                    assert_registered(event_name, '__add_subscriber');
-                    subscribers[event_name].push({id: subscriber_uuid, fn: fn});
-                };
+             if (arguments.length === 0) {
+                 spec = {};
+             }
 
-                that.__remove_subscriber = function(subscriber_uuid) {
-                    juice.foreach(subscribers,
-                                  function(event_name, pairs) {
-                                      pairs = juice.filter(pairs,
-                                                           function(pair) {
-                                                               return pair.id !== subscriber_uuid;
-                                                           });
-                                  });
-                };
-            })();
+             that.uuid = function() {
+                 return id;
+             };
 
-            if (arguments.length === 0) {
-                spec = {};
-            }
+             my.raise = function(msg) {
+                 juice.error.raise(msg, {widget_namespace: my.namespace, widget_name: my.name, widget_id: id});
+             };
 
-            that.uuid = function() {
-                return id;
-            };
+             my.namespace = namespace;
+             my.name = name;
+             my.selector = '#' + id;
 
-            my.raise = function(msg) {
-                juice.error.raise(msg, {widget_namespace: my.namespace, widget_name: my.name, widget_id: id});
-            };
+             my.$ = function(selector) {
+                 var elems = jQuery(my.selector);
+                 if (elems.length === 0) {
+                     my.raise('selector_error');
+                 }
+                 if (!selector) {
+                     return elems;
+                 }
+                 return elems.find(selector);
+             };
 
-            my.namespace = namespace;
-            my.name = name;
-            my.selector = '#' + id;
+             that.show = function() { my.expect_state('domified'); my.$().show(); };
+             that.hide = function() { my.expect_state('domified'); my.$().hide(); };
+             that.remove = function() { my.expect_state('domified'); my.$().remove(); that.dispose(); };
+             that.dispose = function() {
+                 transition('domified', 'disposed');
+                 my.publish('dispose');
+                 destroy_event_system();
+             };
 
-            my.$ = function(selector) {
-                var elems = jQuery(my.selector);
-                if (elems.length === 0) {
-                    my.raise('selector_error');
-                }
-                if (!selector) {
-                    return elems;
-                }
-                return elems.find(selector);
-            };
+             my.render = function() {
+                 return '';
+             };
 
-            that.show = function() { my.expect_state('domified'); my.$().show(); };
-            that.hide = function() { my.expect_state('domified'); my.$().hide(); };
-            that.remove = function() { my.expect_state('domified'); my.$().remove(); that.dispose(); };
-            that.dispose = function() {
-                transition('domified', 'disposed');
-                my.publish('dispose');
-                destroy_event_system();
-            };
+             my.state = function() {
+                 return state;
+             };
 
-            my.render = function() {
-                return '';
-            };
+             my.expect_state = function() {
+                 var args = juice.args(arguments);
+                 if (!juice.any(args, function(arg) { return state === arg; })) {
+                     my.raise('bad_state', {expected: args, actual: state});
+                 }
+             };
 
-            my.state = function() {
-                return state;
-            };
+             transition = function(from, to) {
+                 my.expect_state(from);
+                 state = to;
+             };
 
-            my.expect_state = function() {
-                var args = juice.args(arguments);
-                if (!juice.any(args, function(arg) { return state === arg; })) {
-                    my.raise('bad_state', {expected: args, actual: state});
-                }
-            };
+             my.set_container_element = function(t, attribs) {
+                 container_element = t;
+                 container_attribs = attribs;
+             };
 
-            transition = function(from, to) {
-                my.expect_state(from);
-                state = to;
-            };
+             call_linked_render = function(f) {
+                 var answer;
+                 if (render_stack.length > 0) {
+                     render_stack[render_stack.length-1](that);
+                 }
+                 render_stack.push(function(w) { linked.push(w); });
+                 answer = f();
+                 render_stack.pop();
+                 return answer;
+             };
 
-            my.set_container_element = function(t, attribs) {
-                container_element = t;
-                container_attribs = attribs;
-            };
+             that.render = function() {
+                 return call_linked_render(
+                     function() {
+                         var attribs = {
+                             'class': namespace + ' ' + name + ' widget',
+                             'id': id
+                         };
+                         juice.foreach(container_attribs,
+                                       function(k, v) {
+                                           if (k == 'id') {
+                                               juice.error.raise("can't specify id as container attribute");
+                                           }
+                                           if (k == 'class') {
+                                               attribs[k] += ' ' + v;
+                                           }
+                                           else {
+                                               attribs[k] = v;
+                                           }
+                                       });
+                         transition('initial', 'rendered');
+                         return '<' +
+                             container_element + ' ' +
+                             juice.map_dict(attribs,
+                                            function(k, v) {
+                                                return k + '="' + v + '"';
+                                            }).join(' ') +
+                             '>' + my.render() + '</' + container_element + '>';
+                     });
+             };
 
-            call_linked_render = function(f) {
-                var answer;
-                if (render_stack.length > 0) {
-                    render_stack[render_stack.length-1](that);
-                }
-                render_stack.push(function(w) { linked.push(w); });
-                answer = f();
-                render_stack.pop();
-                return answer;
-            };
+             that.toString = that.render; // For convenience in templates
 
-            that.render = function() {
-                return call_linked_render(
-                    function() {
-                        var attribs = {
-                            'class': namespace + ' ' + name + ' widget',
-                            'id': id
-                        };
-                        juice.foreach(container_attribs,
-                                      function(k, v) {
-                                          if (k == 'id') {
-                                              juice.error.raise("can't specify id as container attribute");
-                                          }
-                                          if (k == 'class') {
-                                              attribs[k] += ' ' + v;
-                                          }
-                                          else {
-                                              attribs[k] = v;
-                                          }
-                                      });
-                        transition('initial', 'rendered');
-                        return '<' +
-                            container_element + ' ' +
-                            juice.map_dict(attribs,
-                                           function(k, v) {
-                                               return k + '="' + v + '"';
-                                           }).join(' ') +
-                            '>' + my.render() + '</' + container_element + '>';
-                    });
-            };
+             my.register_event('domify');
+             that.fire_domify = function() { my.publish('domify'); };
 
-            that.toString = that.render; // For convenience in templates
+             // Calls f when the widget enters the domified state.
+             // Warning: has no effect if the widget is already
+             // domified.
 
-            my.register_event('domify');
-            that.fire_domify = function() { my.publish('domify'); };
+             my.on_domify = function(f) { my.subscribe_self('domify', f); };
 
-            // Calls f when the widget enters the domified state.
-            // Warning: has no effect if the widget is already
-            // domified.
+             // Calls f and return true if and only if the widget
+             // is in the domified state. Otherwise, returns false.
 
-            my.on_domify = function(f) { my.subscribe_self('domify', f); };
+             my.if_domified = function(f) {
+                 if (my.state() === 'domified') {
+                     f();
+                     return true;
+                 }
+                 return false;
+             };
 
-            // Calls f and return true if and only if the widget
-            // is in the domified state. Otherwise, returns false.
+             // If the widget is in the domified state, calls f
+             // immediately. Otherwise, calls f when the widget
+             // becomes domified.
 
-            my.if_domified = function(f) {
-                if (my.state() === 'domified') {
-                    f();
-                    return true;
-                }
-                return false;
-            };
+             my.after_domify = function(f) {
+                 if (!my.if_domified(f)) {
+                     my.on_domify(f);
+                 }
+             };
 
-            // If the widget is in the domified state, calls f
-            // immediately. Otherwise, calls f when the widget
-            // becomes domified.
+             my.register_event('dispose');
+             my.after_dispose = function(f) {
+                 if (my.state() === 'disposed') {
+                     f();
+                     return;
+                 }
+                 my.subscribe_self('dispose', f);
+             };
 
-            my.after_domify = function(f) {
-                if (!my.if_domified(f)) {
-                    my.on_domify(f);
-                }
-            };
+             var fire_domify_for_linked_widgets = function() {
+                 juice.foreach(linked, function(w) { w.fire_domify(); });
+                 domified_and_linked = domified_and_linked.concat(linked);
+                 linked = [];
+             };
+             var dispose_of_domified_and_linked_widgets = function() {
+                 juice.foreach(domified_and_linked, function(w) { w.dispose(); });
+                 domified_and_linked = [];
+             };
 
-            my.register_event('dispose');
-            my.after_dispose = function(f) {
-                if (my.state() === 'disposed') {
-                    f();
-                    return;
-                }
-                my.subscribe_self('dispose', f);
-            };
+             my.on_domify(
+                 function() {
+                     transition('rendered', 'domified');
+                     fire_domify_for_linked_widgets();
+                 });
 
-            var fire_domify_for_linked_widgets = function() {
-                juice.foreach(linked, function(w) { w.fire_domify(); });
-                domified_and_linked = domified_and_linked.concat(linked);
-                linked = [];
-            };
-            var dispose_of_domified_and_linked_widgets = function() {
-                juice.foreach(domified_and_linked, function(w) { w.dispose(); });
-                domified_and_linked = [];
-            };
+             my.refresh = function(p) {
+                 p = p || my.render;
+                 dispose_of_domified_and_linked_widgets();
+                 call_linked_render(
+                     function() {
+                         var r = juice.is_function(p) ? p() : p;
+                         if (!juice.is_string(r)) {
+                             juice.error.raise('type_mismatch', {expected: 'String', actual: typeof r});
+                         }
+                         my.expect_state('domified');
+                         my.$().html(r);
+                         fire_domify_for_linked_widgets();
+                     });
+             };
 
-            my.on_domify(
-                function() {
-                    transition('rendered', 'domified');
-                    fire_domify_for_linked_widgets();
-                });
+             that.enhance = function(name, spec) {
+                 var css_class;
+                 if (that.enhanced(name)) {
+                     juice.error.raise('already_enhanced', {name: name});
+                 }
+                 if (!proj.enhancers[name]) {
+                     juice.error.raise('enhancer_not_defined', {name: name});
+                 }
+                 enhancements[name] = true;
+                 css_class = 'enhancer_' + name.replace(/[.]/g, '_');
+                 my.on_domify(function() { my.$().addClass(css_class); });
+                 proj.enhancers[name](that, my, spec);
+                 return that;
+             };
 
-            my.refresh = function(p) {
-                p = p || my.render;
-                dispose_of_domified_and_linked_widgets();
-                call_linked_render(
-                    function() {
-                        var r = juice.is_function(p) ? p() : p;
-                        if (!juice.is_string(r)) {
-                            juice.error.raise('type_mismatch', {expected: 'String', actual: typeof r});
-                        }
-                        my.expect_state('domified');
-                        my.$().html(r);
-                        fire_domify_for_linked_widgets();
-                    });
-            };
+             that.enhanced = function(name) {
+                 return !!enhancements[name];
+             };
 
-            that.enhance = function(name, spec) {
-                var css_class;
-                if (that.enhanced(name)) {
-                    juice.error.raise('already_enhanced', {name: name});
-                }
-                if (!proj.enhancers[name]) {
-                    juice.error.raise('enhancer_not_defined', {name: name});
-                }
-                enhancements[name] = true;
-                css_class = 'enhancer_' + name.replace(/[.]/g, '_');
-                my.on_domify(function() { my.$().addClass(css_class); });
-                proj.enhancers[name](that, my, spec);
-                return that;
-            };
+             try {
+                 constructor(that, my, spec);
+             }
+             catch (e) {
+                 juice.error.handle(e);
+                 juice.error.raise('widget constructor failed for ' + name);
+             }
 
-            that.enhanced = function(name) {
-                return !!enhancements[name];
-            };
+             return that;
+         };
 
-            try {
-                constructor(that, my, spec);
-            }
-            catch (e) {
-                juice.error.handle(e);
-                juice.error.raise('widget constructor failed', {name: unique_name});
-            }
+         def.many = function(items) {
+             return juice.map(items, function(i) { return def(i); });
+         };
 
-            if (!constructed.hasOwnProperty(unique_name)) {
-                constructed[unique_name] = 0;
-            }
-            constructed[unique_name] += 1;
+         pkg[name] = def;
+         return def;
+     };
 
-            return that;
-        };
+     lib.define_local = function(name, constructor) {
+         var def, message;
+         def = lib.define(name, constructor);
+         message = 'local widget instantiated without local constructor';
 
-        def.many = function(items) {
-            return juice.map(items, function(i) { return def(i); });
-        };
+         juice.mdef(site.lib,
+                    function(spec) {
+                        juice.error.raise(message, {name: name});
+                    },
+                    current_namespace, name);
 
-        pkg[name] = def;
-        return def;
-    };
+         juice.mdef(site.lib,
+                    function(spec) {
+                        juice.error.raise(message, {name: name});
+                    },
+                    current_namespace, name, many);
+         return def;
+     };
 
-    lib.define_local = function(name, constructor) {
-        var def, message;
-        def = lib.define(name, constructor);
-        message = 'local_widget_instantiated_without_local_constructor';
-        proj.widgets[current_namespace][name] = function(spec) {
-            juice.error.raise(message, {name: name});
-        };
-        proj.widgets[current_namespace][name].many = function(spec) {
-            juice.error.raise(message, {name: name});
-        };
-        return def;
-    };
+     lib.define_enhancer = function(name, constructor) {
+         var namespace = Array.prototype.slice(current_namespace, [0]);
+         namespace[1] = "enhancers";
+         if (juice.mhas(site.lib, namespace, name)) {
 
-    lib.define_enhancer = function(name, constructor) {
-        var enhancer_name = current_namespace + '.' + name;
-        if (proj.enhancers[enhancer_name]) {
-            juice.error.raise('enhancer_already_defined', {name: enhancer_name});
-        }
-        proj.enhancers[enhancer_name] = constructor;
-    };
+         var enhancer_name = current_namespace + '.' + name;
+         if (proj.enhancers[enhancer_name]) {
+             juice.error.raise('enhancer_already_defined', {name: enhancer_name});
+         }
+         proj.enhancers[enhancer_name] = constructor;
+     };
 
-    // +---------------------------+
-    // | package management system |
-    // +---------------------------+
+     // +---------------------------+
+     // | package management system |
+     // +---------------------------+
 
-    lib.define_package = function(namespace, constructor) {
-        if (current_namespace) {
-            juice.error.raise('nested_widget_package', {current_namespace: current_namespace, namespace: namespace});
-        }
-        if (proj.widgets.hasOwnProperty(namespace)) {
-            juice.error.raise('widget_package_already_defined', {namespace: namespace});
-        }
-        current_namespace = namespace;
-        proj.widgets[namespace] = {};
-        proj.enhancers[namespace] = {};
-        constructor(juice, proj, jQuery);
-        current_namespace = null;
-    };
+     lib.define_package = function(lib_name, pkg_name, constructor) {
+         var namespace;
+         if (current_namespace) {
+             juice.error.raise('nested widget package', {current_namespace: current_namespace,
+                                                         lib_name: lib_name,
+                                                         pkg_name: pkg_name});
+         }
+         namespace = [lib_name, 'widgets', pkg_name];
+         if (juice.mhas(site.lib, namespace.concat([pkg_name]))) {
+             juice.error.raise('widget package already declared', {namespace: namespace,
+                                                                   pkg_name: pkg_name});
+         }
+         current_namespace = namespace;
+         juice.init_library(site, lib_name);
+         juice.mdef(site.lib, {}, namespace);
+         constructor(juice, site, jQuery);
+         current_namespace = null;
+     };
 
-    lib.constructed = function() {
-        return constructed;
-    };
-
-})(juice, proj, jQuery);
+ })(juice, proj, jQuery);

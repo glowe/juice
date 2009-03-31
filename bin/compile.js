@@ -116,7 +116,7 @@ targets = {widgets: {}, rpcs: {}, base: false, pages: false, 'juice_web': false,
 juice.foreach(changed_source_files,
               function(f) {
                   if (f.target_type == 'widgets' || f.target_type == 'rpcs') {
-                      juice.mset(targets, [f.target_type, f.lib_name, f.pkg_name], true);
+                      juice.mset(targets, true, [f.target_type, f.lib_name, f.pkg_name]);
                   }
                   else {
                       targets[f.target_type] = true;
@@ -164,6 +164,7 @@ if (targets.juice_ext_web) {
 if (targets.pages) {
     juice.build.lint_page_paths('pages.js');
     print("Lint pages: OK");
+
     juice.build.compile_pages('pages.js');
     print("Compile pages: OK");
 }

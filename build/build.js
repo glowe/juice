@@ -24,10 +24,12 @@
 
      juice.build.set_site_settings = function(s) {
          config.site_settings = juice.spec(s, {base_url: undefined,
-                                               js_base_url: undefined,
+                                               cookie_name: undefined,
                                                global_script_urls: [],
                                                global_stylesheet_urls: [],
                                                global_widget_packages: [],
+                                               js_base_url: undefined,
+                                               smother_alerts: false,
                                                user: {}});
      };
      juice.build.site_settings = function() {
@@ -267,8 +269,8 @@
      };
 
      juice.build.scope_js = function(contents) {
-         return '(function(juice, proj, jQuery) {'
-             + contents + '})(juice, proj, jQuery);';
+         return '(function(juice, site, jQuery) {'
+             + contents + '})(juice, site, jQuery);';
      };
 
      juice.build.read_file_and_scope_js = function(filename) {
@@ -392,8 +394,11 @@
                               return juice.build.read_file_and_scope_js(source.path);
                           });
 
-         runtime_settings = juice.dict_intersect_keys(config.site_settings, ['base_url', 'user']);
-         base.push('juice.install_settings(' + JSON.stringify(runtime_settings) + ');');
+         runtime_settings = juice.dict_intersect_keys(config.site_settings,
+                                                      ['base_url', 'cookie_name', 'user', 'smother_alerts']);
+
+         // Since settings are prerequisite for many things, make sure they're set first.
+         base.unshift('site.settings=' + JSON.stringify(runtime_settings) + ';');
 
          juice.build.write_final_file(
              'js/base.js',
@@ -404,7 +409,7 @@
          var seen = {};
          load(pages_filename);
 
-         juice.foreach(proj.pages,
+         juice.foreach(site.pages,
                        function(name, page) {
                            if (!page.path_is_dynamic()) {
                                if (seen.hasOwnProperty(page.path())) {
@@ -422,7 +427,7 @@
          load(pages_filename);
 
          page_template = eval(juice.build.compile_template_file(juice.home() + '/build/templates/page.html'));
-         juice.foreach(proj.pages,
+         juice.foreach(site.pages,
                        function(name, page) {
                            var dependencies, path;
                            if (page.path_is_dynamic()) {

@@ -8,17 +8,22 @@
          self.juice = lib = {};
      }
 
-     self.proj = {
-         enhancers:  {},
+     self.site = {
          layouts:    {},
-         modifiers:  {},
+         lib:        {},
          pages:      {},
-         rpcs:       {},
-         widgets:    {}
+         settings:   {}
      };
 
-     lib.args = function(a) {
-         return Array.prototype.slice.apply(a, [0]);
+     lib.init_library = function(site, lib_name) {
+         site.lib[lib_name] = {enhancers: {},
+                               rpcs: {},
+                               util: {},
+                               widgets: {}};
+     };
+
+     lib.args = function(a, n) {
+         return Array.prototype.slice.apply(a, [arguments.length === 1 ? 0 : n]);
      };
 
      lib.newid = function() {
@@ -59,7 +64,7 @@
                             print(msg);
                         };
                     }
-                    if (!proj.settings.smother_alerts) {
+                    if (!site.settings.smother_alerts) {
                         return function(msg) {
                             alert(juice.dump(dumped));
                         };
@@ -279,11 +284,16 @@
      };
 
      lib.flatten = function(a) {
+         if (!lib.is_array(a)) {
+             return [a];
+         }
          if (a.length === 0) {
              return [];
          }
-         var first = a[0];
-         return first.concat(lib.flatten(a.slice(1)));
+         if (!lib.is_array(a[0])) {
+             return [a[0]].concat(lib.flatten(a.slice(1)));
+         }
+         return lib.flatten(a[0]).concat(lib.flatten(a.slice(1)));
      };
 
      // Returns true if and only if the predicate p(v) is true for any values
@@ -549,17 +559,58 @@
 
      // TODO: docs!
 
-     lib.mset = function(a, dims, v) {
-         var first = dims[0];
-         if (dims.length === 1) {
-             a[first] = v;
-             return;
-         }
-         if (!a.hasOwnProperty(first)) {
-             a[first] = {};
-         }
-         juice.mset(a[first], dims.slice(1), v);
-     };
+     (function() {
+          var setfn = function(a, v, dims, overwrite) {
+              var b = a, d, i;
+              for (i = 0; i < dims.length; i++) {
+                  d = dims[i];
+                  if (i === dims.length-1) {
+                      if (!b.hasOwnProperty(d) || overwrite) {
+                          b[d] = v;
+                      }
+                  }
+                  else if (!b.hasOwnProperty(d)) {
+                      b[d] = {};
+                  }
+                  else if (!lib.is_object(b[d])) {
+                      throw ('mset path error (dims='+juice.dump(dims)+')');
+                  }
+                  b = b[d];
+              }
+          };
+
+          lib.mdef = function(a, v) {
+              setfn(a, v, lib.flatten(lib.args(arguments, 2)), false);
+          };
+
+          lib.mset = function(a, v) {
+              setfn(a, v, lib.flatten(lib.args(arguments, 2)), true);
+          };
+
+          lib.mget = function(a) {
+              var i, b = a, dims = lib.flatten(lib.args(arguments, 1));
+              for (i = 0; i < dims.length; i++) {
+                  if (!b.hasOwnProperty(dims[i])) {
+                      throw ('mget access error (dims='+juice.dump(dims)+')');
+                  }
+                  b = b[dims[i]];
+              }
+              return b;
+          };
+
+          lib.mhas = function(a) {
+              var b = a, d, dims, i;
+              dims = lib.flatten(lib.args(arguments, 1));
+              for (i = 0; i < dims.length-1; i++) {
+                  d = dims[i];
+                  if (!b.hasOwnProperty(d)) {
+                      return false;
+                  }
+                  b = b[d];
+              }
+              return b.hasOwnProperty(dims[dims.length-1]);
+          };
+      })();
 
      // TODO: document me.
 

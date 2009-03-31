@@ -1,4 +1,4 @@
-(function(juice, proj) {
+(function(juice, site) {
 
      var
      active_layout,
@@ -179,7 +179,7 @@
      juice.page = {
 
          define: function(spec) {
-             proj.pages[spec.name] = create_page(spec);
+             site.pages[spec.name] = create_page(spec);
          },
 
          define_404: function(spec) {
@@ -207,4 +207,4 @@
          }
      };
 
- })(juice, proj);
+ })(juice, site);
