@@ -1,4 +1,4 @@
- var jQuery = {};
+var jQuery = {};
 
 load('juice/web/prelude.js');
 load('juice/web/error.js');
