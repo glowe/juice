@@ -1,15 +1,44 @@
 // Give us stack traces in v8
-sys.add_debug_event_listener(
-    function(event, exec_state, event_data, data) {
-        var frame, i, prop;
-        print(event_data.exception());
-        if (event == 2) {
-            for (i = 0; i < exec_state.frameCount(); i++) {
-                print(exec_state.frame(i).sourceAndPositionText());
-            }
-        }
-        print();
-    });
+(function() {
+     var format_frame = function(frame) {
+         var func, result = '';
+         func = frame.func();
+
+         if (func.resolved()) {
+             if (func.script()) {
+                 if (func.script().name()) {
+                     result += func.script().name();
+                 } else {
+                     result += '[unnamed]';
+                 }
+                 if (!frame.isDebuggerFrame()) {
+                     var location = frame.sourceLocation();
+                     result += ' line ';
+                     result += !(typeof(location) === 'undefined') ? (location.line + 1) : '?';
+                     result += ' column ';
+                     result += !(typeof(location) === 'undefined') ? (location.column + 1) : '?';
+                 }
+             } else {
+                 result += '[no source]';
+             }
+         } else {
+             result += '[unresolved]';
+         }
+
+         return result;
+     };
+     sys.add_debug_event_listener(
+         function(event, exec_state, event_data, data) {
+             var i, prop;
+             print(event_data.exception());
+             if (event == 2) {
+                 for (i = 0; i < exec_state.frameCount(); i++) {
+                     print(format_frame(exec_state.frame(i)));
+                 }
+                 print();
+             }
+         });
+ })();
 
 juice.sys.install_interpreter(
     {basename: sys.os.basename,
