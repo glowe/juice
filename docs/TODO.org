@@ -12,7 +12,9 @@
   the user starts a validation RPC (e.g., check if username
   exists) and then submits the form before the original RPC
   returns, we shouldn't honor the validation request.
+* IMPORTANT Unify type checking in juice/CTK RPC specification verification code.
 * IMPORTANT support optional page parameters and default values
+
     E.g. (pseudo-code):
 
         juice.page.define(
