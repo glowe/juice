@@ -89,6 +89,7 @@ juice.sys.install_interpreter(
      },
      rmdir: sys.os.rmdir,
      sha1: sys.crypt.sha1,
+     system: sys.os.system,
      unlink: sys.os.unlink,
      write_file: function(path, contents) {
          var file;

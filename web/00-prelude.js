@@ -478,10 +478,11 @@
          return lib.keys(s);
      };
 
-     // Returns the union of two arrays.
+     // Returns the union of arrays.
 
-     lib.union = function(a, b) {
-         return lib.unique(a.concat(b));
+     lib.union = function() {
+         var args = juice.args(arguments);
+         return lib.unique(Array.prototype.concat.apply(args[0], args.slice(1)));
      };
 
      lib.date_to_unix = function(d) {

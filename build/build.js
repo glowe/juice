@@ -169,57 +169,113 @@
                           });
      };
 
-     juice.build.file_log = function(source_files) {
-         var cache = {}, log, sha1_file;
+     (function() {
+          var file_log = function(source_files, log_filename) {
 
-         if (juice.sys.file_exists(log_filename)) {
-             log = juice.dict_intersect_keys(juice.build.read_file_json(log_filename),
-                                             juice.map(source_files, function(f) { return f.path; }));
-         }
-         else {
-             log = {};
-         }
 
-         sha1_file = function(filename) {
-             if (!cache[filename]) {
-                 cache[filename] = juice.sys.sha1(juice.sys.read_file(filename));
-             }
-             return cache[filename];
-         };
 
-         return {
-             has_file_changed: function(filename) {
-                 return sha1_file(filename) !== log[filename];
-             },
-             update_file: function(filename) {
-                 log[filename] = sha1_file(filename);
-             },
-             save: function() {
-                 juice.sys.write_file(log_filename, JSON.stringify(log), true);
-             },
-             clear: function() {
-                 juice.sys.unlink(log_filename);
-                 log = {};
-             }
-         };
-     };
+          };
 
-     juice.build.file_find = function(top_dir, predicate) {
-         var answer = [], helper;
-         helper = function(path) {
-             juice.foreach(juice.sys.list_dir(path, {fullpath:true}),
-                           function(filename) {
-                               if (juice.sys.file_exists(filename) == 'dir') {
-                                   helper(filename);
-                               }
-                               else if (!predicate || predicate(filename)) {
-                                   answer.push(filename);
-                               }
-                           });
-         };
-         helper(top_dir);
-         return juice.map(answer, function(f) { return f.slice(top_dir.length + 1); });
-     };
+          juice.build.user_file_log = function(source_files) {
+
+
+
+          };
+
+          juice.build.file_log = function(source_files) {
+              var cache = {}, log, sha1_file;
+
+              if (juice.sys.file_exists(log_filename)) {
+                  log = juice.dict_intersect_keys(juice.build.read_file_json(log_filename),
+                                                  juice.map(source_files, function(f) { return f.path; }));
+              }
+              else {
+                  log = {};
+              }
+
+              sha1_file = function(filename) {
+                  if (!cache[filename]) {
+                      cache[filename] = juice.sys.sha1(juice.sys.read_file(filename));
+                  }
+                  return cache[filename];
+              };
+
+              return {
+                  has_file_changed: function(filename) {
+                      return sha1_file(filename) !== log[filename];
+                  },
+                  update_file: function(filename) {
+                      log[filename] = sha1_file(filename);
+                  },
+                  save: function() {
+                      juice.sys.write_file(log_filename, JSON.stringify(log), true);
+                  },
+                  clear: function() {
+                      juice.sys.unlink(log_filename);
+                      log = {};
+                  }
+              };
+          };
+      })();
+
+     (function() {
+          var applications = {}, categorizers = {};
+          juice.build.set_user_source_file_categorizer = function(lib_name, categorizer_fn) {
+              if (!juice.build.lib_paths().hasOwnProperty(lib_name)) {
+                  juice.error.raise("Attempting to set categorizer for unrecognized library: " +lib_name);
+              }
+              categorizers[lib_name] = categorizer_fn;
+          };
+
+          juice.build.find_user_categorized_source_files = function() {
+              var user_source_files = [];
+
+              juice.foreach(categorizers,
+                            function(lib_name, categorizer_fn) {
+                                var helper = function(path) {
+                                    juice.foreach(juice.sys.list_dir(path, {fullpath:true}),
+                                                  function(filename) {
+                                                      var category;
+                                                      if (juice.sys.file_exists(filename) == 'dir') {
+                                                          helper(filename);
+                                                      }
+                                                      else if ((category = categorizer_fn(filename))) {
+                                                          user_source_files.push(juice.build.source_file(
+                                                                                     {category: category,
+                                                                                      lib_name: lib_name,
+                                                                                      path: filename,
+                                                                                      target_type: 'user'}));
+                                                      }
+                                                  });
+                                };
+                                helper(juice.build.find_library(lib_name) + "/user");
+                            });
+              return user_source_files;
+          };
+
+          juice.build.set_user_source_file_applier = function(lib_name, apply_fn) {
+              if (!juice.build.lib_paths().hasOwnProperty(lib_name)) {
+                  juice.error.raise("Attempting to set applier for unrecognized library: " +lib_name);
+              }
+
+              applications[lib_name] = apply_fn;
+          };
+
+          juice.build.run_user_source_file_appliers = function(source_files) {
+              var user_source_files = juice.filter(source_files,
+                                                   function(file) {
+                                                       return file.target_type === 'user';
+                                                   });
+              juice.foreach(applications,
+                            function(lib_name, application) {
+                                application(juice.filter(user_source_files,
+                                                         function(file) {
+                                                             return file.lib_name === lib_name;
+                                                         }));
+                            });
+          };
+
+      })();
 
      juice.build.lint_js = function(filename) {
          var arrow = function(column) {
@@ -498,10 +554,22 @@
                                path += 'index.html';
                            }
 
-                           dependencies = juice.build.collect_page_dependencies(page.widget_packages());
-                           dependencies.script_urls = juice.union(dependencies.script_urls, page.script_urls());
+                           dependencies =
+                               juice.build.collect_page_dependencies(
+                                   juice.union(page.widget_packages(),
+                                               juice.build.site_settings().global_widget_packages));
+
+                           dependencies.script_urls =
+                               juice.union(
+                                   dependencies.script_urls,
+                                   page.script_urls(),
+                                   juice.build.site_settings().global_script_urls);
+
                            dependencies.stylesheet_urls =
-                               juice.union(dependencies.stylesheet_urls, page.stylesheet_urls());
+                                       juice.union(
+                                           dependencies.stylesheet_urls,
+                                           page.stylesheet_urls(),
+                                           juice.build.site_settings().global_stylesheet_urls);
 
                            juice.build.write_final_file(
                                path,

@@ -1,6 +1,5 @@
 var
 all_source_files,
-base_source_files,
 changed_source_files,
 file_log,
 internal_lib_name,
@@ -83,6 +82,24 @@ all_source_files = all_source_files.concat(
                   return juice.build.source_file({path: path, target_type: "juice_ext_web"});
               }));
 
+// Look for user defined hooks here
+(function() {
+     var user_categorize = juice.sys.file_exists("categorize.js"),
+     user_apply = juice.sys.file_exists("apply.js");
+     if (user_categorize || user_apply) {
+         if (!user_categorize) {
+             juice.build.fatal("User defined apply.js, but no categorize.js found.");
+         }
+
+         if (!user_apply) {
+             juice.build.fatal("User defined categorize.js, but no apply.js found.");
+         }
+         load("apply.js");
+         load("categorize.js");
+     }
+ })();
+
+all_source_files = all_source_files.concat(juice.build.find_user_categorized_source_files());
 
 //
 // TODO: insure that all referenced packages exist, so we don"t have to check all the time.
@@ -101,8 +118,9 @@ changed_source_files =
      var has_linted = false;
      juice.foreach(changed_source_files,
                    function(f) {
+                       var ext = juice.sys.parse_path(f.path).ext;
                        if (f.target_type == "juice_ext_web" ||
-                           (f.path.slice(-3) != ".js" && f.path.slice(-5) != ".json")) {
+                           (ext != "js" && ext != "json")) {
                            return;
                        }
                        has_linted = true;
@@ -124,6 +142,7 @@ targets = {
     juice_web: false,
     pages: false,
     rpcs: {},
+    user: false,
     widgets: {}
 };
 
@@ -140,6 +159,11 @@ juice.foreach(changed_source_files,
                       targets.pages = true;
                   }
               });
+
+// FIXME: group by on all_source_files on target type here so that
+//        later calls are cheap (i.e., they don't have to filter
+//        themselves).
+
 
 if (targets.base) {
     juice.build.compile_site_base(all_source_files);
@@ -186,6 +210,10 @@ if (targets.pages) {
     print("Compile pages: OK.");
 }
 
+if (targets.user) {
+    juice.build.run_user_source_file_appliers(all_source_files);
+    print("User defined hooks: OK.");
+}
 
 print("Done.");
 

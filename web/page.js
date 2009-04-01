@@ -5,16 +5,9 @@
      constructor,
      create_page,
      dynamic_path_var_re,
-     global_script_urls,
-     global_stylesheet_urls,
-     global_widget_packages,
      page_404;
 
      dynamic_path_var_re = /\[\[(\w+) (.*?)\]\]/g;
-
-     global_stylesheet_urls = [];
-     global_script_urls = [];
-     global_widget_packages = [];
 
      create_page = function(spec) {
          var extract_args, my = {}, that = {};
@@ -64,15 +57,15 @@
          };
 
          that.script_urls = function() {
-             return global_script_urls.concat(my.script_urls);
+             return my.script_urls;
          };
 
          that.stylesheet_urls = function() {
-             return global_stylesheet_urls.concat(my.stylesheet_urls);
+             return my.stylesheet_urls;
          };
 
          that.widget_packages = function() {
-             return global_widget_packages.concat(my.widget_packages);
+             return my.widget_packages;
          };
 
          that.url = function(args) {
@@ -202,18 +195,6 @@
 
          set_init: function(constr) {
              constructor = constr;
-         },
-
-         add_global_script_url: function(url) {
-             global_script_urls.push(url);
-         },
-
-         add_global_stylesheet_url: function(url) {
-             global_stylesheet_urls.push(url);
-         },
-
-         add_global_widget_package: function(url) {
-             global_widget_packages.push(url);
          }
      };
 

@@ -16,6 +16,7 @@
                             read_file:      undefined,
                             rmdir:          undefined,
                             sha1:           undefined,
+                            system:         undefined,
                             unlink:         undefined,
                             write_file:     undefined});
 
@@ -28,7 +29,28 @@
          juice.sys.read_file      = impl.read_file;
          juice.sys.rmdir          = impl.rmdir;
          juice.sys.sha1           = impl.sha1;
+         juice.sys.system         = impl.system;
          juice.sys.unlink         = impl.unlink;
+
+         juice.sys.parse_path = function(path) {
+             var ext,
+             filename = juice.sys.basename(path),
+             p,
+             without_ext = filename;
+
+             if ((p = filename.lastIndexOf(".")) != -1) {
+                 ext = filename.substr(p + 1);
+                 without_ext = filename.substr(0, p);
+             }
+
+             return {
+                 filename:    filename,
+                 dir:         juice.sys.dirname(path),
+                 ext:         ext,
+                 path:        path,
+                 without_ext: without_ext
+             };
+         };
 
          juice.sys.write_file = function(path, contents, overwrite) {
 	     juice.sys.mkdir(juice.sys.dirname(path));
