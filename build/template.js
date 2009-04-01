@@ -380,7 +380,7 @@
 
              compiled = 'var _a = []';
              if (modifier_invoked) {
-                 compiled += ', ' + modifiers_alias + ' = proj.modifiers';
+                 compiled += ', ' + modifiers_alias + ' = juice.modifiers';
              }
              return compiled + ';\n' + code.join('\n') + "\nreturn _a.join('');";
          };

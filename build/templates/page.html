@@ -32,6 +32,6 @@
     <script src="{{js_base_url}}/libs/{{pkg.lib_name}}/widgets/{{pkg.pkg_name}}.js"></script>
     {%endfor%}
 
-    <script>proj.pages.{{name}}.init(jQuery('#main'));</script>
+    <script>juice.page.init("{{name}}", "#main");</script>
   </body>
 </html>

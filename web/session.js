@@ -1,4 +1,4 @@
-(function(juice, proj, jQuery) {
+(function(juice, site, jQuery) {
 
      var initialized;
 
@@ -122,4 +122,4 @@
          }
      };
 
- })(juice, proj, jQuery);
+ })(juice, site, jQuery);

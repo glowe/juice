@@ -62,7 +62,7 @@ find_library = function(name) {
 };
 
 program_options = juice.program_options(
-    {"settings=": "path to site setting file",
+    {"settings=": ["path to site setting file", "settings/default.js"],
      "with-lib=[]": ["specify path to an external library", []]});
 
 options = program_options.parse_arguments(argv);
