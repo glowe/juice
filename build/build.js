@@ -179,18 +179,6 @@
      };
 
      (function() {
-          var file_log = function(source_files, log_filename) {
-
-
-
-          };
-
-          juice.build.user_file_log = function(source_files) {
-
-
-
-          };
-
           juice.build.file_log = function(source_files) {
               var cache = {}, log, sha1_file;
 
@@ -210,6 +198,15 @@
               };
 
               return {
+                  empty: function() {
+                      var k;
+                      for (k in log) {
+                          if (log.hasOwnProperty(k)) {
+                              return false;
+                          }
+                      }
+                      return true;
+                  },
                   has_file_changed: function(filename) {
                       return sha1_file(filename) !== log[filename];
                   },

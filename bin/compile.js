@@ -105,7 +105,10 @@ all_source_files.push(juice.build.source_file({target_type: "settings", path: ju
 
 file_log = juice.build.file_log(all_source_files);
 
-if (file_log.has_file_changed(juice.build.site_settings_path())) {
+if (file_log.empty()) {
+    print("Starting full build...");
+}
+else if (file_log.has_file_changed(juice.build.site_settings_path())) {
     juice.build.clean();
     print("Settings file changed (" + juice.build.site_settings_path() + "); starting from scratch.");
     settings_changed = true;
