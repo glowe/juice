@@ -499,7 +499,6 @@
                            }
 
                            dependencies = juice.build.collect_page_dependencies(page.widget_packages());
-                           print("Graham " + name + " dependencies = " + juice.dump(dependencies));
                            dependencies.script_urls = juice.union(dependencies.script_urls, page.script_urls());
                            dependencies.stylesheet_urls =
                                juice.union(dependencies.stylesheet_urls, page.stylesheet_urls());

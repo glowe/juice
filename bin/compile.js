@@ -50,7 +50,7 @@ all_source_files = juice.map(required_source_files,
                              });
 
 
-// FIXME: May want to error if we find a file that doesn"t fit
+// FIXME: May want to error if we find a file that doesn't fit
 
 // Add source files in libraries
 juice.foreach(juice.build.lib_paths(),
@@ -143,7 +143,7 @@ juice.foreach(changed_source_files,
 
 if (targets.base) {
     juice.build.compile_site_base(all_source_files);
-    print("Compile site base: OK");
+    print("Compile site base: OK.");
 }
 
 if (!juice.empty(targets.widgets)) {
@@ -154,7 +154,7 @@ if (!juice.empty(targets.widgets)) {
                                         juice.build.compile_widget_package(lib_name, pkg_name, all_source_files);
                                     });
                   });
-    print("Compile widget packages: OK");
+    print("Compile widget packages: OK.");
 }
 
 if (!juice.empty(targets.rpcs)) {
@@ -165,29 +165,29 @@ if (!juice.empty(targets.rpcs)) {
                                         juice.build.compile_rpc_package(lib_name, pkg_name, all_source_files);
                                     });
                   });
-    print("Compile rpc packages: OK");
+    print("Compile rpc packages: OK.");
 }
 
 if (targets.juice_web) {
     juice.build.compile_juice_web(all_source_files);
-    print("Compile juice web: OK");
+    print("Compile juice web: OK.");
 }
 
 if (targets.juice_ext_web) {
     juice.build.compile_juice_ext_web(all_source_files);
-    print("Compile juice ext web: OK");
+    print("Compile juice ext web: OK.");
 }
 
 if (targets.pages) {
     juice.build.lint_page_paths("pages.js");
-    print("Lint pages: OK");
+    print("Lint pages: OK.");
 
     juice.build.compile_pages("pages.js");
-    print("Compile pages: OK");
+    print("Compile pages: OK.");
 }
 
 
-print(juice.dump(targets));
+print("Done.");
 
 juice.foreach(all_source_files, function(f) { file_log.update_file(f.path); });
 
