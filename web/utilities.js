@@ -1,6 +1,26 @@
-(function(juice, jQuery) {
-
+(function(juice, site, jQuery) {
+     var current_lib_name;
      juice.util = {
+
+         define: function(name, fn) {
+             var util = juice.mget(site.lib, current_lib_name, 'util');
+
+             if (util[name]) {
+                 juice.error.raise('util already defined', {lib_name: lib_name, name: name});
+             }
+
+             util[name] = fn;
+         },
+
+         define_package: function(lib_name, constructor) {
+             if (current_lib_name) {
+                 juice.error.raise('nested utility package: ' + lib_name);
+             }
+             current_lib_name = lib_name;
+             juice.mdef(site.lib, {}, lib_name, 'util');
+             constructor(juice, site, jQuery);
+             current_lib_name = null;
+         },
 
          // This is the default message facility implementation; projects may
          // override it simply be setting juice.util.message to a new value,
@@ -104,4 +124,4 @@
                    })()
      };
 
- })(juice, jQuery);
+ })(juice, site, jQuery);

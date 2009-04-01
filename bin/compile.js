@@ -24,33 +24,33 @@ try {
     juice.build.load_config();
 }
 catch (e) {
-    juice.build.fatal('Unable to load build configuration. Perhaps you need to run "juice config"?');
+    juice.build.fatal("Unable to load build configuration. Perhaps you need to run 'juice config'?");
 }
 
 // Make sure required source files exist. E.g. pages.js, layouts.js.
-required_source_files = ['macros.json', 'pages.js', 'layouts.js'];
+required_source_files = ["macros.json", "pages.js", "layouts.js", "proxies.js"];
 juice.foreach(required_source_files,
               function(filename) {
-                  if (juice.sys.file_exists(filename) !== 'file') {
-                      juice.build.fatal('Missing a required source file: '+filename);
+                  if (juice.sys.file_exists(filename) !== "file") {
+                      juice.build.fatal("Missing a required source file: " + filename);
                   }
               });
 
 // Insure the site has an internal library.
-internal_lib_name = juice.build.lib_name('lib');
+internal_lib_name = juice.build.lib_name("lib");
 if (!internal_lib_name) {
-    juice.build.fatal('Site library not found (expected to find it in "./lib").');
+    juice.build.fatal("Site library not found (expected to find it in './lib').");
 }
 
 all_source_files = juice.map(required_source_files,
                              function(path) {
-                                 var target_type = path !== "pages.js" ? "base" : "pages";
-                                 return juice.build.source_file({path: path,
-                                                                 target_type: target_type});
+                                 return juice.build.source_file({category: path === "pages.js" ? "pages" : "normal",
+                                                                 path: path,
+                                                                 target_type: "base"});
                              });
 
 
-// FIXME: May want to error if we find a file that doesn't fit
+// FIXME: May want to error if we find a file that doesn"t fit
 
 // Add source files in libraries
 juice.foreach(juice.build.lib_paths(),
@@ -63,22 +63,29 @@ juice.foreach(juice.build.lib_paths(),
 
 // Add juice/web
 all_source_files = all_source_files.concat(
-    juice.map(juice.sys.list_dir(juice.home('web'), {filter_re:/[.]js$/, fullpath:true}),
+    juice.map(juice.sys.list_dir(juice.home("web"), {filter_re:/[.]js$/, fullpath:true}),
               function(path) {
-                  return juice.build.source_file({path: path, target_type: "juice_web"});
+                  return juice.build.source_file({category: 'js', path: path, target_type: "juice_web"});
+              }));
+
+// Add juice/web/templates
+all_source_files = all_source_files.concat(
+    juice.map(juice.sys.list_dir(juice.home("web/templates"), {filter_re:/[.]html$/, fullpath:true}),
+              function(path) {
+                  return juice.build.source_file({category: 'template', path: path, target_type: "juice_web"});
               }));
 
 
 // Add juice ext files
 all_source_files = all_source_files.concat(
-    juice.map(juice.sys.list_dir(juice.home('ext/web'), {filter_re:/[.]js$/, fullpath:true}),
+    juice.map(juice.sys.list_dir(juice.home("ext/web"), {filter_re:/[.]js$/, fullpath:true}),
               function(path) {
                   return juice.build.source_file({path: path, target_type: "juice_ext_web"});
               }));
 
 
 //
-// TODO: insure that all referenced packages exist, so we don't have to check all the time.
+// TODO: insure that all referenced packages exist, so we don"t have to check all the time.
 //
 
 file_log = juice.build.file_log(all_source_files);
@@ -94,8 +101,7 @@ changed_source_files =
      var has_linted = false;
      juice.foreach(changed_source_files,
                    function(f) {
-                       if (f.target_type == 'juice_web' ||
-                           f.target_type == 'juice_ext_web' ||
+                       if (f.target_type == "juice_ext_web" ||
                            (f.path.slice(-3) != ".js" && f.path.slice(-5) != ".json")) {
                            return;
                        }
@@ -103,26 +109,37 @@ changed_source_files =
                        var errors = juice.build.lint_js(f.path);
                        if (errors.length) {
                            juice.foreach(errors, function(e) { print(e); });
-                           juice.build.fatal('JSLINT failed. Aborting.');
+                           juice.build.fatal("JSLINT failed. Aborting.");
                        }
                    });
      if (has_linted) {
-         print('Lint: OK.');
+         print("Lint: OK.");
      }
  })();
 
 // Determine which targets need to be recompiled.
-targets = {widgets: {}, rpcs: {}, base: false, pages: false, 'juice_web': false, 'juice_ext_web': false};
+targets = {
+    base: false,
+    juice_ext_web: false,
+    juice_web: false,
+    pages: false,
+    rpcs: {},
+    widgets: {}
+};
+
 juice.foreach(changed_source_files,
               function(f) {
-                  if (f.target_type == 'widgets' || f.target_type == 'rpcs') {
+                  if (f.target_type === "widgets" || f.target_type === "rpcs") {
                       juice.mset(targets, true, [f.target_type, f.lib_name, f.pkg_name]);
                   }
                   else {
                       targets[f.target_type] = true;
                   }
-              });
 
+                  if (f.category == "pages" || f.category == "meta") {
+                      targets.pages = true;
+                  }
+              });
 
 if (targets.base) {
     juice.build.compile_site_base(all_source_files);
@@ -162,10 +179,10 @@ if (targets.juice_ext_web) {
 }
 
 if (targets.pages) {
-    juice.build.lint_page_paths('pages.js');
+    juice.build.lint_page_paths("pages.js");
     print("Lint pages: OK");
 
-    juice.build.compile_pages('pages.js');
+    juice.build.compile_pages("pages.js");
     print("Compile pages: OK");
 }
 

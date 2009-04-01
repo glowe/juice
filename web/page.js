@@ -2,6 +2,7 @@
 
      var
      active_layout,
+     constructor,
      create_page,
      dynamic_path_var_re,
      global_script_urls,
@@ -192,6 +193,15 @@
                  juice.error.raise('page_not_initialized');
              }
              active_layout.add_widget(panel, widget);
+         },
+
+         init: function(name, selector) {
+             constructor(juice, site, jQuery);
+             site.pages[name].init(jQuery(selector));
+         },
+
+         set_init: function(constr) {
+             constructor = constr;
          },
 
          add_global_script_url: function(url) {

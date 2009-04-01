@@ -1,6 +1,7 @@
 (function(juice, site, jQuery) {
      var
      current_namespace,
+     enhancers = {},
      lib,
      render_stack;
 
@@ -12,7 +13,7 @@
 
          var def, namespace, pkg;
 
-         namespace = juice.copy_object(current_namespace);
+         namespace = current_namespace.slice(0);
          pkg = juice.mget(site.lib, namespace);
 
          if (pkg[name]) {
@@ -291,13 +292,13 @@
                  if (that.enhanced(name)) {
                      juice.error.raise('already_enhanced', {name: name});
                  }
-                 if (!proj.enhancers[name]) {
+                 if (!enhancers[name]) {
                      juice.error.raise('enhancer_not_defined', {name: name});
                  }
                  enhancements[name] = true;
                  css_class = 'enhancer_' + name.replace(/[.]/g, '_');
                  my.on_domify(function() { my.$().addClass(css_class); });
-                 proj.enhancers[name](that, my, spec);
+                 enhancers[name](that, my, spec);
                  return that;
              };
 
@@ -339,20 +340,16 @@
                     function(spec) {
                         juice.error.raise(message, {name: name});
                     },
-                    current_namespace, name, many);
+                    current_namespace, name, 'many');
          return def;
      };
 
      lib.define_enhancer = function(name, constructor) {
-         var namespace = Array.prototype.slice(current_namespace, [0]);
-         namespace[1] = "enhancers";
-         if (juice.mhas(site.lib, namespace, name)) {
-
-         var enhancer_name = current_namespace + '.' + name;
-         if (proj.enhancers[enhancer_name]) {
+         var enhancer_name = current_namespace[0] + '.' + current_namespace[2] + '.' + name;
+         if (enhancers[enhancer_name]) {
              juice.error.raise('enhancer_already_defined', {name: enhancer_name});
          }
-         proj.enhancers[enhancer_name] = constructor;
+         enhancers[enhancer_name] = constructor;
      };
 
      // +---------------------------+
@@ -367,15 +364,14 @@
                                                          pkg_name: pkg_name});
          }
          namespace = [lib_name, 'widgets', pkg_name];
-         if (juice.mhas(site.lib, namespace.concat([pkg_name]))) {
-             juice.error.raise('widget package already declared', {namespace: namespace,
-                                                                   pkg_name: pkg_name});
+         if (juice.mhas(site.lib, namespace)) {
+             juice.error.raise('widget package already declared', {namespace: namespace});
+
          }
          current_namespace = namespace;
-         juice.init_library(site, lib_name);
          juice.mdef(site.lib, {}, namespace);
          constructor(juice, site, jQuery);
          current_namespace = null;
      };
 
- })(juice, proj, jQuery);
+ })(juice, site, jQuery);

@@ -44,7 +44,7 @@
          juice.sys.rm_rf = function(path) {
              var status = juice.sys.file_exists(path);
              if (status == 'dir') {
-                 juice.foreach(juice.sys.list_dir(path, {fullpath:true}),
+                 juice.foreach(juice.sys.list_dir(path, {fullpath:true, show_hidden:true}),
                                juice.sys.rm_rf);
                  juice.sys.rmdir(path);
              }
@@ -58,7 +58,7 @@
 
          juice.sys.list_dir = function(path, spec) {
 	     var filenames;
-             spec = juice.spec(spec, {filter_re: null, fullpath: false});
+             spec = juice.spec(spec, {filter_re: null, fullpath: false, show_hidden: false});
 
              try {
                  filenames = impl.list_dir(path);
@@ -69,7 +69,10 @@
 
              filenames = juice.filter(filenames,
                                       function(f) {
-                                          if (f[0] == '.') {
+                                          if (f == "." || f == "..") {
+                                              return false;
+                                          }
+                                          if (!spec.show_hidden && f[0] == ".") {
                                               return false;
                                           }
                                           if (spec.filter_re) {

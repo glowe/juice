@@ -16,10 +16,10 @@
      };
 
      lib.init_library = function(site, lib_name) {
-         site.lib[lib_name] = {enhancers: {},
-                               rpcs: {},
-                               util: {},
-                               widgets: {}};
+         site.lib[lib_name] = site.lib[lib_name] || {enhancers: {},
+                                                     rpcs: {},
+                                                     util: {},
+                                                     widgets: {}};
      };
 
      lib.args = function(a, n) {
@@ -281,6 +281,20 @@
 
      lib.filter_value = function(a, x) {
          return lib.filter(a, function(y) { return x !== y; });
+     };
+
+
+     lib.group_by = function(a, f) {
+         var answer = {};
+         juice.foreach(a,
+                       function(v) {
+                           var group = f(v);
+                           if (!answer.hasOwnProperty(group)) {
+                               answer[group] = [];
+                           }
+                           answer[group].push(v);
+                       });
+         return answer;
      };
 
      lib.flatten = function(a) {

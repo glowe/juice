@@ -23,7 +23,8 @@ def run_server(args):
         if site == '':
             raise UsageError('Empty site')
 
-        os.chdir('build/' + site + '/' + mode + '/htdocs')
+#        os.chdir('build/' + site + '/' + mode + '/htdocs')
+        os.chdir('build/final')
         import SimpleHTTPServer
         # hack to make SimpleHTTPServer work
         sys.argv = []

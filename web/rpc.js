@@ -200,7 +200,7 @@
      // +----------------+
 
      lib.define = function(spec) {
-         var my_namespace = juice.copy_object(current_namespace);
+         var my_namespace = current_namespace.slice(0); // dereference
 
          assert_spec_is_valid(spec.req_spec);
          assert_spec_is_valid(spec.rsp_spec);
@@ -256,7 +256,16 @@
                  });
          };
 
-         rpc.namespace = current_namespace;
+         rpc.namespace = {
+             lib_name: my_namespace[0],
+             pkg_name: my_namespace[2],
+             toString: function() {
+                 return this.lib_name + '.' + this.pkg_name;
+             },
+             search: function(o) {
+                 return o[this.toString()] || o[this.lib_name];
+             }
+         };
          rpc.name = spec.name;
          rpc.service_name = spec.service_name;
          rpc.req_spec = spec.req_spec;
@@ -276,7 +285,7 @@
      // +---------+
 
      is_mocking_enabled = function() {
-         return proj.settings.rpc_mocking;
+         return site.settings.rpc_mocking;
      };
 
      assert_mocking_enabled = function() {
@@ -299,16 +308,16 @@
      // proxy.
 
      lib.define_mock = function(name, o) {
-         if (!proj.rpcs.hasOwnProperty(current_namespace)) {
+         if (!juice.mhas(site.lib, current_namespace)) {
              juice.error.raise('Current namespace not found',
-                                {current_namespace: current_namespace});
+                                {namespace: current_namespace});
          }
-         if (!proj.rpcs[current_namespace].hasOwnProperty(name)) {
+         if (!juice.mhas(site.lib, current_namespace, name)) {
              juice.error.raise('Attempt to mock an undefined rpc',
                                {name: name,
-                                rpcs: juice.keys(proj.rpcs[current_namespace])});
+                                namespace: current_namespace});
          }
-         proj.rpcs[current_namespace][name].mock = o;
+         juice.mset(site.lib, o, current_namespace, name, 'mock');
      };
 
      // The function passed to juice.rpc.define_mock should use this function
@@ -369,16 +378,16 @@
      proxy_map = {};
 
      find_proxy = function(rpc) {
-         var mock;
+         var answer, mock;
          if (is_mocking_enabled()) {
              bootstrap_mocking_cookie();
              mock = juice.cookie.get('rpc.mock');
-             if (mock.hasOwnProperty('*') || mock.hasOwnProperty(rpc.namespace)) {
+             if (mock.hasOwnProperty('*') || rpc.namespace.search(mock)) {
                  return mocking_proxy;
              }
          }
-         if (proxy_map[rpc.namespace]) {
-             return proxy_map[rpc.namespace];
+         if ((answer = rpc.namespace.search(proxy_map))) {
+             return answer;
          }
          if (default_proxy) {
              return default_proxy;

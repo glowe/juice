@@ -50,7 +50,8 @@
 
      juice.build.source_file = function(spec) {
          return juice.spec(spec,
-                           {lib_name: null,
+                           {category: null,
+                            lib_name: null,
                             path: undefined,
                             pkg_name: null,
                             target_type: undefined});
@@ -81,7 +82,8 @@
                                                  + package_json_path);
                            }
 
-                           source_files.push(juice.build.source_file({lib_name: lib_name,
+                           source_files.push(juice.build.source_file({category: "meta",
+                                                                      lib_name: lib_name,
                                                                       path: package_json_path,
                                                                       pkg_name: pkg_name,
                                                                       target_type: "widgets"}));
@@ -92,7 +94,8 @@
                                                                               fullpath: true}),
                                          function(path) {
                                              source_files.push(
-                                                 juice.build.source_file({lib_name: lib_name,
+                                                 juice.build.source_file({category: "widget",
+                                                                          lib_name: lib_name,
                                                                           path: path,
                                                                           pkg_name: pkg_name,
                                                                           target_type: "widgets"}));
@@ -107,7 +110,8 @@
                                                                  fullpath: true}),
                                              function(path) {
                                                  source_files.push(
-                                                     juice.build.source_file({lib_name: lib_name,
+                                                     juice.build.source_file({category: 'template',
+                                                                              lib_name: lib_name,
                                                                               path: path,
                                                                               pkg_name: pkg_name,
                                                                               target_type: "widgets"}));
@@ -120,18 +124,7 @@
      juice.build.find_rpc_source_files = function(lib_name) {
          var rpcs_path = juice.build.find_library(lib_name) + "/rpcs/",
          pkgs,
-         proxies_path = rpcs_path + "proxies.js",
          source_files = [];
-
-         // Look within the rpc directory for the proxies.js file
-         // and tag it with type "base".
-         if (juice.sys.file_exists(proxies_path) != "file") {
-             juice.build.fatal("Missing required proxies file: " + proxies_path);
-         }
-         source_files.push(
-             juice.build.source_file({lib_name: lib_name,
-                                      path: proxies_path,
-                                      target_type: "base"}));
 
          pkgs = juice.filter(juice.sys.list_dir(rpcs_path),
                              function(pkg) {
@@ -163,14 +156,15 @@
              return [];
          }
 
-         // Tag each .js file with the "base" target type.
+         // Tag each .js file with the "util" target type.
          return juice.map(juice.sys.list_dir(util_path,
                                              {filter_re: /[.]js$/,
                                               fullpath: true}),
                           function(path) {
-                              return juice.build.source_file({lib_name: lib_name,
+                              return juice.build.source_file({category: "util",
+                                                              lib_name: lib_name,
                                                               path: path,
-                                                              pkg_name: pkg_name,
+                                                              pkg_name: undefined,
                                                               target_type: "base"});
                           });
      };
@@ -337,16 +331,29 @@
      };
 
      juice.build.compile_juice_web = function(all_files) {
-         var files = juice.filter(all_files,
-                                  function(source_file) {
-                                      return source_file.target_type === "juice_web";
-                                  });
+         var files, templates, lines = [];
+         files = juice.filter(all_files,
+                              function(source_file) {
+                                  return source_file.target_type === "juice_web";
+                              });
+
+         files = juice.group_by(files, function(file) { return file.category; });
+
+         templates = juice.build.compile_templates(
+             juice.map(files.template,
+                       function(source_file) {
+                           return source_file.path;
+                       }));
+
+         lines.push('(function(jQuery) {', 'var templates = ' + templates + ";");
+         lines = lines.concat(juice.map(files.js,
+                                        function(source) {
+                                            return juice.sys.read_file(source.path);
+                                        }));
+         lines.push('})(jQuery);');
          juice.build.write_final_file(
              'js/juice-web.js',
-             juice.map(files,
-                       function(source) {
-                           return juice.sys.read_file(source.path);
-                       }).join("\n"));
+                 lines.join("\n"));
      };
 
      juice.build.compile_juice_ext_web = function(all_files) {
@@ -365,34 +372,85 @@
 
 
      juice.build.compile_site_base = function(all_files) {
-         var base, base_source_files, runtime_settings;
+         var base,
+         base_source_files,
+         lib_util_map,
+         pages,
+         runtime_settings;
 
          base_source_files = juice.filter(all_files,
-                                          function(source_file) {
-                                              return source_file.target_type === "base";
+                                          function(file) {
+                                              return file.target_type === "base";
                                           });
 
-         // Sort by library name first (undefined last) and then by path name
-         base_source_files.sort(function(a, b) {
-                                    if (a.library_name < b.library_name) {
-                                        return -1;
-                                    }
-                                    if (a.library_name > b.library_name) {
-                                        return 1;
-                                    }
-                                    if (a.path < b.path) {
-                                        return -1;
-                                    }
-                                    if (a.path > b.path) {
-                                        return 1;
-                                    }
-                                    return 0;
-                                });
+         base_source_files = juice.group_by(base_source_files,
+                                            function(file) {
+                                                return file.category;
+                                            });
 
-         base = juice.map(base_source_files,
+         // Sort by library name first (undefined last) and then by path name
+         base_source_files.normal.sort(function(a, b) {
+                                           if (a.library_name < b.library_name) {
+                                               return -1;
+                                           }
+                                           if (a.library_name > b.library_name) {
+                                               return 1;
+                                           }
+                                           if (a.path < b.path) {
+                                               return -1;
+                                           }
+                                           if (a.path > b.path) {
+                                               return 1;
+                                           }
+                                           return 0;
+                                       });
+
+         base = juice.map(base_source_files.normal,
                           function(source) {
                               return juice.build.read_file_and_scope_js(source.path);
                           });
+
+         juice.foreach(juice.build.lib_paths(),
+                       function(lib_name) {
+                           base.push('juice.init_library(site, "' + lib_name + '");');
+                       });
+
+         // Build a dictionary that maps each library name to its
+         // list of utility source files.
+
+         lib_util_map = {};
+         juice.foreach(base_source_files.util,
+                       function(source) {
+                           juice.mdef(lib_util_map, [], source.lib_name);
+                           lib_util_map[source.lib_name].push(source);
+                       });
+
+         // Individually package each library's utility source
+         // files, then append them to base.
+
+         juice.foreach(lib_util_map,
+                       function(lib_name, source_files) {
+                           var util = juice.map(source_files,
+                                                function(source) {
+                                                    return juice.build.read_file_and_scope_js(source.path);
+                                                });
+                           base = base.concat(
+                               ['juice.util.define_package("' + lib_name + '", function(juice, site, jQuery) {',
+                                'try {',
+                                util.join('\n'),
+                                '} catch (e) { juice.error.handle(e); }',
+                                '});']);
+
+                       });
+
+         // base
+         pages = juice.build.read_file_and_scope_js(base_source_files.pages[0].path);
+         base = base.concat(
+             ["juice.page.set_init(function(juice, site, jQuery) {",
+              "try {",
+              pages,
+              '} catch (e) { juice.error.handle(e); }',
+              '});']);
 
          runtime_settings = juice.dict_intersect_keys(config.site_settings,
                                                       ['base_url', 'cookie_name', 'user', 'smother_alerts']);
@@ -440,7 +498,8 @@
                                path += 'index.html';
                            }
 
-                           dependencies = juice.build.collect_dependencies(page.widget_packages());
+                           dependencies = juice.build.collect_page_dependencies(page.widget_packages());
+                           print("Graham " + name + " dependencies = " + juice.dump(dependencies));
                            dependencies.script_urls = juice.union(dependencies.script_urls, page.script_urls());
                            dependencies.stylesheet_urls =
                                juice.union(dependencies.stylesheet_urls, page.stylesheet_urls());
@@ -459,43 +518,37 @@
      };
 
      juice.build.compile_widget_package = function(lib_name, pkg_name, all_source_files) {
-         var js_source_files, template_source_files, source_files, widgets;
+         var source_files, templates, widgets;
 
          // These three loops can be optimized into a single loop if required
          source_files = juice.filter(all_source_files,
-                                     function(source_file) {
-                                         return source_file.lib_name === lib_name
-                                             && source_file.pkg_name === pkg_name
-                                             && source_file.target_type === "widgets";
+                                     function(file) {
+                                         return file.lib_name === lib_name
+                                             && file.pkg_name === pkg_name
+                                             && file.target_type === "widgets";
                                         });
 
-         js_source_files = juice.filter(source_files,
-                                        function(source_file) {
-                                            return source_file.path.slice(-3) === ".js";
-                                        });
+         source_files = juice.group_by(source_files,
+                                       function(file) {
+                                           return file.category;
+                                       });
 
-         // FOR NOW WE RECOMPILE ALL TEMPLATES
-         template_source_files = juice.filter(source_files,
-                                              function(source_file) {
-                                                  return source_file.path.slice(-5) == ".html";
-                                              });
-
-         widgets = juice.map(js_source_files,
+         widgets = juice.map(source_files.widget,
                              function(source_file) {
                                  return juice.build.read_file_and_scope_js(source_file.path);
                              });
 
-         var templates = juice.build.compile_templates(
-             juice.map(template_source_files,
+         templates = juice.build.compile_templates(
+             juice.map(source_files.template,
                        function(source_file) {
                            return source_file.path;
                        }));
 
          juice.build.write_final_file(
              'js/libs/' + lib_name + '/widgets/' + pkg_name + '.js',
-             ['juice.widget.define_package("' + pkg_name + '", function(juice, jQuery) {',
+             ['juice.widget.define_package("' + lib_name + '", "' + pkg_name + '", function(juice, site, jQuery) {',
               'try {',
-              'var templates = ' + templates,
+              'var templates = ' + templates + ';',
               widgets.join('\n'),
               '} catch (e) { juice.error.handle(e); }',
               '});'].join("\n"));
@@ -518,7 +571,7 @@
 
          juice.build.write_final_file(
              'js/libs/' + lib_name + '/rpcs/' + pkg_name + '.js',
-             ['juice.rpc.define_package("' + pkg_name + '", function(juice) {',
+             ['juice.rpc.define_package("' + lib_name + '", "' + pkg_name + '", function(juice, site, jQuery) {',
               'try {',
               rpcs.join('\n'),
               '} catch (e) { juice.error.handle(e); }',
@@ -551,51 +604,79 @@
          return juice.build.lib_name(path) === name;
      };
 
-     juice.build.parse_dependency = function(dependency) {
-         var parts = dependency.split(".");
-         return {lib_name: parts[0],
-                 type: parts[1],
-                 pkg_name: parts[2]};
+     juice.build.dependency_map = function(widget_pkg_names) {
+         var dependency_map = {};
+         juice.foreach(widget_pkg_names,
+                       function(widget_pkg_name) {
+                           var lib_name, type, pkg_name, parts = widget_pkg_name.split('.');
+                           lib_name = parts[0];
+                           type = parts[1];
+                           pkg_name = parts[2];
+                           juice.mdef(dependency_map, [], lib_name, type);
+                           dependency_map[lib_name][type].push(pkg_name);
+                       });
+         return dependency_map;
      };
 
-     juice.build.collect_dependencies = function(unexplored) {
-         var explored = {},
-         dependency,
-         metadata,
-         parsed,
+
+     // Tell me everything that I need to include on page
+     // unexplored is a list of dependency strings (e.g., juice_bar.widgets.demo)
+
+     // {juice_bar: {widgets: [pkg1, pkg2], rpcs: [pkg1, pkg2]}}
+
+     juice.build.collect_page_dependencies = function(widget_pkg_names) {
+         var
+         helper,
+         seen = {},
          rpc_pkgs = [],
          script_urls = [],
          stylesheet_urls = [],
          widget_pkgs = [];
 
-         while (unexplored.length > 0) {
-             dependency = unexplored.pop();
-             if (explored.hasOwnProperty(dependency)) {
-                 juice.error.raise("circular widget package dependency (" + dependency + ")",
-                                   {explored: explored});
-             }
-             parsed = juice.build.parse_dependency(dependency);
-             widget_pkgs.push(parsed);
-             metadata = juice.build.read_widget_package_metadata(juice.build.find_library(parsed.lib_name),
-                                                                 parsed.pkg_name);
-             script_urls = script_urls.concat(metadata.script_urls);
-             stylesheet_urls = stylesheet_urls.concat(metadata.stylesheet_urls);
-             juice.foreach(metadata.dependencies,
-                           function(dep) {
-                               var p = juice.build.parse_dependency(dep);
-                               if (p.type === "widgets") {
-                                   unexplored.push(dep);
-                               }
-                               else {
-                                   rpc_pkgs.push(p);
-                               }
+         helper = function(dependencies) {
+             juice.foreach(dependencies,
+                           function(lib_name, lib) {
+                               juice.foreach(lib.widgets,
+                                             function(pkg_name) {
+                                                 var key, metadata;
+                                                 key = lib_name + '.widgets.' + pkg_name;
+                                                 if (seen.hasOwnProperty(key)) {
+                                                     return;
+                                                 }
+
+                                                 widget_pkgs.push({lib_name: lib_name,
+                                                                   pkg_name: pkg_name});
+
+                                                 metadata =
+                                                     juice.build.read_widget_package_metadata(
+                                                         juice.build.find_library(lib_name), pkg_name);
+
+                                                 script_urls = script_urls.concat(metadata.script_urls);
+                                                 stylesheet_urls = stylesheet_urls.concat(metadata.stylesheet_urls);
+
+                                                 seen[key] = true;
+                                                 helper(metadata.dependencies);
+                                             });
+                               juice.foreach(lib.rpcs,
+                                             function(pkg_name) {
+                                                 var key;
+                                                 key = lib_name + '.rpcs.' + pkg_name;
+                                                 if (seen.hasOwnProperty(key)) {
+                                                     return;
+                                                 }
+                                                 rpc_pkgs.push({lib_name: lib_name,
+                                                                pkg_name: pkg_name});
+                                                 seen[key] = true;
+                                             });
                            });
-             explored[dependency] = true;
-         }
+         };
+
+         helper(juice.build.dependency_map(widget_pkg_names));
+
          return {widget_pkgs: widget_pkgs,
                  rpc_pkgs: rpc_pkgs,
-                 script_urls: script_urls,
-                 stylesheet_urls: stylesheet_urls};
+                 script_urls: juice.unique(script_urls),
+                 stylesheet_urls: juice.unique(stylesheet_urls)};
      };
 
      juice.build.read_widget_package_metadata = function(libpath, pkg) {

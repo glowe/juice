@@ -93,7 +93,7 @@
 
          that.to_string = function() {
              var query = build_query_string(that.args || {});
-             return path_concat(that.base || proj.settings.site_base_url, that.path) +
+             return path_concat(that.base || site.settings.base_url, that.path) +
                  (query ? ('?' + query) : "");
          };
 
