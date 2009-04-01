@@ -219,19 +219,29 @@
       })();
 
      (function() {
-          var applications = {}, categorizers = {};
-          juice.build.set_user_source_file_categorizer = function(lib_name, categorizer_fn) {
-              if (!juice.build.lib_paths().hasOwnProperty(lib_name)) {
-                  juice.error.raise("Attempting to set categorizer for unrecognized library: " +lib_name);
+          var appliers = [], categorizers = [], user_source_files = [];
+
+          juice.build.categorize_source_files = function(what, categorizer_fn) {
+              var path;
+              if (what.lib_name) {
+                  try {
+                      path = juice.build.find_library(what.lib_name);
+                  }
+                  catch (e) {
+                      juice.error.raise("Attempting to set categorizer for unrecognized library: " +lib_name);
+                  }
+                  path += '/' + what.dir;
               }
-              categorizers[lib_name] = categorizer_fn;
+              else {
+                  path = './' + what.dir;
+              }
+              categorizers.push({path:path, fn:categorizer_fn, lib_name:what.lib_name});
           };
 
           juice.build.find_user_categorized_source_files = function() {
-              var user_source_files = [];
 
               juice.foreach(categorizers,
-                            function(lib_name, categorizer_fn) {
+                            function(categorizer) {
                                 var helper = function(path) {
                                     juice.foreach(juice.sys.list_dir(path, {fullpath:true}),
                                                   function(filename) {
@@ -239,39 +249,28 @@
                                                       if (juice.sys.file_exists(filename) == 'dir') {
                                                           helper(filename);
                                                       }
-                                                      else if ((category = categorizer_fn(filename))) {
+                                                      else if ((category = categorizer.fn(filename))) {
                                                           user_source_files.push(juice.build.source_file(
                                                                                      {category: category,
-                                                                                      lib_name: lib_name,
+                                                                                      lib_name: categorizer.lib_name,
                                                                                       path: filename,
                                                                                       target_type: 'user'}));
                                                       }
                                                   });
                                 };
-                                helper(juice.build.find_library(lib_name) + "/user");
+                                helper(categorizer.path);
                             });
               return user_source_files;
           };
 
-          juice.build.set_user_source_file_applier = function(lib_name, apply_fn) {
-              if (!juice.build.lib_paths().hasOwnProperty(lib_name)) {
-                  juice.error.raise("Attempting to set applier for unrecognized library: " +lib_name);
-              }
-
-              applications[lib_name] = apply_fn;
+          juice.build.apply_to_source_files = function(fn) {
+              appliers.push(fn);
           };
 
-          juice.build.run_user_source_file_appliers = function(source_files) {
-              var user_source_files = juice.filter(source_files,
-                                                   function(file) {
-                                                       return file.target_type === 'user';
-                                                   });
-              juice.foreach(applications,
-                            function(lib_name, application) {
-                                application(juice.filter(user_source_files,
-                                                         function(file) {
-                                                             return file.lib_name === lib_name;
-                                                         }));
+          juice.build.run_user_source_file_appliers = function() {
+              juice.foreach(appliers,
+                            function(applier) {
+                                applier(user_source_files);
                             });
           };
 
@@ -655,6 +654,10 @@
          var answer;
          eval('answer = ' + juice.sys.read_file(filename));
          return answer;
+     };
+
+     juice.build.eval_file = function(filename) {
+         eval(juice.sys.read_file(filename));
      };
 
      juice.build.lib_name = function(path) {
