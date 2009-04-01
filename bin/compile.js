@@ -5,6 +5,7 @@ var
 all_source_files,
 file_log,
 internal_lib_name,
+lint,
 options,
 program_options,
 required_source_files,
@@ -118,6 +119,7 @@ juice.foreach(all_source_files,
               function(f) {
                   f.changed = settings_changed || file_log.has_file_changed(f.path);
                   if (f.changed) {
+                      lint = true;
                       if (f.target_type === "widgets" || f.target_type === "rpcs") {
                           juice.mset(targets, true, [f.target_type, f.lib_name, f.pkg_name]);
                       }
@@ -131,31 +133,27 @@ juice.foreach(all_source_files,
                   }
               });
 
-
 // Lint all non juice source files.
-(function() {
-     var linted = false;
-     juice.foreach(all_source_files,
-                   function(f) {
-                       if (!f.changed) {
-                           return;
-                       }
-                       var errors, ext = juice.sys.parse_path(f.path).ext;
-                       if (f.target_type == "juice_ext_web" ||
-                           (ext != "js" && ext != "json")) {
-                           return;
-                       }
-                       linted = true;
-                       errors = juice.build.lint_js(f.path);
-                       if (errors.length) {
-                           juice.foreach(errors, function(e) { print(e); });
-                           juice.build.fatal("JSLINT failed. Aborting.");
-                       }
-                   });
-     if (linted) {
-         print("Lint: OK.");
-     }
- })();
+if (lint) {
+    print("Linting...");
+    juice.foreach(all_source_files,
+                  function(f) {
+                      if (!f.changed) {
+                          return;
+                      }
+                      var errors, ext = juice.sys.parse_path(f.path).ext;
+                      if (f.target_type == "juice_ext_web" ||
+                          (ext != "js" && ext != "json")) {
+                          return;
+                      }
+                      errors = juice.build.lint_js(f.path);
+                      if (errors.length) {
+                          juice.foreach(errors, function(e) { print(e); });
+                          juice.build.fatal("JSLINT failed. Aborting.");
+                      }
+                  });
+    print("Lint: OK.");
+}
 
 // Determine which targets need to be recompiled.
 
