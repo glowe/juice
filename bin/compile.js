@@ -8,6 +8,7 @@ internal_lib_name,
 options,
 program_options,
 required_source_files,
+settings_changed = false,
 source_files,
 targets = {
     base: false,
@@ -16,6 +17,7 @@ targets = {
     pages: false,
     rpcs: {},
     user: false,
+    settings: false,
     widgets: {}
 };
 
@@ -60,7 +62,6 @@ all_source_files = juice.map(required_source_files,
                                                                  target_type: "base"});
                              });
 
-
 // FIXME: May want to error if we find a file that doesn't fit
 
 // Add source files in libraries
@@ -69,7 +70,6 @@ juice.foreach(juice.build.lib_paths(),
                   all_source_files = all_source_files.concat(juice.build.find_widget_source_files(lib_name));
                   all_source_files = all_source_files.concat(juice.build.find_rpc_source_files(lib_name));
                   all_source_files = all_source_files.concat(juice.build.find_util_source_files(lib_name));
-                  // FIXME: How do we handle style files?
               });
 
 // Add juice/web
@@ -101,15 +101,19 @@ if (juice.sys.file_exists("hooks.js")) {
 
 all_source_files = all_source_files.concat(juice.build.find_user_categorized_source_files());
 
-//
-// TODO: insure that all referenced packages exist, so we don"t have to check all the time.
-//
+all_source_files.push(juice.build.source_file({target_type: "settings", path: juice.build.site_settings_path()}));
 
 file_log = juice.build.file_log(all_source_files);
 
+if (file_log.has_file_changed(juice.build.site_settings_path())) {
+    juice.build.clean();
+    print("Settings file changed (" + juice.build.site_settings_path() + "); starting from scratch.");
+    settings_changed = true;
+}
+
 juice.foreach(all_source_files,
               function(f) {
-                  f.changed = file_log.has_file_changed(f.path);
+                  f.changed = settings_changed || file_log.has_file_changed(f.path);
                   if (f.changed) {
                       if (f.target_type === "widgets" || f.target_type === "rpcs") {
                           juice.mset(targets, true, [f.target_type, f.lib_name, f.pkg_name]);
@@ -123,6 +127,7 @@ juice.foreach(all_source_files,
                       }
                   }
               });
+
 
 // Lint all non juice source files.
 (function() {

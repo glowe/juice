@@ -39,7 +39,7 @@ options,
 site_lib_deps,          // recursive library dependencies for entire site
 site_lib_name,
 site_lib_path,
-settings_filename,
+site_settings_path,
 lib_paths = {},
 libs_seen = {};
 
@@ -76,12 +76,10 @@ options = program_options.parse_arguments(argv);
 // - Maybe even check types of values (e.g. user must point to an object).
 //
 
-settings_filename = options['settings'];
-if (juice.sys.file_exists(settings_filename) !== 'file') {
-    juice.build.fatal('Settings file "'+settings_filename+'" not found.');
+site_settings_path = options['settings'];
+if (juice.sys.file_exists(site_settings_path) !== 'file') {
+    juice.build.fatal('Settings file "'+site_settings_path+'" not found.');
 }
-load(settings_filename);
-// TODO: settings-related checks would go here.
 
 // Parse the --with-lib command line option.
 juice.foreach(options['with-lib'],
@@ -126,6 +124,7 @@ do {
 
 print('Saving configuration.');
 juice.build.set_lib_paths(lib_paths);
+juice.build.set_site_settings_path(site_settings_path);
 juice.build.save_config();
 juice.build.file_log().clear();
 print('Run "juice compile" to build your site.');
