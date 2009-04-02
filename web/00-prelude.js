@@ -654,4 +654,15 @@
          helper(namespace.split('.'), lib);
      };
 
+     // Joins all arguments with the path separator character. Collapses
+     // repeated leading and trailing separator chars.
+
+     lib.path_join = function() {
+         return juice.map(juice.args(arguments),
+                          function(a) {
+                              return a.replace(/^\/+/, "/").replace(/\/+$/, "/");
+                          })
+             .join("/");
+     };
+
  })(this);

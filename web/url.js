@@ -103,6 +103,12 @@
                               args: that.args});
          };
 
+         that.join_path = function(s) {
+             return lib.make({base: that.base,
+                              path: juice.path_join(that.path, s),
+                              args: that.args});
+         };
+
          that.toString = that.to_string;
 
          that.redirect = function() {

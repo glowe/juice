@@ -74,28 +74,29 @@
      };
 
      juice.build.find_widget_source_files = function(lib_name) {
-         var widgets_path = juice.build.find_library(lib_name) + "/widgets/",
+         var widgets_path = juice.path_join(juice.build.find_library(lib_name), "widgets"),
          pkgs,
          source_files = [];
 
          // Each sub-directory contains a widget package.
          pkgs = juice.filter(juice.sys.list_dir(widgets_path),
                              function(pkg) {
-                                 return juice.sys.file_exists(widgets_path + pkg) === "dir";
+                                 return juice.sys.file_exists(juice.path_join(widgets_path, pkg)) === "dir";
                              });
 
          juice.foreach(pkgs,
                        function(pkg_name) {
-                           var widget_pkg_path = widgets_path + pkg_name,
-                           package_json_path   = widget_pkg_path + "/package.json",
-                           templates_path      = widget_pkg_path + "/templates/";
+                           var widget_pkg_path, package_json_path, templates_path;
+
+                           widget_pkg_path   = juice.path_join(widgets_path, pkg_name),
+                           package_json_path = juice.path_join(widget_pkg_path, "package.json"),
+                           templates_path    = juice.path_join(widget_pkg_path, "templates");
 
                            // Ensure that the package.json file
                            // exists and tag it with the "widgets"
                            // target type.
                            if (juice.sys.file_exists(package_json_path) != "file") {
-                               juice.build.fatal("Missing required package file: "
-                                                 + package_json_path);
+                               juice.build.fatal("Missing required package file: " + package_json_path);
                            }
 
                            source_files.push(juice.build.source_file({category: "meta",
@@ -138,19 +139,19 @@
      };
 
      juice.build.find_rpc_source_files = function(lib_name) {
-         var rpcs_path = juice.build.find_library(lib_name) + "/rpcs/",
+         var rpcs_path = juice.path_join(juice.build.find_library(lib_name), "rpcs"),
          pkgs,
          source_files = [];
 
          pkgs = juice.filter(juice.sys.list_dir(rpcs_path),
                              function(pkg) {
-                                 return juice.sys.file_exists(rpcs_path + pkg) === "dir";
+                                 return juice.sys.file_exists(juice.path_join(rpcs_path, pkg)) === "dir";
                              });
 
          juice.foreach(pkgs,
                        function(pkg_name) {
                            // Tag each .js file with the "rpcs" target type.
-                           juice.foreach(juice.sys.list_dir(rpcs_path + pkg_name,
+                           juice.foreach(juice.sys.list_dir(juice.path_join(rpcs_path, pkg_name),
                                                             {filter_re: /[.]js$/,
                                                              fullpath: true}),
                                          function(path) {
@@ -167,7 +168,7 @@
 
 
      juice.build.find_util_source_files = function(lib_name) {
-         var util_path = juice.build.find_library(lib_name) + "/util/";
+         var util_path = juice.path_join(juice.build.find_library(lib_name), "util");
          if (!juice.sys.file_exists(util_path)) {
              return [];
          }
@@ -243,10 +244,10 @@
                   catch (e) {
                       juice.error.raise("Attempting to set categorizer for unrecognized library: " +lib_name);
                   }
-                  path += '/' + what.dir;
+                  path = juice.path_join(path, what.dir);
               }
               else {
-                  path = './' + what.dir;
+                  path = juice.path_join('.', what.dir);
               }
               categorizers.push({path:path, fn:categorizer_fn, lib_name:what.lib_name});
           };
@@ -318,10 +319,10 @@
      };
 
      juice.build.final_file_path = function(relpath) {
-         return 'build/final/' + relpath; // FIXME: add site name and mode (e.g. "bp/release")
+         return juice.path_join('build', 'final', relpath); // FIXME: add site name and mode (e.g. "bp/release")
      };
      juice.build.intermediate_file_path = function(relpath) {
-         return 'build/intermediate/' + relpath;
+         return juice.path_join('build', 'intermediate', relpath); // FIXME: add site name and mode (e.g. "bp/release")
      };
      juice.build.write_final_file = function(relpath, contents) {
          juice.sys.write_file(juice.build.final_file_path(relpath), contents, true);
@@ -331,8 +332,7 @@
      };
 
      juice.build.scope_js = function(contents) {
-         return '(function(juice, site, jQuery) {'
-             + contents + '})(juice, site, jQuery);';
+         return '(function(juice, site, jQuery) {' + contents + '})(juice, site, jQuery);';
      };
 
      juice.build.read_file_and_scope_js = function(filename) {
@@ -552,7 +552,7 @@
          var page_template;
          load(pages_filename);
 
-         page_template = eval(juice.build.compile_template_file(juice.home() + '/build/templates/page.html'));
+         page_template = eval(juice.build.compile_template_file(juice.path_join(juice.home(), 'build/templates/page.html')));
          juice.foreach(site.pages,
                        function(name, page) {
                            var dependencies, path;
@@ -562,7 +562,7 @@
                            else {
                                path = page.path();
                            }
-                           if (path.charAt(path.length - 1) === '/') {
+                           if (path.charAt(path.length - 1) === '/') { // FIXME: this is error-prone
                                path += 'index.html';
                            }
 
@@ -624,7 +624,7 @@
                        }));
 
          juice.build.write_final_file(
-             'js/libs/' + lib_name + '/widgets/' + pkg_name + '.js',
+             juice.path_join('js/libs', lib_name, 'widgets', pkg_name) + '.js',
              ['juice.widget.define_package("' + lib_name + '", "' + pkg_name + '", function(juice, site, jQuery) {',
               'try {',
               'var templates = ' + templates + ';',
@@ -649,7 +649,7 @@
                           });
 
          juice.build.write_final_file(
-             'js/libs/' + lib_name + '/rpcs/' + pkg_name + '.js',
+             juice.path_join('js/libs', lib_name, 'rpcs', pkg_name) + '.js',
              ['juice.rpc.define_package("' + lib_name + '", "' + pkg_name + '", function(juice, site, jQuery) {',
               'try {',
               rpcs.join('\n'),
@@ -677,7 +677,7 @@
 
      juice.build.lib_name = function(path) {
          var json, lib_json_path;
-         lib_json_path = path + '/lib.json';
+         lib_json_path = juice.path_join(path, 'lib.json');
          if (juice.sys.file_exists(lib_json_path) !== 'file') {
              return false;
          }
@@ -767,7 +767,7 @@
      juice.build.read_widget_package_metadata = function(libpath, pkg) {
          var answer, json, pkg_filename;
 
-         pkg_filename = libpath + '/widgets/' + pkg + '/package.json';
+         pkg_filename = juice.path_join(libpath, 'widgets', pkg, 'package.json');
          if (juice.sys.file_exists(pkg_filename) != 'file') {
              juice.error.raise('package metadata file not found: '+pkg_filename);
          }
@@ -806,7 +806,7 @@
      juice.build.library_dependencies = function(libpath) {
          var answer = {};
 
-         juice.foreach(juice.sys.list_dir(libpath + '/widgets/'),
+         juice.foreach(juice.sys.list_dir(juice.path_join(libpath, 'widgets')),
                        function(pkg) {
                            var metadata = juice.build.read_widget_package_metadata(libpath, pkg);
                            answer = juice.build.merge_library_dependencies(answer, metadata.dependencies);
@@ -850,7 +850,7 @@
                        function(lib_path) {
                            juice.foreach(["rpcs", "widgets"],
                                          function(type) {
-                                             juice.foreach(juice.sys.list_dir(lib_path + "/" + type,
+                                             juice.foreach(juice.sys.list_dir(juice.path_join(lib_path, type),
                                                                               {fullpath: true, filter_re: /[.]js$/}),
                                                            function(path) {
                                                                juice.sys.write_file(path,
