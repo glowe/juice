@@ -30,6 +30,7 @@
                                         global_stylesheet_urls: [],
                                         global_widget_packages: [],
                                         js_base_url: undefined,
+                                        minify: false,
                                         smother_alerts: false,
                                         user: {}});
      };
@@ -832,6 +833,26 @@
                        });
 
          return answer;
+     };
+
+     juice.build.minify = function() {
+         juice.foreach(juice.sys.list_dir(juice.build.final_file_path("js"), {fullpath: true, filter_re: /[.]js$/}),
+                       function(path) {
+                           juice.sys.write_file(path, jsmin("", juice.sys.read_file(path), 3), true);
+                       });
+         juice.foreach(juice.sys.list_dir(juice.build.final_file_path("js/libs"), {fullpath: true}),
+                       function(lib_path) {
+                           juice.foreach(["rpcs", "widgets"],
+                                         function(type) {
+                                             juice.foreach(juice.sys.list_dir(lib_path + "/" + type,
+                                                                              {fullpath: true, filter_re: /[.]js$/}),
+                                                           function(path) {
+                                                               juice.sys.write_file(path,
+                                                                                    jsmin("", juice.sys.read_file(path), 3),
+                                                                                    true);
+                                                           });
+                                         });
+                       });
      };
 
  })(juice);

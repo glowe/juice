@@ -207,6 +207,13 @@ if (targets.user) {
     print("User defined hooks: OK.");
 }
 
+if (juice.build.site_settings().minify) {
+    // FIXME: only minify what we have to
+    juice.build.minify();
+    print("Minify: OK.");
+}
+
+
 print("Done.");
 
 juice.foreach(all_source_files, function(f) { file_log.update_file(f.path); });
