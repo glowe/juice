@@ -561,17 +561,17 @@
 
                            dependencies =
                                juice.build.collect_page_dependencies(
-                                   juice.union(page.widget_packages(),
-                                               juice.build.site_settings().global_widget_packages));
+                                   juice.unique(page.widget_packages(),
+                                                juice.build.site_settings().global_widget_packages));
 
                            dependencies.script_urls =
-                               juice.union(
+                               juice.unique(
                                    dependencies.script_urls,
                                    page.script_urls(),
                                    juice.build.site_settings().global_script_urls);
 
                            dependencies.stylesheet_urls =
-                                       juice.union(
+                                       juice.unique(
                                            dependencies.stylesheet_urls,
                                            page.stylesheet_urls(),
                                            juice.build.site_settings().global_stylesheet_urls);
