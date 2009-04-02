@@ -6,7 +6,8 @@
 
      var config = {},
      config_filename = '.juice-config.json',
-     log_filename    = '.juice-file-log.json';
+     log_filename    = '.juice-file-log.json',
+     site_settings   = {};
 
      juice.build = {};
 
@@ -23,20 +24,28 @@
      };
 
      juice.build.set_site_settings = function(s) {
-         config.site_settings = juice.spec(s, {base_url: undefined,
-                                               cookie_name: undefined,
-                                               global_script_urls: [],
-                                               global_stylesheet_urls: [],
-                                               global_widget_packages: [],
-                                               js_base_url: undefined,
-                                               smother_alerts: false,
-                                               user: {}});
+         site_settings = juice.spec(s, {base_url: undefined,
+                                        cookie_name: undefined,
+                                        global_script_urls: [],
+                                        global_stylesheet_urls: [],
+                                        global_widget_packages: [],
+                                        js_base_url: undefined,
+                                        minify: false,
+                                        smother_alerts: false,
+                                        user: {}});
      };
+
      juice.build.site_settings = function() {
-         return config.site_settings;
+         return site_settings;
      };
      juice.build.set_lib_paths = function(p) {
          config.lib_paths = p;
+     };
+     juice.build.set_site_settings_path = function(p) {
+         config.site_settings_path = p;
+     };
+     juice.build.site_settings_path = function() {
+         return config.site_settings_path;
      };
      juice.build.lib_paths = function() {
          return config.lib_paths;
@@ -46,6 +55,7 @@
      };
      juice.build.load_config = function() {
          config = juice.build.read_file_json(config_filename);
+         juice.build.eval_file(config.site_settings_path);
      };
 
      juice.build.source_file = function(spec) {
@@ -170,18 +180,6 @@
      };
 
      (function() {
-          var file_log = function(source_files, log_filename) {
-
-
-
-          };
-
-          juice.build.user_file_log = function(source_files) {
-
-
-
-          };
-
           juice.build.file_log = function(source_files) {
               var cache = {}, log, sha1_file;
 
@@ -201,6 +199,15 @@
               };
 
               return {
+                  empty: function() {
+                      var k;
+                      for (k in log) {
+                          if (log.hasOwnProperty(k)) {
+                              return false;
+                          }
+                      }
+                      return true;
+                  },
                   has_file_changed: function(filename) {
                       return sha1_file(filename) !== log[filename];
                   },
@@ -507,7 +514,7 @@
               '} catch (e) { juice.error.handle(e); }',
               '});']);
 
-         runtime_settings = juice.dict_intersect_keys(config.site_settings,
+         runtime_settings = juice.dict_intersect_keys(site_settings,
                                                       ['base_url', 'cookie_name', 'user', 'smother_alerts']);
 
          // Since settings are prerequisite for many things, make sure they're set first.
@@ -555,17 +562,17 @@
 
                            dependencies =
                                juice.build.collect_page_dependencies(
-                                   juice.union(page.widget_packages(),
-                                               juice.build.site_settings().global_widget_packages));
+                                   juice.unique(page.widget_packages(),
+                                                juice.build.site_settings().global_widget_packages));
 
                            dependencies.script_urls =
-                               juice.union(
+                               juice.unique(
                                    dependencies.script_urls,
                                    page.script_urls(),
                                    juice.build.site_settings().global_script_urls);
 
                            dependencies.stylesheet_urls =
-                                       juice.union(
+                                       juice.unique(
                                            dependencies.stylesheet_urls,
                                            page.stylesheet_urls(),
                                            juice.build.site_settings().global_stylesheet_urls);
@@ -657,7 +664,9 @@
      };
 
      juice.build.eval_file = function(filename) {
-         eval(juice.sys.read_file(filename));
+         // Why does this function exist? Because if you call load
+         // in a function scope, locals will not escape!
+         load(filename);
      };
 
      juice.build.lib_name = function(path) {
@@ -824,6 +833,26 @@
                        });
 
          return answer;
+     };
+
+     juice.build.minify = function() {
+         juice.foreach(juice.sys.list_dir(juice.build.final_file_path("js"), {fullpath: true, filter_re: /[.]js$/}),
+                       function(path) {
+                           juice.sys.write_file(path, jsmin("", juice.sys.read_file(path), 3), true);
+                       });
+         juice.foreach(juice.sys.list_dir(juice.build.final_file_path("js/libs"), {fullpath: true}),
+                       function(lib_path) {
+                           juice.foreach(["rpcs", "widgets"],
+                                         function(type) {
+                                             juice.foreach(juice.sys.list_dir(lib_path + "/" + type,
+                                                                              {fullpath: true, filter_re: /[.]js$/}),
+                                                           function(path) {
+                                                               juice.sys.write_file(path,
+                                                                                    jsmin("", juice.sys.read_file(path), 3),
+                                                                                    true);
+                                                           });
+                                         });
+                       });
      };
 
  })(juice);

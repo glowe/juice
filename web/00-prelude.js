@@ -469,17 +469,24 @@
          return delegator;
      };
 
-     // Returns the array a with only its unique elements. Only works with
-     // items that can be used as associative array keys.
+     // Accepts 1 or more arrays and returns an array consisting
+     // of the unique items. Only works with items that can be
+     // used as associative array keys.
 
-     lib.unique = function(a) {
+     lib.unique = function() {
+         var arrays = juice.args(arguments);
          var s = {};
-         lib.foreach(a, function(k) { s[k] = 1; });
+         lib.foreach(arrays,
+                     function(array) {
+                         juice.foreach(array,
+                                       function(k) {
+                                           s[k] = 1;
+                                       });
+                     });
          return lib.keys(s);
      };
 
      // Returns the union of arrays.
-
      lib.union = function() {
          var args = juice.args(arguments);
          return lib.unique(Array.prototype.concat.apply(args[0], args.slice(1)));
