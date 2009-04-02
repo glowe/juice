@@ -3,6 +3,7 @@
 //        themselves).
 var
 all_source_files,
+all_source_files_plus_user,
 file_log,
 internal_lib_name,
 lint,
@@ -95,16 +96,24 @@ all_source_files = all_source_files.concat(
                   return juice.build.source_file({path: path, target_type: "juice_ext_web"});
               }));
 
-// Look for user defined hooks here
-if (juice.sys.file_exists("hooks.js")) {
-    juice.build.eval_file("hooks.js");
-}
-
-all_source_files = all_source_files.concat(juice.build.find_user_categorized_source_files());
-
 all_source_files.push(juice.build.source_file({target_type: "settings", path: juice.build.site_settings_path()}));
 
-file_log = juice.build.file_log(all_source_files);
+// Load the user-defined compile hooks, then locate the source files they're
+// interested in and combine them with all_source_files in a new array.
+
+if (juice.sys.file_exists("hooks.js")) {
+    juice.build.eval_file("hooks.js");
+    all_source_files_plus_user = all_source_files.concat(juice.build.find_user_categorized_source_files());
+    all_source_files_plus_user.push(
+        juice.build.source_file({category: "user-defined hooks",
+                                 path: "hooks.js",
+                                 target_type: "user"}));
+}
+else {
+    all_source_files_plus_user = all_source_files;
+}
+
+file_log = juice.build.file_log(all_source_files_plus_user);
 
 if (file_log.empty()) {
     print("Starting full build...");
@@ -115,7 +124,10 @@ else if (file_log.has_file_changed(juice.build.site_settings_path())) {
     settings_changed = true;
 }
 
-juice.foreach(all_source_files,
+// Determine which source files have changed since the last compile. For each
+// source file that has changed, mark its targets as needing to be recompiled.
+
+juice.foreach(all_source_files_plus_user,
               function(f) {
                   f.changed = settings_changed || file_log.has_file_changed(f.path);
                   if (f.changed) {
@@ -133,17 +145,21 @@ juice.foreach(all_source_files,
                   }
               });
 
-// Lint all non juice source files.
+// Lint all source files.
+
 if (lint) {
     print("Linting...");
-    juice.foreach(all_source_files,
+    juice.foreach(all_source_files_plus_user,
                   function(f) {
+                      var errors, ext;
                       if (!f.changed) {
                           return;
                       }
-                      var errors, ext = juice.sys.parse_path(f.path).ext;
-                      if (f.target_type == "juice_ext_web" ||
-                          (ext != "js" && ext != "json")) {
+                      ext = juice.sys.parse_path(f.path).ext;
+                      if (ext != "js" && ext != "json") {
+                          return;
+                      }
+                      if (f.target_type == "juice_ext_web") {
                           return;
                       }
                       errors = juice.build.lint_js(f.path);
@@ -213,9 +229,7 @@ if (juice.build.site_settings().minify) {
     print("Minify: OK.");
 }
 
-
 print("Done.");
 
-juice.foreach(all_source_files, function(f) { file_log.update_file(f.path); });
-
+juice.foreach(all_source_files_plus_user, function(f) { file_log.update_file(f.path); });
 file_log.save();

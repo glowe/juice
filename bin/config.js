@@ -80,6 +80,7 @@ site_settings_path = options['settings'];
 if (juice.sys.file_exists(site_settings_path) !== 'file') {
     juice.build.fatal('Settings file "'+site_settings_path+'" not found.');
 }
+print('Using settings file at "'+site_settings_path+'".');
 
 // Parse the --with-lib command line option.
 juice.foreach(options['with-lib'],
