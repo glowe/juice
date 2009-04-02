@@ -162,6 +162,9 @@ if (lint) {
                       if (f.target_type == "juice_ext_web") {
                           return;
                       }
+                      if (f.target_type == "juice_web" && !juice.build.should_lint_juice()) {
+                          return;
+                      }
                       errors = juice.build.lint_js(f.path);
                       if (errors.length) {
                           juice.foreach(errors, function(e) { print(e); });

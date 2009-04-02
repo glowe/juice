@@ -63,7 +63,8 @@ find_library = function(name) {
 
 program_options = juice.program_options(
     {"settings=": ["path to site setting file", "settings/default.js"],
-     "with-lib=[]": ["specify path to an external library", []]});
+     "with-lib=[]": ["specify path to an external library", []],
+     "lint-juice": "lint the juice framework"});
 
 options = program_options.parse_arguments(argv);
 
@@ -126,6 +127,7 @@ do {
 print('Saving configuration.');
 juice.build.set_lib_paths(lib_paths);
 juice.build.set_site_settings_path(site_settings_path);
+juice.build.set_should_lint_juice(options['lint-juice']);
 juice.build.save_config();
 juice.build.file_log().clear();
 print('Run "juice compile" to build your site.');
