@@ -448,7 +448,6 @@
                        }).join("\n"));
      };
 
-
      juice.build.compile_site_base = function(all_files) {
          var base,
          base_source_files,
@@ -490,26 +489,9 @@
 
          // lib_paths() contains all libraries that are used by the site.
          // Explode out library declarations to allow forward references.
-          juice.foreach(juice.build.lib_paths(),
-                        function(lib_name, lib_path) {
-                            // Explode out entire library structure here
-                            var exploded =
-                                {
-                                    enhancers: {},
-                                    rpcs:      {},
-                                    util:      {},
-                                    widgets:   {}
-                                };
-
-                            juice.foreach(["rpcs", "widgets"],
-                                          function(type) {
-                                              juice.foreach(juice.build.find_packages(lib_name, type),
-                                                            function(pkg) {
-                                                                exploded[type][pkg.name] = {};
-                                                            });
-                                          });
-
-                            base.push("site.lib."+lib_name+"="+JSON.stringify(exploded)+";");
+         juice.foreach(juice.build.lib_paths(),
+                       function(lib_name) {
+                           base.push("site.lib."+lib_name+"="+JSON.stringify(juice.build.library_stubs(lib_name))+";");
                        });
 
          // Build a dictionary that maps each library name to its
@@ -560,70 +542,110 @@
              base.join("\n"));
      };
 
-     juice.build.lint_page_paths = function(pages_filename) {
-         var seen = {};
-         load(pages_filename);
 
-         juice.foreach(site.pages,
-                       function(name, page) {
-                           if (!page.path_is_dynamic()) {
-                               if (seen.hasOwnProperty(page.path())) {
-                                   juice.build.fatal("Duplicate page path: " + page.path());
-                               }
-                               seen[page.path()] = true;
-                           }
+
+     juice.build.library_stubs = function(lib_name) {
+         var lib = {
+             enhancers: {},
+             rpcs:      {},
+             util:      {},
+             widgets:   {}
+         };
+
+         juice.foreach(["rpcs", "widgets"],
+                       function(type) {
+                           juice.foreach(juice.build.find_packages(lib_name, type),
+                                         function(pkg) {
+                                             lib[type][pkg.name] = {};
+                                         });
                        });
+
+         return lib;
      };
 
+     (function() {
+          var init, initialized = false;
+          init = function(pages_filename) {
+              if (initialized) {
+                  return;
+              }
+              juice.foreach(juice.build.lib_paths(),
+                            function(lib_name) {
+                                site.lib[lib_name] = juice.build.library_stubs(lib_name);
+                            });
+              load(pages_filename);
+              initialized = true;
+          };
 
-     juice.build.compile_pages = function(pages_filename) {
-         // Ensure page paths are unique
-         var page_template;
-         load(pages_filename);
 
-         page_template = eval(juice.build.compile_template_file(juice.path_join(juice.home(), 'build/templates/page.html')));
-         juice.foreach(site.pages,
-                       function(name, page) {
-                           var dependencies, path;
-                           if (page.path_is_dynamic()) {
-                               path = '/__' + name + '.html';
-                           }
-                           else {
-                               path = page.path();
-                           }
-                           if (path.charAt(path.length - 1) === '/') { // FIXME: this is error-prone
-                               path += 'index.html';
-                           }
 
-                           dependencies =
-                               juice.build.collect_page_dependencies(
-                                   juice.unique(page.widget_packages(),
-                                                juice.build.site_settings().global_widget_packages));
+          juice.build.lint_page_paths = function(pages_filename) {
+              var seen = {};
+              init(pages_filename);
 
-                           dependencies.script_urls =
-                               juice.unique(
-                                   dependencies.script_urls,
-                                   page.script_urls(),
-                                   juice.build.site_settings().global_script_urls);
+              juice.foreach(site.pages,
+                            function(name, page) {
+                                if (!page.path_is_dynamic()) {
+                                    if (seen.hasOwnProperty(page.path())) {
+                                        juice.build.fatal("Duplicate page path: " + page.path());
+                                    }
+                                    seen[page.path()] = true;
+                                }
+                            });
+          };
 
-                           dependencies.stylesheet_urls =
-                                       juice.unique(
-                                           dependencies.stylesheet_urls,
-                                           page.stylesheet_urls(),
-                                           juice.build.site_settings().global_stylesheet_urls);
+          juice.build.compile_pages = function(pages_filename) {
+              var page_template;
 
-                           juice.build.write_final_file(
-                               path,
-                               page_template({name: name,
-                                              title: page.title(),
-                                              js_base_url: juice.build.site_settings().js_base_url,
-                                              script_urls: dependencies.script_urls,
-                                              stylesheet_urls: dependencies.stylesheet_urls,
-                                              widget_packages: dependencies.widget_pkgs,
-                                              rpc_packages: dependencies.rpc_pkgs}));
+              init(pages_filename);
 
-                       });
-     };
+              page_template =
+                  eval(juice.build.compile_template_file(juice.path_join(juice.home(), 'build/templates/page.html')));
+
+              juice.foreach(site.pages,
+                            function(name, page) {
+                                var dependencies, path;
+                                if (page.path_is_dynamic()) {
+                                    path = '/__' + name + '.html';
+                                }
+                                else {
+                                    path = page.path();
+                                }
+                                if (path.charAt(path.length - 1) === '/') { // FIXME: this is error-prone
+                                    path += 'index.html';
+                                }
+
+                                dependencies =
+                                    juice.build.collect_page_dependencies(
+                                        juice.unique(page.widget_packages(),
+                                                     juice.build.site_settings().global_widget_packages));
+
+                                dependencies.script_urls =
+                                    juice.unique(
+                                        dependencies.script_urls,
+                                        page.script_urls(),
+                                        juice.build.site_settings().global_script_urls);
+
+                                dependencies.stylesheet_urls =
+                                    juice.unique(
+                                        dependencies.stylesheet_urls,
+                                        page.stylesheet_urls(),
+                                        juice.build.site_settings().global_stylesheet_urls);
+
+                                juice.build.write_final_file(
+                                    path,
+                                    page_template({name: name,
+                                                   title: page.title(),
+                                                   js_base_url: juice.build.site_settings().js_base_url,
+                                                   script_urls: dependencies.script_urls,
+                                                   stylesheet_urls: dependencies.stylesheet_urls,
+                                                   widget_packages: dependencies.widget_pkgs,
+                                                   rpc_packages: dependencies.rpc_pkgs}));
+
+                            });
+          };
+
+      })();
 
      juice.build.compile_widget_package = function(lib_name, pkg_name, all_source_files) {
          var source_files, templates, widgets;
