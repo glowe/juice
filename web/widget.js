@@ -189,7 +189,7 @@
                  return call_linked_render(
                      function() {
                          var attribs = {
-                             'class': namespace + ' ' + name + ' widget',
+                             'class': namespace[0] + ' ' + namespace[2] + ' ' + name + ' widget',
                              'id': id
                          };
                          juice.foreach(container_attribs,
