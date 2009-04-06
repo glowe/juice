@@ -10,8 +10,7 @@
 
      juice.build.fatal = function(msg) {
          // TODO: possibly reformat msg when it's too long.
-         print('Fatal: ' + msg);
-         print('\nCompilation aborted.');
+         print("FATAL: " + msg);
          juice.sys.exit(2);
      };
 

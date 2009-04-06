@@ -8,10 +8,16 @@
          juice.foreach(spec,
                        function(name, details) {
                            var expects_value = false,
-                           description,
                            default_value,
+                           description,
                            multiple = false,
-                           required;
+                           required,
+                           spec_error;
+
+                           spec_error = function(msg) {
+                               juice.error.raise('error in program_options specification here: '
+                                                 +juice.dump(details)+'; '+msg);
+                           };
 
                            if (name.slice(-1) == '=') {
                                name = name.slice(0, -1);
@@ -25,10 +31,10 @@
 
                            if (juice.is_array(details)) {
                                if (details.length !== 2) {
-                                   juice.error.raise('error in program_options specification here: '+juice.dump(details)+'; at most two values allowed');
+                                   spec_error('at most two values allowed');
                                }
                                if (!expects_value) {
-                                   juice.error.raise('error in program_options specification here: '+juice.dump(details)+'; optional arguments require a default value');
+                                   spec_error('optional arguments require a default value');
                                }
                                description = details[0];
                                default_value = details[1];
@@ -39,7 +45,7 @@
                                required = expects_value;
                            }
                            else {
-                               juice.error.raise('error in program_options specification here: '+juice.dump(details)+'; must be array or string');
+                               spec_error('must be array or string');
                            }
 
                            options[name] = {default_value: default_value,
@@ -154,7 +160,7 @@
                                    }
                                });
 
-                 return result;
+                 return {options:result, unconsumed:args.unconsumed};
              },
 
              toString: function() {
