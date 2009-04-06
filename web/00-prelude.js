@@ -548,12 +548,14 @@
      };
 
      lib.spec = function(spec) {
+         var copy_of_spec, meta_specs, unrecog_keys = [];
+
          // Copy spec into a copy, defaulting values from meta_spec and
          // optionally extended_meta_spec.
 
-         var copy_of_spec = {};
-         var meta_specs = lib.args(arguments).slice(1);
+         meta_specs = lib.args(arguments).slice(1);
          spec = spec || {};
+         copy_of_spec = {};
          juice.foreach(meta_specs,
                        function(meta_spec) {
                            juice.foreach(meta_spec,
@@ -569,6 +571,18 @@
                                              }
                                          });
                        });
+
+         juice.foreach(spec,
+                       function(key) {
+                           if (!copy_of_spec.hasOwnProperty(key)) {
+                               unrecog_keys.push(key);
+                           }
+                       });
+
+         if (unrecog_keys.length > 0) {
+             throw "spec contained unrecognized keys: " + unrecog_keys.join(", ");
+         }
+
          return copy_of_spec;
      };
 
