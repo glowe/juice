@@ -15,13 +15,6 @@
          settings:   {}
      };
 
-     lib.init_library = function(site, lib_name) {
-         site.lib[lib_name] = site.lib[lib_name] || {enhancers: {},
-                                                     rpcs: {},
-                                                     util: {},
-                                                     widgets: {}};
-     };
-
      lib.args = function(a, n) {
          return Array.prototype.slice.apply(a, [arguments.length === 1 ? 0 : n]);
      };
@@ -663,6 +656,18 @@
                               return a.replace(/^\/+/, "/").replace(/\/+$/, "/");
                           })
              .join("/");
+     };
+
+     lib.use = function(lib_obj) {
+         var i, parts = lib_obj.split("."), o;
+         o = site.lib;
+         for (i = 0; i < parts.length; i++) {
+             if (lib.is_undefined(o[parts[i]])) {
+                 throw "site.lib." + lib_obj + " is not defined!";
+             }
+             o = o[parts[i]];
+         }
+         return o;
      };
 
  })(this);

@@ -271,8 +271,6 @@
          rpc.req_spec = spec.req_spec;
          rpc.rsp_spec = spec.rsp_spec;
 
-         juice.mdef(site.lib, {}, current_namespace);
-
          if (juice.mget(site.lib, current_namespace).hasOwnProperty(rpc.name)) {
              juice.error.raise('rpc_already_defined', {namespace: rpc.namespace, name: rpc.name});
          }
@@ -532,13 +530,7 @@
                                                       pkg_name: pkg_name});
          }
          namespace = [lib_name, 'rpcs', pkg_name];
-         if (juice.mhas(site.lib, namespace.concat([pkg_name]))) {
-             juice.error.raise('rpc package already declared', {namespace: namespace,
-                                                                pkg_name: pkg_name});
-         }
          current_namespace = namespace;
-         juice.init_library(site, lib_name);
-         juice.mdef(site.lib, {}, namespace);
          constructor(juice, site, jQuery);
          current_namespace = null;
      };

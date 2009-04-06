@@ -359,17 +359,12 @@
      lib.define_package = function(lib_name, pkg_name, constructor) {
          var namespace;
          if (current_namespace) {
-             juice.error.raise('nested widget package', {current_namespace: current_namespace,
+             juice.error.raise("nested widget package", {current_namespace: current_namespace,
                                                          lib_name: lib_name,
                                                          pkg_name: pkg_name});
          }
-         namespace = [lib_name, 'widgets', pkg_name];
-         if (juice.mhas(site.lib, namespace)) {
-             juice.error.raise('widget package already declared', {namespace: namespace});
-
-         }
+         namespace = [lib_name, "widgets", pkg_name];
          current_namespace = namespace;
-         juice.mdef(site.lib, {}, namespace);
          constructor(juice, site, jQuery);
          current_namespace = null;
      };
