@@ -22,6 +22,17 @@ targets = {                 // Specifies which targets might require recompilati
     widgets: {}
 };
 
+// Parse and process command-line arguments.
+
+program_options = juice.program_options(
+    {"cd=": ["Change to this directory before doing anything.", "."],
+     "help": "Display this message."});
+
+po = program_options.parse_arguments(argv);
+options = po.options;
+juice.foreach(po.unconsumed, function(k) { explicit_targets[k] = true; });
+juice.sys.chdir(options.cd);
+
 // Before we do anything potentially destructive, make sure we are in a valid,
 // configured site directory.
 
@@ -31,16 +42,6 @@ try {
 catch (e) {
     juice.build.fatal("Unable to load build configuration. Perhaps you need to run \"juice config\"?");
 }
-
-// Parse and process command-line arguments.
-
-program_options = juice.program_options(
-    {"clean": "remove build targets",
-     "help": "display this message"});
-
-po = program_options.parse_arguments(argv);
-options = po.options;
-juice.foreach(po.unconsumed, function(k) { explicit_targets[k] = true; });
 
 // If the user specified the meta-target "all", recompile all targets.
 

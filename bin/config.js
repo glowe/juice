@@ -62,10 +62,10 @@ find_library = function(name) {
 };
 
 program_options = juice.program_options(
-    {"settings=": ["path to site setting file", "settings/default.js"],
-     "with-lib=[]": ["specify path to an external library", []],
-     "lint-juice": "lint the juice framework",
-     "help": "displays this message"});
+    {"settings=": ["Specify path to site setting file.", "settings/default.js"],
+     "with-lib=[]": ["Specify path to an external library.", []],
+     "lint-juice": "Lint the juice framework.",
+     "help": "Display this message."});
 
 options = program_options.parse_arguments(argv).options;
 
