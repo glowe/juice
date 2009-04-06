@@ -46,36 +46,6 @@ v8::Handle<v8::Value> remove_debug_event_listener(const v8::Arguments& args)
     return v8::Undefined();
 }
 
-// Stolen from GOOGLE
-void report_exception(const v8::TryCatch& try_catch)
-{
-    v8::HandleScope handle_scope;
-    v8::String::Utf8Value exception(try_catch.Exception());
-
-    v8::Handle<v8::Message> message = try_catch.Message();
-
-    if (message.IsEmpty()) {
-        std::cout << *exception << std::endl;
-        return;
-    }
-
-    v8::String::Utf8Value filename(message->GetScriptResourceName());
-    int linenum = message->GetLineNumber();
-    std::cout << *filename << ":" << linenum << ": " << *exception << std::endl;
-
-    v8::String::Utf8Value source_line(message->GetSourceLine());
-    std::cout << *source_line << std::endl;
-    const int start = message->GetStartColumn();
-    for (int i = 0; i < start; i++) {
-        std::cout << " ";
-    }
-    const int end = message->GetEndColumn();
-    for (int i = start; i < end; i++) {
-        std::cout << "^";
-    }
-    std::cout << std::endl;
-}
-
 std::string read_file(const char* filename) throw (FileIOError)
 {
     struct stat file_info;
