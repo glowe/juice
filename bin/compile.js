@@ -1,16 +1,17 @@
 var
-all_source_files,
-all_source_files_plus_user,
-grouped_source_files,
-file_log,
-internal_lib_name,
-lint,
-options,
-program_options,
-required_source_files,
-settings_changed = false,
-source_files,
-targets = {
+all_source_files,           // List of every source file known to the system.
+all_source_files_plus_user, // all_source_files plus user-categorized source files.
+explicit_targets = {},      // Build targets explicitly specified on command line.
+file_log,                   // Tracks which files have changed since last compile.
+grouped_source_files,       // Grouped all_source_files
+internal_lib_name,          // The name of the site's internal library.
+lint,                       // Do any files require linting?
+options,                    // Command-line options specified with "--"
+po,                         // Parsed program options.
+program_options,            // Specifies the options accepted by this program.
+required_source_files,      // Filenames of mandatory source files.
+settings_changed = false,   // Did our settings file change?
+targets = {                 // Specifies which targets might require recompilation.
     base: false,
     juice_ext_web: false,
     juice_web: false,
@@ -21,23 +22,46 @@ targets = {
     widgets: {}
 };
 
-
-program_options = juice.program_options(
-    {"clean": "remove build targets"});
-
-options = program_options.parse_arguments(argv);
-
-if (options.clean) {
-    juice.build.clean();
-    print("You are now clean.");
-    juice.sys.exit(0);
-}
+// Before we do anything potentially destructive, make sure we are in a valid,
+// configured site directory.
 
 try {
     juice.build.load_config();
 }
 catch (e) {
-    juice.build.fatal("Unable to load build configuration. Perhaps you need to run 'juice config'?");
+    juice.build.fatal("Unable to load build configuration. Perhaps you need to run \"juice config\"?");
+}
+
+// Parse and process command-line arguments.
+
+program_options = juice.program_options(
+    {"clean": "remove build targets",
+     "help": "display this message"});
+
+po = program_options.parse_arguments(argv);
+options = po.options;
+juice.foreach(po.unconsumed, function(k) { explicit_targets[k] = true; });
+
+// If the user specified the meta-target "all", recompile all targets.
+
+if (explicit_targets.all) {
+    juice.foreach(targets, function(k) { explicit_targets[k] = true; });
+}
+
+if (options.help) {
+    print(program_options);
+    juice.sys.exit(0);
+}
+
+// If the user specified the "clean" meta-target, reset the build. Also, if
+// that was the only explit target, exit without compiling anything.
+
+if (explicit_targets.clean) {
+    juice.build.clean();
+    print("You are now clean.");
+    if (po.unconsumed.length == 1) {
+        juice.sys.exit(0);
+    }
 }
 
 // Make sure required source files exist. E.g. pages.js, layouts.js.
@@ -128,18 +152,35 @@ else if (file_log.has_file_changed(juice.build.site_settings_path())) {
 juice.foreach(all_source_files_plus_user,
               function(f) {
                   f.changed = settings_changed || file_log.has_file_changed(f.path);
-                  if (f.changed) {
-                      lint = true;
-                      if (f.target_type === "widgets" || f.target_type === "rpcs") {
-                          juice.mset(targets, true, [f.target_type, f.lib_name, f.pkg_name]);
-                      }
-                      else {
-                          targets[f.target_type] = true;
-                      }
 
+                  if (f.target_type === "widgets" || f.target_type === "rpcs") {
+
+                      // Widgets and rpcs require special handling because
+                      // they are recompiled on a per-package basis.
+                      // Therefore, we must also check whether
+                      // explicit_targets contains "rpcs" or "widgets" here.
+
+                      if (f.changed || explicit_targets[f.target_type]) {
+                          juice.mset(targets, true, [f.target_type, f.lib_name, f.pkg_name]);
+                          if (f.changed) { lint = true; }
+                      }
+                  }
+                  else if (f.changed) {
+                      targets[f.target_type] = true;
+                      lint = true;
                       if (f.category == "pages" || f.category == "meta") {
                           targets.pages = true;
                       }
+                  }
+              });
+
+// If the caller specified explicit targets (other than rpcs and widgets,
+// which we checked above), mark those targets for recompilation.
+
+juice.foreach(targets,
+              function(k) {
+                  if (explicit_targets[k] && k != "rpcs" && k != "widgets") {
+                      targets[k] = true;
                   }
               });
 

@@ -64,9 +64,15 @@ find_library = function(name) {
 program_options = juice.program_options(
     {"settings=": ["path to site setting file", "settings/default.js"],
      "with-lib=[]": ["specify path to an external library", []],
-     "lint-juice": "lint the juice framework"});
+     "lint-juice": "lint the juice framework",
+     "help": "displays this message"});
 
-options = program_options.parse_arguments(argv);
+options = program_options.parse_arguments(argv).options;
+
+if (options.help) {
+    print(program_options);
+    juice.sys.exit(0);
+}
 
 //
 // SETTINGS
@@ -77,7 +83,7 @@ options = program_options.parse_arguments(argv);
 // - Maybe even check types of values (e.g. user must point to an object).
 //
 
-site_settings_path = options['settings'];
+site_settings_path = options.settings;
 if (juice.sys.file_exists(site_settings_path) !== 'file') {
     juice.build.fatal('Settings file "'+site_settings_path+'" not found.');
 }
