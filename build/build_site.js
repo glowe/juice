@@ -6,11 +6,7 @@
          pages,
          runtime_settings;
 
-         base_source_files = juice.filter(all_files,
-                                          function(file) {
-                                              return file.target_type === "base";
-                                          });
-
+         base_source_files = all_files["base"];
          base_source_files = juice.group_by(base_source_files,
                                             function(file) {
                                                 return file.category;

@@ -119,11 +119,10 @@
      juice.build.compile_widget_package = function(lib_name, pkg_name, all_source_files) {
          var source_files, templates, widgets;
 
-         source_files = juice.filter(all_source_files,
+         source_files = juice.filter(all_source_files["widgets"],
                                      function(file) {
                                          return file.lib_name === lib_name
-                                             && file.pkg_name === pkg_name
-                                             && file.target_type === "widgets";
+                                             && file.pkg_name === pkg_name;
                                         });
 
          source_files = juice.group_by(source_files,
@@ -155,11 +154,10 @@
      juice.build.compile_rpc_package = function(lib_name, pkg_name, all_source_files) {
          var source_files, rpcs;
 
-         source_files = juice.filter(all_source_files,
+         source_files = juice.filter(all_source_files["rpcs"],
                                      function(source_file) {
                                          return source_file.lib_name === lib_name
-                                             && source_file.pkg_name === pkg_name
-                                             && source_file.target_type === "rpcs";
+                                             && source_file.pkg_name === pkg_name;
                                      });
 
          rpcs = juice.map(source_files,

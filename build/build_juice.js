@@ -1,10 +1,7 @@
 (function(juice){
      juice.build.compile_juice_web = function(all_files) {
          var files, templates, lines = [];
-         files = juice.filter(all_files,
-                              function(source_file) {
-                                  return source_file.target_type === "juice_web";
-                              });
+         files = all_files["juice_web"];
 
          files = juice.group_by(files, function(file) { return file.category; });
 
@@ -26,10 +23,7 @@
      };
 
      juice.build.compile_juice_ext_web = function(all_files) {
-         var files = juice.filter(all_files,
-                                  function(source_file) {
-                                      return source_file.target_type === "juice_ext_web";
-                                  });
+         var files = all_files["juice_ext_web"];
 
          juice.build.write_final_file(
              'js/juice-ext.js',

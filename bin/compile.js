@@ -1,9 +1,7 @@
-// FIXME: group by on all_source_files on target type here so that
-//        later calls are cheap (i.e., they don't have to filter
-//        themselves).
 var
 all_source_files,
 all_source_files_plus_user,
+grouped_source_files,
 file_log,
 internal_lib_name,
 lint,
@@ -174,10 +172,12 @@ if (lint) {
     print("Lint: OK.");
 }
 
+grouped_source_files = juice.group_by(all_source_files, function(file) { return file.target_type; });
+
 // Determine which targets need to be recompiled.
 
 if (targets.base) {
-    juice.build.compile_site_base(all_source_files);
+    juice.build.compile_site_base(grouped_source_files);
     print("Compile site base: OK.");
 }
 
@@ -186,7 +186,7 @@ if (!juice.empty(targets.widgets)) {
                   function(lib_name, pkgs) {
                       juice.foreach(pkgs,
                                     function(pkg_name) {
-                                        juice.build.compile_widget_package(lib_name, pkg_name, all_source_files);
+                                        juice.build.compile_widget_package(lib_name, pkg_name, grouped_source_files);
                                     });
                   });
     print("Compile widget packages: OK.");
@@ -197,19 +197,19 @@ if (!juice.empty(targets.rpcs)) {
                   function(lib_name, pkgs) {
                       juice.foreach(pkgs,
                                     function(pkg_name) {
-                                        juice.build.compile_rpc_package(lib_name, pkg_name, all_source_files);
+                                        juice.build.compile_rpc_package(lib_name, pkg_name, grouped_source_files);
                                     });
                   });
     print("Compile rpc packages: OK.");
 }
 
 if (targets.juice_web) {
-    juice.build.compile_juice_web(all_source_files);
+    juice.build.compile_juice_web(grouped_source_files);
     print("Compile juice web: OK.");
 }
 
 if (targets.juice_ext_web) {
-    juice.build.compile_juice_ext_web(all_source_files);
+    juice.build.compile_juice_ext_web(grouped_source_files);
     print("Compile juice ext web: OK.");
 }
 
