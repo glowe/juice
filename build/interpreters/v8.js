@@ -51,6 +51,7 @@ juice.sys.install_interpreter(
              return juice.error.raise(e);
          }
      },
+     chdir: sys.os.chdir,
      dirname: sys.os.dirname,
      exit: quit,
      file_exists: function(path) {

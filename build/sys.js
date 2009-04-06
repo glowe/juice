@@ -7,6 +7,7 @@
          impl = juice.spec(impl,
                            {basename:       undefined,
                             canonical_path: undefined,
+                            chdir:          undefined,
                             dirname:        undefined,
                             exit:           undefined,
                             file_exists:    undefined,
@@ -22,6 +23,7 @@
 
          juice.sys.basename       = impl.basename;
          juice.sys.canonical_path = impl.canonical_path;
+         juice.sys.chdir          = impl.chdir;
          juice.sys.dirname        = impl.dirname;
          juice.sys.exit           = impl.exit;
          juice.sys.file_exists    = impl.file_exists;
