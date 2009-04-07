@@ -60,16 +60,17 @@ static v8::Handle<v8::Value> Basename(const v8::Arguments& args);
 static v8::Handle<v8::Value> Dirname(const v8::Arguments& args);
 static v8::Handle<v8::Value> FileExists(const v8::Arguments& args);
 static v8::Handle<v8::Value> Getenv(const v8::Arguments& args);
-static v8::Handle<v8::Value> IsDir(const v8::Arguments& args);
 static v8::Handle<v8::Value> Load(const v8::Arguments& args);
-static v8::Handle<v8::Value> Ls(const v8::Arguments &args);
 static v8::Handle<v8::Value> Mkdir(const v8::Arguments &args);
 static v8::Handle<v8::Value> Print(const v8::Arguments& args);
 static v8::Handle<v8::Value> Quit(const v8::Arguments& args);
+static v8::Handle<v8::Value> ReadDir(const v8::Arguments &args);
 static v8::Handle<v8::Value> ReadFile(const v8::Arguments &args);
 static v8::Handle<v8::Value> Realpath(const v8::Arguments& args);
+static v8::Handle<v8::Value> Rmdir(const v8::Arguments& args);
 static v8::Handle<v8::Value> Sha1(const v8::Arguments& args);
 static v8::Handle<v8::Value> System(const v8::Arguments& args);
+static v8::Handle<v8::Value> Unlink(const v8::Arguments& args);
 static v8::Handle<v8::Value> V8(const v8::Arguments& args);
 static v8::Handle<v8::Value> Version(const v8::Arguments& args);
 static v8::Handle<v8::Value> WriteFile(const v8::Arguments& args);
@@ -85,13 +86,14 @@ int main(int argc, char* argv[])
     builtins->Set(v8::String::New("dirname"), v8::FunctionTemplate::New(Dirname));
     builtins->Set(v8::String::New("file_exists"), v8::FunctionTemplate::New(FileExists));
     builtins->Set(v8::String::New("getenv"), v8::FunctionTemplate::New(Getenv));
-    builtins->Set(v8::String::New("is_dir"), v8::FunctionTemplate::New(IsDir));
-    builtins->Set(v8::String::New("ls"), v8::FunctionTemplate::New(Ls));
     builtins->Set(v8::String::New("mkdir"), v8::FunctionTemplate::New(Mkdir));
+    builtins->Set(v8::String::New("read_dir"), v8::FunctionTemplate::New(ReadDir));
     builtins->Set(v8::String::New("read_file"), v8::FunctionTemplate::New(ReadFile));
     builtins->Set(v8::String::New("realpath"), v8::FunctionTemplate::New(Realpath));
+    builtins->Set(v8::String::New("rmdir"), v8::FunctionTemplate::New(Rmdir));
     builtins->Set(v8::String::New("sha1"), v8::FunctionTemplate::New(Sha1));
     builtins->Set(v8::String::New("system"), v8::FunctionTemplate::New(System));
+    builtins->Set(v8::String::New("unlink"), v8::FunctionTemplate::New(Unlink));
     builtins->Set(v8::String::New("write_file"), v8::FunctionTemplate::New(WriteFile));
 
     v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
@@ -110,8 +112,8 @@ int main(int argc, char* argv[])
     if (argc > 1) {
         const char* str = argv[1];
         v8::Handle<v8::String> file_name = v8::String::New(str);
-        v8::Handle<v8::String> source = ReadFile(str)->ToString();
-        if (source.IsEmpty()) {
+        v8::Handle<v8::Value> source = ReadFile(str);
+        if (source == v8::Undefined()) {
             printf("Error reading '%s'\n", str);
             return 1;
         }
@@ -121,7 +123,7 @@ int main(int argc, char* argv[])
         }
         context->Global()->Set(v8::String::New("arguments"), arguments);
 
-        if (!ExecuteString(source, file_name, false)) {
+        if (!ExecuteString(source->ToString(), file_name, false)) {
             printf("Error executing '%s'\n", str);
             return 1;
         }
@@ -193,7 +195,9 @@ static v8::Handle<v8::Value> Version(const v8::Arguments& args) {
 static v8::Handle<v8::Value> ReadFile(const char* name) {
     FILE* file = fopen(name, "rb");
     if (file == NULL) {
-        return SystemCallError("fopen");
+        fprintf(stderr, "FATAL ERROR: fopen(%s) failed: %s\n", name, strerror(errno));
+        exit(2);
+        //return SystemCallError("fopen");
     }
 
     fseek(file, 0, SEEK_END);
@@ -248,6 +252,24 @@ static v8::Handle<v8::Value> ReadFile(const v8::Arguments& args) {
     return v8::Undefined();
 }
 
+static v8::Handle<v8::Value> Rmdir(const v8::Arguments& args) {
+    ASSERT_NUM_ARGS(1);
+    v8::String::AsciiValue path(args[0]);
+    if (rmdir(*path) != 0 && errno != ENOENT) {
+        return SystemCallError("rmdir");
+    }
+    return v8::Undefined();
+}
+
+static v8::Handle<v8::Value> Unlink(const v8::Arguments& args) {
+    ASSERT_NUM_ARGS(1);
+    v8::String::AsciiValue path(args[0]);
+    if (unlink(*path) != 0 && errno != ENOENT) {
+        return SystemCallError("unlink");
+    }
+    return v8::Undefined();
+}
+
 static v8::Handle<v8::Value> WriteFile(const v8::Arguments& args) {
     ASSERT_NUM_ARGS(2);
 
@@ -273,22 +295,9 @@ static v8::Handle<v8::Value> FileExists(const v8::Arguments& args) {
     v8::String::AsciiValue path(args[0]);
     struct stat buf;
     if (stat(*path, &buf) == 0) {
-        return v8::True();
+        return v8::String::New(S_ISDIR(buf.st_mode) ? "dir" : "file");
     }
-    if (errno == ENOENT) {
-        return v8::False();
-    }
-    return SystemCallError("stat");
-}
-
-static v8::Handle<v8::Value> IsDir(const v8::Arguments& args) {
-    ASSERT_NUM_ARGS(1);
-    v8::String::AsciiValue path(args[0]);
-    struct stat buf;
-    if (stat(*path, &buf) == 0) {
-        return S_ISDIR(buf.st_mode) ? v8::True() : v8::False();
-    }
-    if (errno == ENOENT) {
+    if (errno == ENOENT || errno == ENOTDIR) {
         return v8::False();
     }
     return SystemCallError("stat");
@@ -319,7 +328,7 @@ static v8::Handle<v8::Value> Mkdir(const v8::Arguments& args) {
     return result==0 ? v8::True() : v8::False();
 }
 
-static v8::Handle<v8::Value> Ls(const v8::Arguments& args) {
+static v8::Handle<v8::Value> ReadDir(const v8::Arguments& args) {
     ASSERT_NUM_ARGS(1);
 
     DIR *dp;

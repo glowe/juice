@@ -1,8 +1,8 @@
-(function (juice, proj) {
+(function (juice, site) {
      var read_cookie, set_cookie;
 
      read_cookie = function() {
-         var results = document.cookie.match('(^|;) ?' + proj.settings.cookie_name + '=([^;]*)(;|$)');
+         var results = document.cookie.match('(^|;) ?' + site.settings.cookie_name + '=([^;]*)(;|$)');
          if (!results) {
              return {};
          }
@@ -10,7 +10,7 @@
      };
 
      set_cookie = function(value) {
-         document.cookie = proj.settings.cookie_name + '=' + escape(JSON.stringify(value)) + '; path=/';
+         document.cookie = site.settings.cookie_name + '=' + escape(JSON.stringify(value)) + '; path=/';
      };
 
      // FIXME: we can cache cookie value if we want
@@ -35,4 +35,4 @@
              return contents;
          }
      };
- })(juice, proj);
+ })(juice, site);

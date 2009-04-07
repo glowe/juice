@@ -1,4 +1,4 @@
-(function(juice, proj, jQuery) {
+(function(juice, site, jQuery) {
 
      var assert_mocking_enabled
      ,   assert_spec_is_valid       // throws an exception if a specification is improperly formatted
@@ -200,7 +200,7 @@
      // +----------------+
 
      lib.define = function(spec) {
-         var my_namespace = current_namespace;
+         var my_namespace = current_namespace.slice(0); // dereference
 
          assert_spec_is_valid(spec.req_spec);
          assert_spec_is_valid(spec.rsp_spec);
@@ -213,7 +213,8 @@
              do_validate = function(spec_type, my_args) {
                  var errors = validate_against_spec(spec[spec_type], my_args);
                  if (errors.length > 0) {
-                     juice.error.raise(spec_type + '_mismatch', {rpc: my_namespace + '.' + spec.name,
+                     juice.error.raise(spec_type + '_mismatch', {namespace: my_namespace,
+                                                                 rpc_name: spec.name,
                                                                  spec: juice.dump(spec[spec_type]),
                                                                  errors: juice.dump(errors),
                                                                  data: juice.dump(my_args)});
@@ -255,17 +256,25 @@
                  });
          };
 
-         rpc.namespace = current_namespace;
+         rpc.namespace = {
+             lib_name: my_namespace[0],
+             pkg_name: my_namespace[2],
+             toString: function() {
+                 return this.lib_name + '.' + this.pkg_name;
+             },
+             search: function(o) {
+                 return o[this.toString()] || o[this.lib_name];
+             }
+         };
          rpc.name = spec.name;
          rpc.service_name = spec.service_name;
          rpc.req_spec = spec.req_spec;
          rpc.rsp_spec = spec.rsp_spec;
 
-         proj.rpcs[rpc.namespace] = proj.rpcs[rpc.namespace] || {};
-         if (proj.rpcs[rpc.namespace][rpc.name]) {
+         if (juice.mget(site.lib, current_namespace).hasOwnProperty(rpc.name)) {
              juice.error.raise('rpc_already_defined', {namespace: rpc.namespace, name: rpc.name});
          }
-         proj.rpcs[rpc.namespace][rpc.name] = rpc;
+         juice.mget(site.lib, current_namespace)[rpc.name] = rpc;
      };
 
 
@@ -274,7 +283,7 @@
      // +---------+
 
      is_mocking_enabled = function() {
-         return proj.settings.rpc_mocking;
+         return site.settings.rpc_mocking;
      };
 
      assert_mocking_enabled = function() {
@@ -297,16 +306,16 @@
      // proxy.
 
      lib.define_mock = function(name, o) {
-         if (!proj.rpcs.hasOwnProperty(current_namespace)) {
+         if (!juice.mhas(site.lib, current_namespace)) {
              juice.error.raise('Current namespace not found',
-                                {current_namespace: current_namespace});
+                                {namespace: current_namespace});
          }
-         if (!proj.rpcs[current_namespace].hasOwnProperty(name)) {
+         if (!juice.mhas(site.lib, current_namespace, name)) {
              juice.error.raise('Attempt to mock an undefined rpc',
                                {name: name,
-                                rpcs: juice.keys(proj.rpcs[current_namespace])});
+                                namespace: current_namespace});
          }
-         proj.rpcs[current_namespace][name].mock = o;
+         juice.mset(site.lib, o, current_namespace, name, 'mock');
      };
 
      // The function passed to juice.rpc.define_mock should use this function
@@ -367,16 +376,16 @@
      proxy_map = {};
 
      find_proxy = function(rpc) {
-         var mock;
+         var answer, mock;
          if (is_mocking_enabled()) {
              bootstrap_mocking_cookie();
              mock = juice.cookie.get('rpc.mock');
-             if (mock.hasOwnProperty('*') || mock.hasOwnProperty(rpc.namespace)) {
+             if (mock.hasOwnProperty('*') || rpc.namespace.search(mock)) {
                  return mocking_proxy;
              }
          }
-         if (proxy_map[rpc.namespace]) {
-             return proxy_map[rpc.namespace];
+         if ((answer = rpc.namespace.search(proxy_map))) {
+             return answer;
          }
          if (default_proxy) {
              return default_proxy;
@@ -513,22 +522,22 @@
      // | package management system |
      // +---------------------------+
 
-     lib.define_package = function(namespace, constructor) {
+     lib.define_package = function(lib_name, pkg_name, constructor) {
+         var namespace;
          if (current_namespace) {
-             juice.error.raise('nested_rpc_package', {current_namespace: current_namespace, namespace: namespace});
+             juice.error.raise('nested rpc package', {current_namespace: current_namespace,
+                                                      lib_name: lib_name,
+                                                      pkg_name: pkg_name});
          }
-         if (proj.rpcs.hasOwnProperty(namespace)) {
-             juice.error.raise('rpc_package_already_declared', {namespace: namespace});
-         }
+         namespace = [lib_name, 'rpcs', pkg_name];
          current_namespace = namespace;
-         proj.rpcs[namespace] = {};
-         constructor(juice, proj, jQuery);
+         constructor(juice, site, jQuery);
          current_namespace = null;
      };
 
- })(juice, proj, jQuery);
+ })(juice, site, jQuery);
 
-(function(juice, proj, jQuery) {
+(function(juice, site, jQuery) {
      var make_boxcar_helper;
 
      juice.event.register('service-failure');
@@ -594,4 +603,4 @@
          };
      };
 
- })(juice, proj, jQuery);
+ })(juice, site, jQuery);

@@ -1,4 +1,4 @@
-(function(juice, proj, jQuery) {
+(function(juice, site, jQuery) {
 
      var panel_exists = function(panel_name, panels) {
          var i, children;
@@ -16,7 +16,7 @@
 
      juice.layout = {
          define: function(name, panels) {
-             proj.layouts[name] = function(page_name) {
+             site.layouts[name] = function(page_name) {
                  return {
                      to_html: function() {
                          var helper = function(panels) {
@@ -41,4 +41,4 @@
          }
      };
 
-     })(juice, proj, jQuery);
+     })(juice, site, jQuery);

@@ -4,15 +4,15 @@
 * STARTED Add server-side validation procedure
 * STARTED Add a widget browser
 * IMPORTANT Create pagination component for SEO
-* IMPORTANT Where should project specific external js files live?
-  For example, the juice-bar uses jquery-ui.
-* IMPORTANT Compiled script names should have something unique in them to thwart browser caching
+* IMPORTANT Compiled script names should have something unique in them to thwart browser caching (i.e. we need url versioning)
 * IMPORTANT Add facility to ignore success or failure functions when rpc finishes
   This will be important when adding rpc-based form validation. If
   the user starts a validation RPC (e.g., check if username
   exists) and then submits the form before the original RPC
   returns, we shouldn't honor the validation request.
+* IMPORTANT Unify type checking in juice/CTK RPC specification verification code.
 * IMPORTANT support optional page parameters and default values
+
     E.g. (pseudo-code):
 
         juice.page.define(
@@ -35,7 +35,7 @@
     the end of paths. Suggestion: We should omit them from the beginning of
     paths and require that they be explicitly put on the ends of paths.
 
-* MAYBE Change proj settings to just be a dictionary--that way more flexible after all
+* MAYBE Scope the juice.lib namespace passed to widget packages based on their stated dependencies.
 * MAYBE be consistent about event names (use present-tense everywhere?)
 * MAYBE write test for templates and start on 2-pass fix
 * MAYBE RPC testing harness, documentation, stub-generation, etc.
@@ -43,14 +43,12 @@
 * MAYBE Sex up the messaging utility, it's seriously fucking ugly right now
 * MAYBE All services that provide counts should only count up a certain limit and then on front end, through a number modifier, we print something nice like "10,000+"
 * MAYBE To facilitate debugging, templates should try catch and spit out their name when there is an error
-* MAYBE When one template in a widget module is altered, ensure that it is the only one that is recompiled
 * MAYBE Template compiler should throw a compile time error if you use a modifier that is undefined
 * MAYBE Tests
 * MAYBE More modifiers
   - [ ] date formatting modifier
   - [ ] ellipsis formatter
 
-* MAYBE Change new-proj to be able to symlink or copy juice dir.
 * MAYBE Be consistent about functions that accept a single boolean to perform a toggle-action
 
 E.g. enable = function(b)... this function sounds like it should enable the thing even called w/o an argument.
@@ -258,4 +256,5 @@ to use proj.widget.bar.link.
   - test for memory leaks
 
 * DONE automatically determine whether pages have overlapping urls (when possible)
-=======
+======
+* DONE Change proj settings to just be a dictionary--that way more flexible after all

@@ -59,6 +59,16 @@ v8::Handle<v8::Value> os_basename(const v8::Arguments& args)
     return v8::String::New(basename(*path));
 }
 
+v8::Handle<v8::Value> os_chdir(const v8::Arguments& args)
+{
+    v8::HandleScope handle_scope;
+    v8::String::AsciiValue path(args[0]);
+    if (chdir(*path) != 0) {
+        return os_error(errno);
+    }
+    return v8::Undefined();
+}
+
 v8::Handle<v8::Value> os_dirname(const v8::Arguments& args)
 {
     v8::HandleScope handle_scope;
@@ -79,7 +89,7 @@ v8::Handle<v8::Value> os_fclose(const v8::Arguments& args)
         return v8::Undefined();
     }
 
-    if (fclose(file) == 0) return os_error(errno);
+    if (fclose(file) != 0) return os_error(errno);
 
     return v8::Undefined();
 }
@@ -181,7 +191,7 @@ v8::Handle<v8::Value> os_fwrite(const v8::Arguments& args)
 {
     v8::HandleScope handle_scope;
 
-    ASSERT_N_ARGS(3);
+    ASSERT_N_ARGS(2);
 
     FILE* file = convert_arg_to_file(args[0]);
 
@@ -240,7 +250,7 @@ v8::Handle<v8::Value> os_listdir(const v8::Arguments& args)
         dir_entries.push_back(ep->d_name);
     }
 
-    if (ep == NULL && errno) {
+    if (ep == NULL && errno == EBADF) {
         const int errnum = errno;
         closedir(dp);
         return os_error(errnum);
@@ -422,6 +432,7 @@ v8::Local<v8::ObjectTemplate> v8_juice::os_module()
 {
     v8::Local<v8::ObjectTemplate> os = v8::ObjectTemplate::New();
     os->Set(v8::String::New("basename"), v8::FunctionTemplate::New(os_basename));
+    os->Set(v8::String::New("chdir"),    v8::FunctionTemplate::New(os_chdir));
     os->Set(v8::String::New("dirname"),  v8::FunctionTemplate::New(os_dirname));
     os->Set(v8::String::New("fclose"),   v8::FunctionTemplate::New(os_fclose));
     os->Set(v8::String::New("feof"),     v8::FunctionTemplate::New(os_feof));

@@ -14,6 +14,6 @@ uninstall:
 	rm /usr/local/bin/v8
 
 clean:
-	-rm v8 *.o
+	-rm -f v8 *.o
 
 .phony: all clean install uninstall

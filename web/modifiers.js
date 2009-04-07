@@ -1,4 +1,4 @@
-(function(juice, proj) {
+(function(juice) {
 
      var format_ts_offset;
 
@@ -75,30 +75,33 @@
          return full_date(d) + strtime;
      };
 
-     proj.modifiers._ = function(o) {
-         var s;
-         if (juice.is_object(o)) {
-             if (o.hasOwnProperty('render') &&
-                 o.hasOwnProperty('fire_domify')) {
-                 // It's a widget, no safing needed.
-                 return o.toString();
+     juice.modifiers = {
+
+         _: function(o) {
+             var s;
+             if (juice.is_object(o)) {
+                 if (o.hasOwnProperty('render') &&
+                     o.hasOwnProperty('fire_domify')) {
+                     // It's a widget, no safing needed.
+                     return o.toString();
+                 }
              }
+             else if (juice.is_null(o)) {
+                 return null;
+             }
+             else if (juice.is_undefined(o)) {
+                 return undefined;
+             }
+             s = o.toString();
+             return s
+                 .replace(/&/g, '&amp;')
+                 .replace(/</g, '&lt;')
+                 .replace(/>/g, '&gt;');
+         },
+
+         date: function(t) {
+             return format_ts_offset(t, true, true);
          }
-         else if (juice.is_null(o)) {
-             return null;
-         }
-         else if (juice.is_undefined(o)) {
-             return undefined;
-         }
-         s = o.toString();
-         return s
-             .replace(/&/g, '&amp;')
-             .replace(/</g, '&lt;')
-             .replace(/>/g, '&gt;');
      };
 
-     proj.modifiers.date = function(t) {
-         return format_ts_offset(t, true, true);
-     };
-
- })(juice, proj);
+ })(juice);

@@ -1,24 +1,22 @@
 (function(self) {
      var lib, id_seq = 0;
 
-     if (!self.hasOwnProperty('juice')) {
-         self.juice = lib = {};
-     }
-     else {
+     if (self.hasOwnProperty('juice')) {
          lib = self.juice;
      }
+     else {
+         self.juice = lib = {};
+     }
 
-     self.proj = {
-         enhancers:  {},
+     self.site = {
          layouts:    {},
-         modifiers:  {},
+         lib:        {},
          pages:      {},
-         rpcs:       {},
-         widgets:    {}
+         settings:   {}
      };
 
-     lib.args = function(a) {
-         return Array.prototype.slice.apply(a, [0]);
+     lib.args = function(a, n) {
+         return Array.prototype.slice.apply(a, [arguments.length === 1 ? 0 : n]);
      };
 
      lib.newid = function() {
@@ -59,7 +57,7 @@
                             print(msg);
                         };
                     }
-                    if (!proj.settings.smother_alerts) {
+                    if (!site.settings.smother_alerts) {
                         return function(msg) {
                             alert(juice.dump(dumped));
                         };
@@ -167,27 +165,41 @@
          return (lib.is_undefined(a) || lib.is_null(a)) ? b : a;
      };
 
-     // If a is an array, calls f(v) for each value v in a. If a is an object,
-     // calls f(k,v) for each key-value pair k:v in a.
+     // If `a` is an array, calls `f(v)` for each value `v` in `a` until
+     // `f(v)` returns a non-undefined value, which is then returned. If `a`
+     // is an object, calls `f(k,v)` for each key-value pair `k`:`v` in a
+     // until `f(k,v)` returns a non-undefined value, which is then returned.
 
-     lib.foreach = function(a, f) {
-         var i;
+     lib.find = function(a, f) {
+         var i, v;
          if (lib.is_array(a)) {
              for (i = 0; i < a.length; i++) {
-                 f(a[i]);
+                 if (typeof (v = f(a[i])) !== 'undefined') {
+                     return v;
+                 }
              }
          }
          else if (lib.is_object(a)) {
              for (i in a) {
                  if (a.hasOwnProperty(i)) {
-                     f(i, a[i]);
+                     if (typeof (v = f(i, a[i])) !== 'undefined') {
+                         return v;
+                     }
                  }
              }
          }
+         return undefined;
+     };
+
+     // If a is an array, calls f(v) for each value v in a. If a is an object,
+     // calls f(k,v) for each key-value pair k:v in a.
+
+     lib.foreach = function(a, f) {
+         lib.find(a, function(k,v) { f(k,v); });
      };
 
      // If a is an array, returns a list containing f(v) for each value v in
-     // a. If a is an array, returns an object containing a key-value pair
+     // a. If a is an object, returns an object containing a key-value pair
      // k:f(v) for each k:v pair in a.
 
      lib.map = function(a, f) {
@@ -238,10 +250,14 @@
 
      // If a is an array, returns an array containing only those values v
      // where p(v) is true. If a is an object, returns an object containing
-     // only those key-value pairs k:v where p(k,v) is true.
+     // only those key-value pairs k:v where p(k,v) is true. If p is not
+     // supplied, this function filters values that evaluate to false.
 
      lib.filter = function(a, p) {
          var answer;
+         if (!p) {
+             p = function(v) { return !!v; };
+         }
          if (lib.is_array(a)) {
              answer = [];
              lib.foreach(a, function(v) { if (p(v)) { answer.push(v); } });
@@ -260,12 +276,31 @@
          return lib.filter(a, function(y) { return x !== y; });
      };
 
+
+     lib.group_by = function(a, f) {
+         var answer = {};
+         juice.foreach(a,
+                       function(v) {
+                           var group = f(v);
+                           if (!answer.hasOwnProperty(group)) {
+                               answer[group] = [];
+                           }
+                           answer[group].push(v);
+                       });
+         return answer;
+     };
+
      lib.flatten = function(a) {
+         if (!lib.is_array(a)) {
+             return [a];
+         }
          if (a.length === 0) {
              return [];
          }
-         var first = a[0];
-         return first.concat(lib.flatten(a.slice(1)));
+         if (!lib.is_array(a[0])) {
+             return [a[0]].concat(lib.flatten(a.slice(1)));
+         }
+         return lib.flatten(a[0]).concat(lib.flatten(a.slice(1)));
      };
 
      // Returns true if and only if the predicate p(v) is true for any values
@@ -427,14 +462,27 @@
          return delegator;
      };
 
-     // Returns the union of two arrays.
+     // Accepts 1 or more arrays and returns an array consisting
+     // of the unique items. Only works with items that can be
+     // used as associative array keys.
 
-     lib.union = function(a, b) {
-         var s = {}, u = [];
-         lib.foreach(a, function(k) { s[k] = 1; });
-         lib.foreach(b, function(k) { s[k] = 1; });
-         lib.foreach(s, function(k) { u.push(k); });
-         return u;
+     lib.unique = function() {
+         var arrays = juice.args(arguments);
+         var s = {};
+         lib.foreach(arrays,
+                     function(array) {
+                         juice.foreach(array,
+                                       function(k) {
+                                           s[k] = 1;
+                                       });
+                     });
+         return lib.keys(s);
+     };
+
+     // Returns the union of arrays.
+     lib.union = function() {
+         var args = juice.args(arguments);
+         return lib.unique(Array.prototype.concat.apply(args[0], args.slice(1)));
      };
 
      lib.date_to_unix = function(d) {
@@ -499,12 +547,15 @@
          return copy;
      };
 
-     lib.spec = function(spec, meta_spec) {
+     lib.spec = function(spec) {
+         var copy_of_spec, meta_specs, unrecog_keys = [];
+
          // Copy spec into a copy, defaulting values from meta_spec and
          // optionally extended_meta_spec.
 
-         var copy_of_spec = {};
-         var meta_specs = lib.args(arguments).slice(1);
+         meta_specs = lib.args(arguments).slice(1);
+         spec = spec || {};
+         copy_of_spec = {};
          juice.foreach(meta_specs,
                        function(meta_spec) {
                            juice.foreach(meta_spec,
@@ -520,8 +571,75 @@
                                              }
                                          });
                        });
+
+         juice.foreach(spec,
+                       function(key) {
+                           if (!copy_of_spec.hasOwnProperty(key)) {
+                               unrecog_keys.push(key);
+                           }
+                       });
+
+         if (unrecog_keys.length > 0) {
+             throw "spec contained unrecognized keys: " + unrecog_keys.join(", ");
+         }
+
          return copy_of_spec;
      };
+
+     // TODO: docs!
+
+     (function() {
+          var setfn = function(a, v, dims, overwrite) {
+              var b = a, d, i;
+              for (i = 0; i < dims.length; i++) {
+                  d = dims[i];
+                  if (i === dims.length-1) {
+                      if (!b.hasOwnProperty(d) || overwrite) {
+                          b[d] = v;
+                      }
+                  }
+                  else if (!b.hasOwnProperty(d)) {
+                      b[d] = {};
+                  }
+                  else if (!lib.is_object(b[d])) {
+                      throw ('mset path error (dims='+juice.dump(dims)+')');
+                  }
+                  b = b[d];
+              }
+          };
+
+          lib.mdef = function(a, v) {
+              setfn(a, v, lib.flatten(lib.args(arguments, 2)), false);
+          };
+
+          lib.mset = function(a, v) {
+              setfn(a, v, lib.flatten(lib.args(arguments, 2)), true);
+          };
+
+          lib.mget = function(a) {
+              var i, b = a, dims = lib.flatten(lib.args(arguments, 1));
+              for (i = 0; i < dims.length; i++) {
+                  if (!b.hasOwnProperty(dims[i])) {
+                      throw ('mget access error (dims='+juice.dump(dims)+')');
+                  }
+                  b = b[dims[i]];
+              }
+              return b;
+          };
+
+          lib.mhas = function(a) {
+              var b = a, d, dims, i;
+              dims = lib.flatten(lib.args(arguments, 1));
+              for (i = 0; i < dims.length-1; i++) {
+                  d = dims[i];
+                  if (!b.hasOwnProperty(d)) {
+                      return false;
+                  }
+                  b = b[d];
+              }
+              return b.hasOwnProperty(dims[dims.length-1]);
+          };
+      })();
 
      // TODO: document me.
 
@@ -541,6 +659,29 @@
              helper(parts.slice(1), target[first]);
          };
          helper(namespace.split('.'), lib);
+     };
+
+     // Joins all arguments with the path separator character. Collapses
+     // repeated leading and trailing separator chars.
+
+     lib.path_join = function() {
+         return juice.map(juice.args(arguments),
+                          function(a) {
+                              return a.replace(/^\/+/, "/").replace(/\/+$/, "/");
+                          })
+             .join("/");
+     };
+
+     lib.use = function(lib_obj) {
+         var i, parts = lib_obj.split("."), o;
+         o = site.lib;
+         for (i = 0; i < parts.length; i++) {
+             if (lib.is_undefined(o[parts[i]])) {
+                 throw "site.lib." + lib_obj + " is not defined!";
+             }
+             o = o[parts[i]];
+         }
+         return o;
      };
 
  })(this);
