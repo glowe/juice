@@ -1,5 +1,9 @@
 (function(juice) {
-     juice.build.compile_template_file = function(filename, options) {
+
+     // Reads a template file and returns the corresponding source
+     // code for a template function as a string.
+
+     juice.build.template_file_to_src = function(filename, options) {
          var contents, macros, parser;
          options = juice.spec(options, {macros: null,
                                         templates_prefix: null});
@@ -32,9 +36,9 @@
                            try {
                                // Get rid of surrounding whitespace (e.g., trailing new lines).
                                templates['_' + template_name] =
-                                   juice.build.compile_template_file(source_filename,
-                                                                     {macros: macros,
-                                                                      templates_prefix: 'templates._'});
+                                   juice.build.template_file_to_src(source_filename,
+                                                                    {macros: macros,
+                                                                     templates_prefix: 'templates._'});
                                templates[template_name] =
                                    'function(_o) { return function() { return templates._' + template_name + '(_o); }; }';
                            }
@@ -57,4 +61,18 @@
                                 return '"' + template_name + '":' + template_src;
                             }).join(",") + "}";
      };
+
+     juice.build.compile_template = function(filename, options) {
+         var src;
+         try {
+             src = juice.build.template_file_to_src(filename, options);
+         }
+         catch (e) {
+             // FIXME:
+             src = juice.sys.read_file(filename);
+             juice.build.fatal(juice.template.formatted_error(e, src, filename));
+         }
+         return eval(src);
+     };
+
  })(juice);

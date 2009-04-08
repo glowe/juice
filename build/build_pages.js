@@ -110,8 +110,7 @@
 
          init(pages_filename);
 
-         page_template =
-             eval(juice.build.compile_template_file(juice.path_join(juice.home(), 'build/templates/page.html')));
+         page_template = juice.build.compile_template(juice.path_join(juice.home(), 'build/templates/page.html'));
 
          juice.foreach(site.pages,
                        function(name, page) {

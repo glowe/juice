@@ -4,12 +4,16 @@
  your widgets in init_widgets, and add it to the "a" panel.
 */
 
+var widgets = juice.use("{{site_name}}.widgets");
+
 juice.page.define(
     {name: 'sandbox',
      path: '/sandbox/',
      layout: site.layouts.sandbox,
-     widget_packages: ['sandbox'],
+     widget_packages: ['{{site_name}}.widgets.sandbox'],
      init_widgets: function(args) {
-         return {a: []};
+         return {
+             a: [widgets.sandbox.welcome()]
+         };
      }
     });
