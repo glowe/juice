@@ -1,0 +1,72 @@
+/* General */
+
+@define-theme clear-after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+@define-theme clear-ie {
+    zoom(msie): 1;
+}
+
+body {
+    background-color: #fff;
+    font-family: sans-serif, Helvetica, Arial, Verdana;
+    font-size: 14px;
+    margin: 0 auto;
+
+    #main {
+        margin: 0 1em;
+
+        a {
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+        }
+
+        table {
+            font-size: inherit;
+            width: 100%;
+            tr {
+                font-size: inherit;
+            }
+        }
+
+        .layout {
+            background-color: #ddd;
+            border: 1px solid #999;
+            margin: 0.5em auto;
+        }
+    }
+
+    #juice_message_dock {
+        left: 50%;
+        margin-left: -150px;
+        position: absolute;
+        top: 25px;
+        width: 300px;
+        zIndex: 50000;
+
+        div.message {
+            background-color: #333;
+            color: #fff;
+            opacity: 1.0;
+            text-align: center;
+
+            a.dismiss {
+                float: right;
+            }
+        }
+
+        div.message.error {
+            background-color: #fbe3e4;
+            color: red;
+        }
+    }
+}

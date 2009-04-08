@@ -103,3 +103,17 @@ juice.sys.write_file(juice.path_join(site_name, "proxies.js"),
                      true);
 print("Created proxies file: OK");
 
+var style_path = juice.path_join(site_name, "user/style");
+juice.sys.mkdir(style_path);
+juice.sys.write_file(juice.path_join(style_path, "site.ecss"),
+                     juice.sys.read_file(juice.path_join(juice.home(), "tools/templates/site.ecss")),
+                     true);
+print("Write site.ecss: OK");
+
+(function() {
+     var template = juice.build.compile_template(juice.path_join(juice.home(), "tools/templates/hooks.js"),
+                                                 {macros: {}});
+     juice.sys.write_file(juice.path_join(site_name, "hooks.js"),
+                          template({site_name: site_name}),
+                          true);
+ })();
