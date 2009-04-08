@@ -121,7 +121,7 @@
 	     // removed from the ECMA-262, Edition 3 standard, mode must be a
 	     // string.
 
-             mode = juice.is_undefined(mode) ? "0777" : String(mode);
+             mode = juice.is_undefined(mode) ? "0755" : String(mode);
 
 	     switch (juice.sys.file_exists(path)) {
              case 'dir':
