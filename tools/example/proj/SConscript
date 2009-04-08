@@ -1,9 +1,0 @@
-Import('*')
-env.Append(BUILDERS = {'ecss': Builder(action = 'ecss -i $SOURCE -o $TARGET')})
-env.ecss('#'+bs.make_htdocs_path('style/new_proj.css'), 'style/new_proj.ecss')
-
-Command('#'+bs.make_htdocs_path('style/images'), 'style/images', Copy('$TARGET', '$SOURCE'))
-
-Command('#'+bs.make_htdocs_path('style/jquery-ui-themeroller.css'),
-        'style/jquery-ui-themeroller.css',
-        Copy('$TARGET', '$SOURCE'))
