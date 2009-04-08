@@ -7,10 +7,10 @@
 var widgets = juice.use("{{site_name}}.widgets");
 
 juice.page.define(
-    {name: 'sandbox',
-     path: '/sandbox/',
+    {name: "sandbox",
+     path: "/sandbox/",
      layout: site.layouts.sandbox,
-     widget_packages: ['{{site_name}}.widgets.sandbox'],
+     widget_packages: ["{{site_name}}.widgets.sandbox"],
      init_widgets: function(args) {
          return {
              a: [widgets.sandbox.welcome()]

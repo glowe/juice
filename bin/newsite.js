@@ -1,4 +1,6 @@
-var site_name, lib_path, usage;
+var site_name, lib_path, write_template, site_base_url, usage;
+
+site_base_url = "http://localhost:8000";
 
 usage = function(msg) {
     print("Error: " + msg);
@@ -7,6 +9,19 @@ usage = function(msg) {
     print("\nname  Must be a legal javascript identifier (i.e., starts with a");
     print("      letter or $, then letters, $, numbers, or _s).");
     juice.sys.exit(2);
+};
+
+write_template = function(filename, output_base_path) {
+    var template_path, template;
+
+    template_path =
+        juice.path_join(juice.home(), "tools/templates/", filename);
+    template = juice.build.compile_template(template_path, {macros: {}});
+
+    juice.sys.write_file(juice.path_join(output_base_path, filename),
+                         template({site_name: site_name,
+                                   site_base_url: site_base_url}),
+                         true);
 };
 
 if (argv.length != 1) {
@@ -32,88 +47,71 @@ juice.sys.write_file(juice.path_join(lib_path, "lib.json"),
 print("Setup site library metadata ("+site_name+"): OK");
 
 (function() {
-     var settings_path = juice.path_join(site_name, "settings"), template;
+     var settings_path = juice.path_join(site_name, "settings");
      juice.sys.mkdir(settings_path);
-     template = juice.build.compile_template(juice.path_join(juice.home(), "tools/templates/default.js"),
-                                             {macros: {}});
-     juice.sys.write_file(juice.path_join(settings_path, "default.js"),
-                          template({site_name: site_name}),
-                          true);
+     write_template("default.js", settings_path);
      print("Setup default settings: OK");
  })();
 
 (function() {
-     var widgets_path = juice.path_join(lib_path, "widgets");
+     var sandbox_path, templates_path, widgets_path;
+     widgets_path = juice.path_join(lib_path, "widgets");
      juice.sys.mkdir(widgets_path);
      print("Setup widgets dir: OK");
 
-     var sandbox_path = juice.path_join(widgets_path, "sandbox");
+     sandbox_path = juice.path_join(widgets_path, "sandbox");
      juice.sys.mkdir(sandbox_path);
      juice.sys.write_file(juice.path_join(sandbox_path, "package.json"),
                           JSON.stringify({dependencies: []}),
                           true);
-     juice.sys.write_file(juice.path_join(sandbox_path, "welcome.js"),
-                          juice.sys.read_file(juice.home() + "/tools/templates/welcome.js"),
-                          true);
+     write_template("welcome.js", sandbox_path);
 
-     var template = juice.build.compile_template(juice.path_join(juice.home(), "tools/templates/welcome.html"),
-                                                 {macros: {}});
-     var templates_path = juice.path_join(sandbox_path, "templates");
+     templates_path = juice.path_join(sandbox_path, "templates");
      juice.sys.mkdir(templates_path);
-     juice.sys.write_file(juice.path_join(templates_path, "welcome.html"),
-                          template({lib_path: juice.sys.canonical_path(lib_path),
-                                    site_path: juice.sys.canonical_path(site_name)}),
-                          true);
+     write_template("welcome.html", templates_path);
      print("Wrote welcome widget: OK");
  })();
 
-var rpcs_path = juice.path_join(lib_path, "rpcs");
-juice.sys.mkdir(rpcs_path);
+juice.sys.mkdir(juice.path_join(lib_path, "rpcs"));
 print("Setup rpcs dir: OK");
 
-var util_path = juice.path_join(lib_path, "util");
-juice.sys.mkdir(util_path);
+
+juice.sys.mkdir(juice.path_join(lib_path, "util"));
 print("Setup util dir: OK");
 
-var user_path = juice.path_join(lib_path, "user");
-juice.sys.mkdir(user_path);
+
+juice.sys.mkdir(juice.path_join(lib_path, "user"));
 print("Setup user dir: OK");
 
 juice.sys.write_file(juice.path_join(site_name, "macros.json"),
                      JSON.stringify({}),
                      true);
-print("Created empty macros file: OK");
+print("Created empty macros.json file: OK");
 
-(function() {
-     var template = juice.build.compile_template(juice.path_join(juice.home(), "tools/templates/pages.js"),
-                                                 {macros: {}});
-     juice.sys.write_file(juice.path_join(site_name, "pages.js"),
-                          template({site_name: site_name}),
-                          true);
-     print("Created pages file: OK");
- })();
+write_template("pages.js", site_name);
+print("Created pages.sj file: OK");
 
-juice.sys.write_file(juice.path_join(site_name, "layouts.js"),
-                     juice.sys.read_file(juice.path_join(juice.home(), "tools/templates/layouts.js")),
-                     true);
+write_template("layouts.js", site_name);
 print("Created layouts file: OK");
 
-juice.sys.write_file(juice.path_join(site_name, "proxies.js"),
-                     juice.sys.read_file(juice.path_join(juice.home(), "tools/templates/proxies.js")),
-                     true);
+write_template("proxies.js", site_name);
 print("Created proxies file: OK");
 
-var style_path = juice.path_join(site_name, "user/style");
-juice.sys.mkdir(style_path);
-juice.sys.write_file(juice.path_join(style_path, "site.ecss"),
-                     juice.sys.read_file(juice.path_join(juice.home(), "tools/templates/site.ecss")),
-                     true);
-print("Write site.ecss: OK");
-
 (function() {
-     var template = juice.build.compile_template(juice.path_join(juice.home(), "tools/templates/hooks.js"),
-                                                 {macros: {}});
-     juice.sys.write_file(juice.path_join(site_name, "hooks.js"),
-                          template({site_name: site_name}),
-                          true);
+     var style_path = juice.path_join(site_name, "user/style");
+     juice.sys.mkdir(style_path);
+     write_template("site.ecss", style_path);
+     print("Created site.ecss: OK");
  })();
+
+write_template("hooks.js", site_name);
+print("Created hooks.js: OK");
+
+print("Done.");
+print("\nTo inspect your site, run the following commands and then point your");
+print("webrowser at " + site_base_url + "/sandbox/");
+print("\ncd " + site_name);
+print("juice config");
+print("juice compile");
+print("juice runserver");
+
