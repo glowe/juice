@@ -256,14 +256,14 @@ if (targets.juice_ext_web) {
 }
 
 if (targets.pages) {
-    juice.build.lint_page_paths("pages.js");
+    juice.build.lint_page_paths();
     print("Lint pages: OK.");
 }
 
 // FIXME: It'd be nice to only recompile a subset of the affected
 // pages on a widget recompile.
 if (targets.pages || targets.widgets) {
-    juice.build.compile_pages("pages.js");
+    juice.build.compile_pages();
     print("Compile pages: OK.");
 }
 

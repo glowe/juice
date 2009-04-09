@@ -1,4 +1,4 @@
-(function(juice, site, jQuery) {
+(function(juice, site) {
 
      var panel_exists = function(panel_name, panels) {
          var i, children;
@@ -41,4 +41,4 @@
          }
      };
 
-     })(juice, site, jQuery);
+     })(juice, site);

@@ -8,7 +8,8 @@
                        function(lib_name) {
                            site.lib[lib_name] = juice.build.library_stubs(lib_name);
                        });
-         load(pages_filename);
+         load("layouts.js");
+         load("pages.js");
          initialized = true;
      };
 
@@ -89,10 +90,10 @@
      };
 
 
-     juice.build.lint_page_paths = function(pages_filename) {
+     juice.build.lint_page_paths = function() {
          var seen = {};
 
-         init(pages_filename);
+         init();
 
          juice.foreach(site.pages,
                        function(name, page) {
@@ -105,10 +106,10 @@
                        });
      };
 
-     juice.build.compile_pages = function(pages_filename) {
+     juice.build.compile_pages = function() {
          var page_template;
 
-         init(pages_filename);
+         init();
 
          page_template = juice.build.compile_template(juice.path_join(juice.home(), 'build/templates/page.html'));
 

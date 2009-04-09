@@ -4,15 +4,10 @@
      build_query_string,
      canonicalize_path,
      lib,
-     path_concat,
      parse_location,
      parse_url;
 
      juice.url = lib = {};
-
-     path_concat = function(a, b) {
-         return a + ((a[a.length-1] === '/' && b[0] === '/') ? b.slice(1) : b);
-     };
 
      parse_url = function(url) {
          var result, answer;
@@ -78,29 +73,30 @@
 
      lib.make = function(spec) {
          var that, parts;
+         if (!juice.is_object(spec)) {
+             spec = parse_url(spec);
+         }
 
-         if (juice.is_object(spec)) {
-             that = {base: spec.base || "",
-                     path: spec.path || "",
-                     args: spec.args || {}};
+         that = juice.spec(spec, {base: "",
+                                  path: "",
+                                  args: {}});
+
+         if (juice.is_undefined(that.base)) {
+             juice.error.raise("base arg for url was undefined");
          }
-         else {
-             parts = parse_url(spec);
-             that = {base: parts.base || "",
-                     path: parts.path || "",
-                     args: parts.args || {}};
-         }
+
+         // Normalize that.base and that.path
+         that.base = that.base.replace(/\/+$/, "");
+         that.path = "/" + that.path.replace(/^\/+/, "");
 
          that.to_string = function() {
              var query = build_query_string(that.args || {});
-             return path_concat(that.base || site.settings.base_url, that.path) +
+             return (that.base || site.settings.base_url) + that.path +
                  (query ? ('?' + query) : "");
          };
 
          that.append_path = function(s) {
-             return lib.make({base: that.base,
-                              path: path_concat(that.path, s),
-                              args: that.args});
+             return that.join_path(path(s));
          };
 
          that.join_path = function(s) {

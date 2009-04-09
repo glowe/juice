@@ -534,19 +534,6 @@
          }
      };
 
-     lib.defaults = function(spec, defaults) {
-         var copy = {};
-         spec = spec || {};
-         lib.delegate(copy, spec);
-         juice.foreach(defaults,
-                       function(k, v) {
-                           if (!spec.hasOwnProperty(k) || juice.is_undefined(spec[k])) {
-                               copy[k] = v;
-                           }
-                       });
-         return copy;
-     };
-
      lib.spec = function(spec) {
          var copy_of_spec, meta_specs, unrecog_keys = [];
 
@@ -665,11 +652,7 @@
      // repeated leading and trailing separator chars.
 
      lib.path_join = function() {
-         return juice.map(juice.args(arguments),
-                          function(a) {
-                              return a.replace(/^\/+/, "/").replace(/\/+$/, "/");
-                          })
-             .join("/");
+         return juice.args(arguments).join("/").replace(/\/{2,}/g, "/");
      };
 
      lib.use = function(lib_obj) {
