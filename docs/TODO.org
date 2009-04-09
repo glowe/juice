@@ -1,6 +1,8 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
+* IMPORTANT Provide convenient way to globally manipulate page titles.
+* IMPORTANT Need to recompile base whenever an rpc/widget package is added or removed.
 * IMPORTANT Create pagination component for SEO
 * IMPORTANT Compiled script names should have something unique in them to thwart browser caching (i.e. we need url versioning)
 * IMPORTANT Add facility to ignore success or failure functions when rpc finishes
