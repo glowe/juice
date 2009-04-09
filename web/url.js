@@ -95,7 +95,7 @@
                  (query ? ('?' + query) : "");
          };
 
-         that.join_path = function(s) {
+         that.path_join = function(s) {
              return lib.make({base: that.base,
                               path: juice.path_join(that.path, s),
                               args: that.args});
