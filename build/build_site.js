@@ -36,7 +36,7 @@
 
          // lib_paths() contains all libraries that are used by the site.
          // Explode out library declarations to allow forward references.
-         juice.foreach(juice.build.lib_paths(),
+         juice.foreach(juice.build.config.lib_paths(),
                        function(lib_name) {
                            base.push("site.lib."+lib_name+"="+JSON.stringify(juice.build.library_stubs(lib_name))+";");
                        });

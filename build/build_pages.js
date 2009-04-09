@@ -4,7 +4,7 @@
          if (initialized) {
              return;
          }
-         juice.foreach(juice.build.lib_paths(),
+         juice.foreach(juice.build.config.lib_paths(),
                        function(lib_name) {
                            site.lib[lib_name] = juice.build.library_stubs(lib_name);
                        });

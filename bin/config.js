@@ -42,6 +42,8 @@ program_options = juice.program_options(
     {"settings=": ["Specify path to site setting file.", "settings/default.js"],
      "with-lib=[]": ["Specify path to an external library.", []],
      "lint-juice": "Lint the juice framework.",
+     "minify": "Optimize javascript output for size.",
+     "disable-rpc-mocking": "Removed support for mocked RPCs.",
      "help": "Display this message."});
 
 options = program_options.parse_arguments(argv).options;
@@ -105,9 +107,11 @@ do {
 } while (new_lib_deps.length != 0);
 
 print('Saving configuration.');
-juice.build.set_lib_paths(lib_paths);
-juice.build.set_site_settings_path(site_settings_path);
-juice.build.set_should_lint_juice(options['lint-juice']);
-juice.build.save_config();
+juice.build.config.set_lib_paths(lib_paths);
+juice.build.config.set_rpc_mocking_enabled(!options['disable-rpc-mocking']);
+juice.build.config.set_site_settings_path(site_settings_path);
+juice.build.config.set_lint_juice(options['lint-juice']);
+juice.build.config.set_minify(options['minify']);
+juice.build.config.save();
 juice.build.file_log().clear();
 print('Run "juice compile" to build your site.');
