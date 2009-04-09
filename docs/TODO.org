@@ -12,6 +12,9 @@
   returns, we shouldn't honor the validation request.
 * IMPORTANT Unify type checking in juice/CTK RPC specification verification code.
 * IMPORTANT Add a widget browser
+* IMPORTANT Fix compile template errors
+  Source files should not have to be reloaded
+* IMPORTANT When widget dependencies are calculated, we should ensure that the packages really exist
 * MAYBE Add server-side validation procedure
 * MAYBE Scope the juice.lib namespace passed to widget packages based on their stated dependencies.
 * MAYBE be consistent about event names (use present-tense everywhere?)
