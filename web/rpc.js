@@ -48,8 +48,10 @@
      };
 
      assert_spec_is_valid = function(spec) {
-         var i;
          if (juice.is_string(spec)) {
+             if (spec[spec.length-1] === '?') {
+                 spec = spec.slice(0, -1);
+             }
              if (spec !== 'scalar' &&
                  spec !== 'any' &&
                  spec !== 'boolean' &&

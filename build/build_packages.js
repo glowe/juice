@@ -81,16 +81,24 @@
 
          juice.foreach(pkgs,
                        function(pkg) {
+                           var dirs = [pkg.path], mock_dir = juice.path_join(pkg.path, 'mock');
+
+                           // If rpc mocking is enabled and the mock dir exists, scan it too.
+                           if (juice.build.site_settings().rpc_mocking && juice.sys.file_exists(mock_dir) == "dir") {
+                               dirs.push(mock_dir);
+                           }
+
                            // Tag each .js file with the "rpcs" target type.
-                           juice.foreach(juice.sys.list_dir(pkg.path,
-                                                            {filter_re: /[.]js$/,
-                                                             fullpath: true}),
-                                         function(path) {
-                                             source_files.push(
-                                                 juice.build.source_file({lib_name: lib_name,
-                                                                          path: path,
-                                                                          pkg_name: pkg.name,
-                                                                          target_type: "rpcs"}));
+                           juice.foreach(dirs,
+                                         function(dir) {
+                                             juice.foreach(juice.sys.list_dir(dir, {filter_re: /[.]js$/, fullpath: true}),
+                                                           function(path) {
+                                                               source_files.push(
+                                                                   juice.build.source_file({lib_name: lib_name,
+                                                                                            path: path,
+                                                                                            pkg_name: pkg.name,
+                                                                                            target_type: "rpcs"}));
+                                                           });
                                          });
                        });
 

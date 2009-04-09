@@ -36,7 +36,7 @@
 
          // lib_paths() contains all libraries that are used by the site.
          // Explode out library declarations to allow forward references.
-         juice.foreach(juice.build.lib_paths(),
+         juice.foreach(juice.build.config.lib_paths(),
                        function(lib_name) {
                            base.push("site.lib."+lib_name+"="+JSON.stringify(juice.build.library_stubs(lib_name))+";");
                        });
@@ -79,7 +79,11 @@
               '});']);
 
          runtime_settings = juice.dict_intersect_keys(juice.build.site_settings(),
-                                                      ['base_url', 'cookie_name', 'user', 'smother_alerts']);
+                                                      ['base_url',
+                                                       'cookie_name',
+                                                       'user',
+                                                       'rpc_mocking',
+                                                       'smother_alerts']);
 
          // Since settings are prerequisite for many things, make sure they're set first.
          base.unshift('site.settings=' + JSON.stringify(runtime_settings) + ';');

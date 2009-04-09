@@ -1,6 +1,6 @@
 (function(juice) {
      juice.build.find_library = function(name) {
-         var path = juice.build.lib_paths()[name];
+         var path = juice.build.config.lib_paths()[name];
          if (path) { return path; }
          return juice.error.raise('path to library "'+name+'" is unknown');
      };

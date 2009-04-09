@@ -37,7 +37,7 @@ juice.sys.chdir(options.cd);
 // configured site directory.
 
 try {
-    juice.build.load_config();
+    juice.build.config.load();
 }
 catch (e) {
     juice.build.fatal("Unable to load build configuration. Perhaps you need to run \"juice config\"?");
@@ -90,7 +90,7 @@ all_source_files = juice.map(required_source_files,
 // FIXME: May want to error if we find a file that doesn't fit
 
 // Add source files in libraries
-juice.foreach(juice.build.lib_paths(),
+juice.foreach(juice.build.config.lib_paths(),
               function(lib_name) {
                   all_source_files = all_source_files.concat(juice.build.find_widget_source_files(lib_name));
                   all_source_files = all_source_files.concat(juice.build.find_rpc_source_files(lib_name));
@@ -119,7 +119,7 @@ all_source_files = all_source_files.concat(
                   return juice.build.source_file({path: path, target_type: "juice_ext_web"});
               }));
 
-all_source_files.push(juice.build.source_file({target_type: "settings", path: juice.build.site_settings_path()}));
+all_source_files.push(juice.build.source_file({target_type: "settings", path: juice.build.config.site_settings_path()}));
 
 // Load the user-defined compile hooks, then locate the source files they're
 // interested in and combine them with all_source_files in a new array.
@@ -141,9 +141,9 @@ file_log = juice.build.file_log(all_source_files_plus_user);
 if (file_log.empty()) {
     print("Starting full build...");
 }
-else if (file_log.has_file_changed(juice.build.site_settings_path())) {
+else if (file_log.has_file_changed(juice.build.config.site_settings_path())) {
     juice.build.clean();
-    print("Settings file changed (" + juice.build.site_settings_path() + "); starting from scratch.");
+    print("Settings file changed (" + juice.build.config.site_settings_path() + "); starting from scratch.");
     settings_changed = true;
 }
 
@@ -202,7 +202,7 @@ if (lint) {
                       if (f.target_type == "juice_ext_web") {
                           return;
                       }
-                      if (f.target_type == "juice_web" && !juice.build.should_lint_juice()) {
+                      if (f.target_type == "juice_web" && !juice.build.config.lint_juice()) {
                           return;
                       }
                       errors = juice.build.lint_js(f.path);

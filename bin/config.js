@@ -105,9 +105,9 @@ do {
 } while (new_lib_deps.length != 0);
 
 print('Saving configuration.');
-juice.build.set_lib_paths(lib_paths);
-juice.build.set_site_settings_path(site_settings_path);
-juice.build.set_should_lint_juice(options['lint-juice']);
-juice.build.save_config();
+juice.build.config.set_lib_paths(lib_paths);
+juice.build.config.set_site_settings_path(site_settings_path);
+juice.build.config.set_lint_juice(options['lint-juice']);
+juice.build.config.save();
 juice.build.file_log().clear();
 print('Run "juice compile" to build your site.');
