@@ -79,7 +79,11 @@
               '});']);
 
          runtime_settings = juice.dict_intersect_keys(juice.build.site_settings(),
-                                                      ['base_url', 'cookie_name', 'user', 'smother_alerts']);
+                                                      ['base_url',
+                                                       'cookie_name',
+                                                       'user',
+                                                       'rpc_mocking',
+                                                       'smother_alerts']);
 
          // Since settings are prerequisite for many things, make sure they're set first.
          base.unshift('site.settings=' + JSON.stringify(runtime_settings) + ';');
