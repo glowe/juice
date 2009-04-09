@@ -77,7 +77,7 @@
              spec = parse_url(spec);
          }
 
-         that = juice.spec(spec, {base: "",
+         that = juice.spec(spec, {base: site.settings.base_url,
                                   path: "",
                                   args: {}});
 
@@ -91,7 +91,7 @@
 
          that.to_string = function() {
              var query = build_query_string(that.args || {});
-             return (that.base || site.settings.base_url) + that.path +
+             return that.base + that.path +
                  (query ? ('?' + query) : "");
          };
 
