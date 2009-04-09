@@ -86,8 +86,8 @@
 
          answer = {
              dependencies: {},
-             stylesheet_urls: spec.stylesheet_urls,
-             script_urls: spec.script_urls
+             stylesheet_urls: json.stylesheet_urls,
+             script_urls: json.script_urls
          };
 
          // TODO: perform some defensive checks on the package metadata
