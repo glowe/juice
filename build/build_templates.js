@@ -44,6 +44,8 @@
                            }
                            catch (e) {
                                if (e.info && e.info.what === 'syntax_error') {
+                                   // FIXME:
+                                   var file_contents = juice.sys.read_file(source_filename);
                                    juice.error.raise(
                                        juice.template.formatted_error(e,
                                                                       file_contents,
