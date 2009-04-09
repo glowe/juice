@@ -79,12 +79,15 @@
          if (juice.sys.file_exists(pkg_filename) != 'file') {
              juice.error.raise('package metadata file not found: '+pkg_filename);
          }
-         json = juice.build.read_file_json(pkg_filename);
+         json = juice.spec(juice.build.read_file_json(pkg_filename),
+                           {dependencies: [],
+                            stylesheet_urls: [],
+                            script_urls: []});
 
          answer = {
              dependencies: {},
-             stylesheet_urls: juice.nvl(json.stylesheet_urls, []),
-             script_urls: juice.nvl(json.script_urls, [])
+             stylesheet_urls: spec.stylesheet_urls,
+             script_urls: spec.script_urls
          };
 
          // TODO: perform some defensive checks on the package metadata
