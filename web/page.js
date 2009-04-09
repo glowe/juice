@@ -11,23 +11,24 @@
 
      create_page = function(spec) {
          var extract_args, my = {}, that = {};
-
-         my.init_widgets    = spec.init_widgets;
-         my.layout          = spec.layout;
-         my.name            = spec.name;
-         my.parameters      = spec.parameters || [];
-         my.path            = spec.path;
-         my.script_urls     = spec.script_urls || [];
-         my.stylesheet_urls = spec.stylesheet_urls || [];
-         my.title           = spec.title || 'untitled';
-         my.widget_packages = spec.widget_packages || [];
+         spec = juice.spec(spec,
+                           {init_widgets: undefined,
+                            layout: undefined,
+                            name: undefined,
+                            parameters: [],
+                            path: undefined,
+                            script_urls: [],
+                            stylesheet_urls: [],
+                            title: undefined,
+                            widget_packages: []
+                           });
 
          // args is optional but must be an object if provided.
          extract_args = function(args) {
              var recognized = {}, missing = [];
 
              if (juice.is_object(args)) {
-                 juice.foreach(my.parameters,
+                 juice.foreach(spec.parameters,
                                function(k) {
                                    if (args.hasOwnProperty(k)) {
                                        recognized[k] = args[k];
@@ -45,27 +46,27 @@
          };
 
          that.title = function() {
-             return my.title;
+             return spec.title;
          };
 
          that.path = function() {
-             return my.path;
+             return spec.path;
          };
 
          that.path_is_dynamic = function() {
-             return dynamic_path_var_re.test(my.path);
+             return dynamic_path_var_re.test(spec.path);
          };
 
          that.script_urls = function() {
-             return my.script_urls;
+             return spec.script_urls;
          };
 
          that.stylesheet_urls = function() {
-             return my.stylesheet_urls;
+             return spec.stylesheet_urls;
          };
 
          that.widget_packages = function() {
-             return my.widget_packages;
+             return spec.widget_packages;
          };
 
          that.url = function(args) {
@@ -76,7 +77,7 @@
                  juice.error.raise('missing_parameters', {page_name: name, parameters: cmp.missing});
              }
 
-             path = my.path;
+             path = spec.path;
              path_args = {};
              juice.foreach(cmp.recognized,
                           function(k, v) {
@@ -115,12 +116,12 @@
              juice.foreach(req.args, function(k,v) { args[k] = v; });
 
              if (that.path_is_dynamic()) {
-                 vals_re = new RegExp('^' + my.path.replace(dynamic_path_var_re, '($2)') + '$');
+                 vals_re = new RegExp('^' + spec.path.replace(dynamic_path_var_re, '($2)') + '$');
                  if (!(match_result = req.path.match(vals_re))) {
                      return null;
                  }
-                 keys_re = new RegExp('^' + my.path.replace(dynamic_path_var_re, '\\[\\[($1).*?\\]\\]') + '$');
-                 keys = my.path.match(keys_re).slice(1);
+                 keys_re = new RegExp('^' + spec.path.replace(dynamic_path_var_re, '\\[\\[($1).*?\\]\\]') + '$');
+                 keys = spec.path.match(keys_re).slice(1);
                  dynamic_path_args = juice.combine(keys, match_result.slice(1));
                  juice.foreach(dynamic_path_args, function(k, v) { args[k] = v; });
              }
@@ -131,10 +132,10 @@
 
          that.draw = function(container, args) {
              var panels_and_widgets;
-             active_layout = my.layout(my.name);
+             active_layout = spec.layout(spec.name);
              container.html(active_layout.to_html());
              try {
-                 panels_and_widgets = my.init_widgets(args);
+                 panels_and_widgets = spec.init_widgets(args);
              }
              catch (e) {
                  juice.error.handle(e);
