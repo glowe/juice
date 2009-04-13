@@ -218,7 +218,21 @@ grouped_source_files = juice.group_by(all_source_files, function(file) { return 
 
 // Determine which targets need to be recompiled.
 
-if (targets.base) {
+
+if (targets.pages) {
+    juice.build.lint_page_paths();
+    print("Lint pages: OK.");
+}
+
+// FIXME: It'd be nice to only recompile a subset of the affected
+// pages on a widget recompile.
+if (targets.pages || !juice.empty(targets.widgets)) {
+    juice.build.compile_pages();
+    print("Compile pages: OK.");
+}
+
+
+if (targets.pages || targets.base) {
     juice.build.compile_site_base(grouped_source_files);
     print("Compile site base: OK.");
 }
@@ -253,18 +267,6 @@ if (targets.juice_web) {
 if (targets.juice_ext_web) {
     juice.build.compile_juice_ext_web(grouped_source_files);
     print("Compile juice ext web: OK.");
-}
-
-if (targets.pages) {
-    juice.build.lint_page_paths();
-    print("Lint pages: OK.");
-}
-
-// FIXME: It'd be nice to only recompile a subset of the affected
-// pages on a widget recompile.
-if (targets.pages || targets.widgets) {
-    juice.build.compile_pages();
-    print("Compile pages: OK.");
 }
 
 if (targets.user) {
