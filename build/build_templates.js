@@ -44,16 +44,12 @@
                            }
                            catch (e) {
                                if (e.info && e.info.what === 'syntax_error') {
-                                   // FIXME:
-                                   var file_contents = juice.sys.read_file(source_filename);
-                                   juice.error.raise(
-                                       juice.template.formatted_error(e,
-                                                                      file_contents,
-                                                                      juice.sys.canonical_path(source_filename)));
+                                   juice.build.fatal(
+                                       juice.template.formatted_error(
+                                           e,
+                                           juice.sys.canonical_path(source_filename)));
                                }
-                               else {
-                                   throw e;
-                               }
+                               throw e;
                            }
                        });
 
@@ -70,9 +66,7 @@
              src = juice.build.template_file_to_src(filename, options);
          }
          catch (e) {
-             // FIXME:
-             src = juice.sys.read_file(filename);
-             juice.build.fatal(juice.template.formatted_error(e, src, filename));
+             juice.build.fatal(juice.template.formatted_error(e, filename));
          }
          return eval(src);
      };

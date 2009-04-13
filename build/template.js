@@ -28,9 +28,17 @@
      escape_single_quote_re = new RegExp("([^\\\\']*)'", 'g');
 
      raise_syntax_error = function(spec) {
-         var my_spec = spec;
-         my_spec.what = 'syntax_error';
-         juice.error.raise('Syntax error', my_spec);
+         spec = juice.spec(spec,
+                           {
+                               expected: null,
+                               encountered: null,
+                               line: undefined,
+                               col: undefined,
+                               pos: undefined,
+                               source: undefined
+                           });
+         spec.what = 'syntax_error';
+         juice.error.raise('Syntax error', spec);
      };
 
      tag_delims = [
@@ -232,7 +240,10 @@
                  return t;
              }
 
-             return raise_syntax_error({line: line, col: col, pos: pos});
+             return raise_syntax_error({line: line,
+                                        col: col,
+                                        pos: pos,
+                                        source: string});
          };
 
          pos = col = 0;
@@ -251,6 +262,7 @@
          match, modified_expr, modifier, modifiers_alias, modifier_invoked,
          parse, peek, peek_further, peek_helper,
          scanner,
+         source,
          tmpl_prefix,
 
          // LL(2) grammar
@@ -326,11 +338,11 @@
                                      encountered: lookahead[0].value,
                                      pos: lookahead[0].pos,
                                      line: lookahead[0].line,
-                                     col: lookahead[0].col});
+                                     col: lookahead[0].col,
+                                     source: source});
              }
 
-             var r = lookahead.shift();
-             return r;
+             return lookahead.shift();
          };
 
          modified_expr = function(e, mods) {
@@ -368,6 +380,7 @@
          parse = function(string, template_prefix) {
              var compiled;
              scanner = juice.template.scanner(string);
+             source = string;
              code = [];
              code_for_push = [];
              contexts = [];
@@ -809,7 +822,7 @@
          };
      };
 
-     juice.template.formatted_error = function(e, source, source_filename) {
+     juice.template.formatted_error = function(e, source_filename) {
          var arrow, encountered, error, type;
          arrow = function() {
              var a = [], i;
@@ -830,10 +843,15 @@
              juice.error.raise('cant_format_error', {e: e});
          }
 
-         source_filename = source_filename ? (' ' + source_filename + ',') : '';
          error = [];
-         error.push(type + ':' + source_filename + ' line ' + e.info.line + ' column ' + e.info.col + '.\n');
-         error.push(source.slice((e.info.pos - e.info.col), e.info.pos + 1));
+         error.push(type);
+         if (source_filename) {
+             error.push("filename: " + source_filename);
+         }
+         error.push("line: " + e.info.line);
+         error.push("column: " + e.info.col);
+         error.push("");
+         error.push(e.info.source.slice((e.info.pos - e.info.col), e.info.pos + 1));
          error.push(arrow());
          if (e.info.expected) {
              encountered = e.info.encountered === '' ? 'end of file' : e.info.encountered;
