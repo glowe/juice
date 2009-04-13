@@ -11,17 +11,6 @@
 
      create_page = function(spec) {
          var extract_args, my = {}, that = {};
-         spec = juice.spec(spec,
-                           {init_widgets: undefined,
-                            layout: undefined,
-                            name: undefined,
-                            parameters: [],
-                            path: undefined,
-                            script_urls: [],
-                            stylesheet_urls: [],
-                            title: undefined,
-                            widget_packages: []
-                           });
 
          // args is optional but must be an object if provided.
          extract_args = function(args) {
@@ -174,6 +163,21 @@
      juice.page = {
 
          define: function(spec) {
+             spec = juice.spec(spec,
+                               {init_widgets: undefined,
+                                layout: undefined,
+                                name: undefined,
+                                parameters: [],
+                                path: undefined,
+                                script_urls: [],
+                                stylesheet_urls: [],
+                                title: undefined,
+                                widget_packages: []
+                               });
+             if (site.pages.hasOwnProperty(spec.name)) {
+                 juice.error.raise("Attempting to define page with duplicate name: " + spec.name);
+             }
+
              site.pages[spec.name] = create_page(spec);
          },
 
