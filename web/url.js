@@ -95,7 +95,7 @@
          }
 
          // Normalize that.base and that.path
-         spec.base.replace(/\/+$/, "");
+         spec.base = spec.base.replace(/\/+$/, "");
          spec.path = "/" + spec.path.replace(/^\/+/, "");
 
          if (parsed_url) {
