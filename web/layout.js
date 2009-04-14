@@ -33,7 +33,7 @@
                          if (!panel_exists(panel_name, panels)) {
                              juice.error.raise('unrecognized_panel_name', {layout: name, unrecognized: panel_name, panels: panels});
                          }
-                         jQuery('#panel_' + panel_name).append(widget.render());
+                         jQuery('#panel_' + panel_name).append(widget.unsafe_render());
                          widget.fire_domify();
                      }
                  };

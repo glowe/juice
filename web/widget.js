@@ -3,8 +3,6 @@
      current_namespace,
      enhancers = {},
      lib,
-     render_stack;
-
      render_stack = [];
 
      juice.widget = lib = {};
@@ -22,7 +20,6 @@
 
          def = function(spec) {
              var
-             call_linked_render,
              container_attribs = {},
              container_element = 'div',
              destroy_event_system,
@@ -183,48 +180,74 @@
                  container_attribs = attribs;
              };
 
-             call_linked_render = function(f) {
-                 var answer;
-                 if (render_stack.length > 0) {
-                     render_stack[render_stack.length-1](that);
-                 }
-                 render_stack.push(function(w) { linked.push(w); });
-                 answer = f();
-                 render_stack.pop();
-                 return answer;
-             };
+             (function() {
+                  var call_linked_render, render_impl;
 
-             that.render = function() {
-                 return call_linked_render(
-                     function() {
-                         var attribs = {
-                             'class': namespace[0] + ' ' + namespace[2] + ' ' + name + ' widget',
-                             'id': id
-                         };
-                         juice.foreach(container_attribs,
-                                       function(k, v) {
-                                           if (k == 'id') {
-                                               juice.error.raise("can't specify id as container attribute");
-                                           }
-                                           if (k == 'class') {
-                                               attribs[k] += ' ' + v;
-                                           }
-                                           else {
-                                               attribs[k] = v;
-                                           }
-                                       });
-                         transition('initial', 'rendered');
-                         return '<' +
-                             container_element + ' ' +
-                             juice.map_dict(attribs,
+                  call_linked_render = function(unsafe, f) {
+                      var answer;
+                      if (render_stack.length > 0) {
+                          render_stack[render_stack.length-1](that);
+                      }
+                      else if (!unsafe) {
+                          juice.error.raise('tried to render an unlinked widget ('+my.namespace.join('.')+'.'+my.name+')');
+                      }
+                      render_stack.push(function(w) { linked.push(w); });
+                      answer = f();
+                      render_stack.pop();
+                      return answer;
+                  };
+
+                  render_impl = function(unsafe) {
+                      return call_linked_render(
+                          unsafe,
+                          function() {
+                              var attribs = {
+                                  'class': namespace[0] + ' ' + namespace[2] + ' ' + name + ' widget',
+                                  'id': id
+                              };
+                              juice.foreach(container_attribs,
                                             function(k, v) {
-                                                return k + '="' + v + '"';
-                                            }).join(' ') +
-                             '>' + my.render() + '</' + container_element + '>';
-                     });
-             };
+                                                if (k == 'id') {
+                                                    juice.error.raise("can't specify id as container attribute");
+                                                }
+                                                if (k == 'class') {
+                                                    attribs[k] += ' ' + v;
+                                                }
+                                                else {
+                                                    attribs[k] = v;
+                                                }
+                                            });
+                              transition('initial', 'rendered');
+                              return '<' +
+                                  container_element + ' ' +
+                                  juice.map_dict(attribs,
+                                                 function(k, v) {
+                                                     return k + '="' + v + '"';
+                                                 }).join(' ') +
+                                  '>' + my.render() + '</' + container_element + '>';
+                          });
+                  };
 
-             that.toString = that.render; // For convenience in templates
+                  that.render = function() { return render_impl(false); };
+                  that.unsafe_render = function() { return render_impl(true); };
+                  that.toString = that.render; // for convenience in templates
+
+                  my.refresh = function(p) {
+                      p = p || my.render;
+                      dispose_of_domified_and_linked_widgets();
+                      call_linked_render(
+                          true, // ok to be unsafe; we're already domified
+                          function() {
+                              var r = juice.is_function(p) ? p() : p;
+                              if (!juice.is_string(r)) {
+                                  juice.error.raise('type_mismatch', {expected: 'String', actual: typeof r});
+                              }
+                              my.expect_state('domified');
+                              my.$().html(r);
+                              fire_domify_for_linked_widgets();
+                          });
+                  };
+              })();
 
              my.register_event('domify');
 
@@ -274,21 +297,6 @@
              dispose_of_domified_and_linked_widgets = function() {
                  juice.foreach(domified_and_linked, function(w) { w.dispose(); });
                  domified_and_linked = [];
-             };
-
-             my.refresh = function(p) {
-                 p = p || my.render;
-                 dispose_of_domified_and_linked_widgets();
-                 call_linked_render(
-                     function() {
-                         var r = juice.is_function(p) ? p() : p;
-                         if (!juice.is_string(r)) {
-                             juice.error.raise('type_mismatch', {expected: 'String', actual: typeof r});
-                         }
-                         my.expect_state('domified');
-                         my.$().html(r);
-                         fire_domify_for_linked_widgets();
-                     });
              };
 
              that.enhance = function(name, spec) {
