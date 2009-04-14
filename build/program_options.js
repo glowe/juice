@@ -10,17 +10,21 @@
                            var expects_value = false,
                            default_value,
                            description,
+                           match,
                            multiple = false,
+                           raw,
                            required,
                            spec_error;
+
+                           raw = name;
 
                            spec_error = function(msg) {
                                juice.error.raise('error in program_options specification here: '
                                                  +juice.dump(details)+'; '+msg);
                            };
 
-                           if (name.slice(-1) == '=') {
-                               name = name.slice(0, -1);
+                           if ((match = /^([^=]+)=[^=]*$/.exec(name))) {
+                               name = match[1];
                                expects_value = true;
                            }
                            else if (name.slice(-3) == '=[]') {
@@ -52,7 +56,8 @@
                                             description: description,
                                             expects_value: expects_value,
                                             multiple: multiple,
-                                            required: required};
+                                            required: required,
+                                            raw: raw};
                        });
 
          // Given the array of command line arguments, returns a pair of
@@ -164,8 +169,39 @@
              },
 
              toString: function() {
-                 // FIXME: return a nicely formatted help screen.
-                 return juice.dump(options);
+                 var column_two_start, fo = {}, longest_name = 0, string = [], break_here = 80;
+
+                 juice.foreach(options,
+                               function(option, spec) {
+                                   var description = [], name;
+                                   description.push(spec.description);
+                                   if (spec.default_value) {
+                                       description.push("Defaults to '" + spec.default_value + "'");
+                                   }
+                                   if (spec.multiple) {
+                                       description.push("This option can be specified more than once.");
+                                   }
+                                   name = "--" + spec.raw;
+
+                                   fo[name] =  description;
+                                   if (name.length > longest_name) {
+                                       longest_name = name.length;
+                                   }
+                               });
+
+                 column_two_start = longest_name + 4;
+                 juice.foreach(fo,
+                               function(name, description) {
+                                   var i, line = name;
+                                   for (i = name.length; i < column_two_start; i++) {
+                                       line += " ";
+                                   }
+
+                                   // FIXME: Handle description breaking
+                                   line += description.join(" ");
+                                   string.push(line);
+                               });
+                 return string.join("\n");
              }
          };
      };

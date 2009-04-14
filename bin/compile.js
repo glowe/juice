@@ -25,7 +25,7 @@ targets = {                 // Specifies which targets might require recompilati
 // Parse and process command-line arguments.
 
 program_options = juice.program_options(
-    {"cd=": ["Change to this directory before doing anything.", "."],
+    {"cd=DIR": ["Change to DIR before doing anything.", "."],
      "help": "Display this message."});
 
 po = program_options.parse_arguments(argv);
