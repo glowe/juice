@@ -6,6 +6,7 @@ import os
 import signal
 import sys
 import thread
+import time
 
 def run_server(server_address):
     httpd = BaseHTTPServer.HTTPServer(server_address, SimpleHTTPServer.SimpleHTTPRequestHandler)
@@ -31,6 +32,7 @@ def main(args):
     signal.signal(signal.SIGINT, lambda signum, stackframe: thread.exit())
 
     while True:
+        time.sleep(1)
         pass
 
 if __name__ == '__main__':
