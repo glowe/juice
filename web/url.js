@@ -42,7 +42,9 @@
              (answer.host ? answer.host : '') +
              (answer.port ? (':' + answer.port) : '');
 
-         return answer;
+         return {base: answer.base,
+                 path: answer.path,
+                 args: answer.args};
      };
 
      build_query_string = function(args) {
