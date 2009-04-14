@@ -256,8 +256,8 @@
 
              that.fire_domify = function() {
                  transition('rendered', 'domified');
-                 my.publish('domify');
                  fire_domify_for_linked_widgets();
+                 my.publish('domify');
              };
 
              // Calls f and return true if and only if the widget
