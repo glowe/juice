@@ -68,17 +68,24 @@
                                     });
                   };
 
+                  // Publish the specified event, passing `payload` to each
+                  // subscriber. Subscribers are called in LIFO order. If a
+                  // subscriber function returns false, the remaining
+                  // subscriber functions are skipped.
+
                   my.publish = function(event_name, payload) {
+                      var i, subs = subscribers[event_name];
                       assert_registered(event_name, 'publish');
-                      juice.foreach(subscribers[event_name],
-                                    function(pair) {
-                                        try {
-                                            pair.fn(payload);
-                                        }
-                                        catch (e) {
-                                            juice.error.handle(e);
-                                        }
-                                    });
+                      for (i = subs.length-1; i >= 0; --i) {
+                          try {
+                              if (subs[i].fn(payload) === false) {
+                                  return;
+                              }
+                          }
+                          catch (e) {
+                              juice.error.handle(e);
+                          }
+                      }
                   };
 
                   my.subscribe = function(publisher, event_name, fn) {
