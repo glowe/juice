@@ -26,8 +26,10 @@
              container_attribs = {},
              container_element = 'div',
              destroy_event_system,
+             dispose_of_domified_and_linked_widgets,
              domified_and_linked = [],
              enhancements = {},
+             fire_domify_for_linked_widgets,
              id = juice.newid(),
              linked = [],
              my = {},
@@ -225,7 +227,15 @@
              that.toString = that.render; // For convenience in templates
 
              my.register_event('domify');
-             that.fire_domify = function() { my.publish('domify'); };
+
+             // Transitions this widget into the domified state, publishes its
+             // domify event, and recursively domifies its children.
+
+             that.fire_domify = function() {
+                 transition('rendered', 'domified');
+                 my.publish('domify');
+                 fire_domify_for_linked_widgets();
+             };
 
              // Calls f when the widget enters the domified state.
              // Warning: has no effect if the widget is already
@@ -263,21 +273,16 @@
                  my.subscribe_self('dispose', f);
              };
 
-             var fire_domify_for_linked_widgets = function() {
+             fire_domify_for_linked_widgets = function() {
                  juice.foreach(linked, function(w) { w.fire_domify(); });
                  domified_and_linked = domified_and_linked.concat(linked);
                  linked = [];
              };
-             var dispose_of_domified_and_linked_widgets = function() {
+
+             dispose_of_domified_and_linked_widgets = function() {
                  juice.foreach(domified_and_linked, function(w) { w.dispose(); });
                  domified_and_linked = [];
              };
-
-             my.on_domify(
-                 function() {
-                     transition('rendered', 'domified');
-                     fire_domify_for_linked_widgets();
-                 });
 
              my.refresh = function(p) {
                  p = p || my.render;
