@@ -298,7 +298,7 @@
          if (juice.cookie.has('rpc.mock')) {
              return juice.cookie.get('rpc.mock');
          }
-         if (site.settings.config.mock_rpcs_by_default()) {
+         if (site.settings.config.mock_rpcs_by_default) {
              return {'*': true};
          }
          return {};
