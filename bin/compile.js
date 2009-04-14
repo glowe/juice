@@ -274,7 +274,7 @@ if (targets.user) {
     print("User defined hooks: OK.");
 }
 
-if (juice.build.site_settings().minify) {
+if (juice.build.config.minify()) {
     // FIXME: only minify what we have to
     juice.build.minify();
     print("Minify: OK.");

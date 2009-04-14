@@ -2,13 +2,13 @@
 
      var assert_mocking_enabled
      ,   assert_spec_is_valid       // throws an exception if a specification is improperly formatted
-     ,   bootstrap_mocking_cookie
      ,   call_with_random_delay     // used only for mocked rpcs; simulates network latency
      ,   current_namespace
      ,   debug                      // if debugging is enabled, logs rpc info to the console
      ,   default_failure_handler    // handles rpc errors when caller doesn't provide a failure_fn
      ,   default_proxy              // the non namespace-specific proxy function
      ,   find_proxy                 // looks up the proxy function for a specified rpc
+     ,   get_mock_cookie            // returns value of "rpc.mock" key in juice cookie
      ,   is_mocking_enabled         // tests whether this build supports mocked rpcs at all
      ,   lib                        // alias for juice.rpc
      ,   make_proxy_startable       // attaches plumbing to user-supplied proxy functions
@@ -285,7 +285,7 @@
      // +---------+
 
      is_mocking_enabled = function() {
-         return site.settings.rpc_mocking;
+         return site.settings.config.rpc_mocking;
      };
 
      assert_mocking_enabled = function() {
@@ -294,10 +294,14 @@
          }
      };
 
-     bootstrap_mocking_cookie = function() {
-         if (!juice.cookie.has('rpc.mock')) {
-             juice.cookie.set('rpc.mock', {});
+     get_mock_cookie = function() {
+         if (juice.cookie.has('rpc.mock')) {
+             return juice.cookie.get('rpc.mock');
          }
+         if (site.settings.config.mock_rpcs_by_default()) {
+             return {'*': true};
+         }
+         return {};
      };
 
      // Specifies how the specified RPC should be mocked. If o is a function,
@@ -339,8 +343,7 @@
      lib.mock_namespace = function(namespace) {
          var mock;
          assert_mocking_enabled();
-         bootstrap_mocking_cookie();
-         mock = juice.cookie.get('rpc.mock');
+         mock = get_mock_cookie();
          mock[namespace] = true;
          juice.cookie.set('rpc.mock', mock);
      };
@@ -349,7 +352,6 @@
 
      lib.mock_all = function() {
          assert_mocking_enabled();
-         bootstrap_mocking_cookie();
          juice.cookie.set('rpc.mock', {'*': true});
      };
 
@@ -357,7 +359,6 @@
 
      lib.mock_none = function() {
          assert_mocking_enabled();
-         bootstrap_mocking_cookie();
          juice.cookie.set('rpc.mock', {});
      };
 
@@ -367,8 +368,7 @@
 
      lib.whats_mocked = function() {
          assert_mocking_enabled();
-         bootstrap_mocking_cookie();
-         return juice.cookie.get('rpc.mock');
+         return get_mock_cookie('rpc.mock');
      };
 
      // +------------------+
@@ -380,8 +380,7 @@
      find_proxy = function(rpc) {
          var answer, mock;
          if (is_mocking_enabled()) {
-             bootstrap_mocking_cookie();
-             mock = juice.cookie.get('rpc.mock');
+             mock = get_mock_cookie();
              if (mock.hasOwnProperty('*') || rpc.namespace.search(mock)) {
                  return mocking_proxy;
              }

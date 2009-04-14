@@ -84,7 +84,7 @@
                            var dirs = [pkg.path], mock_dir = juice.path_join(pkg.path, 'mock');
 
                            // If rpc mocking is enabled and the mock dir exists, scan it too.
-                           if (juice.build.site_settings().rpc_mocking && juice.sys.file_exists(mock_dir) == "dir") {
+                           if (juice.build.config.rpc_mocking() && juice.sys.file_exists(mock_dir) == "dir") {
                                dirs.push(mock_dir);
                            }
 
