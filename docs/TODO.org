@@ -1,6 +1,7 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
+* IMPORTANT Implement --help for program options
 * IMPORTANT Revisit JUICE_LIBPATH--it doesn't really work the way we expected.
 * IMPORTANT Upgrade jquery
 * IMPORTANT Add juice.page.define_external
