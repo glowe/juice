@@ -42,9 +42,7 @@
              (answer.host ? answer.host : '') +
              (answer.port ? (':' + answer.port) : '');
 
-         return {base: answer.base,
-                 path: answer.path,
-                 args: answer.args};
+         return answer;
      };
 
      build_query_string = function(args) {
@@ -74,31 +72,64 @@
      };
 
      lib.make = function(spec) {
-         var that, parts;
-         if (!juice.is_object(spec)) {
-             spec = parse_url(spec);
+         var that, parsed_url, parts;
+         if (!spec) {
+             juice.error.raise("empty url");
          }
 
-         that = juice.spec(spec, {base: site.settings.base_url,
+         if (!juice.is_object(spec)) {
+             parsed_url = parse_url(spec);
+             spec = {base: parsed_url.base,
+                     path: parsed_url.path,
+                     port: parsed_url.port,
+                     args: parsed_url.args};
+         }
+
+         spec = juice.spec(spec, {base: site.settings.base_url,
                                   path: "",
+                                  port: null,
                                   args: {}});
 
-         if (juice.is_undefined(that.base)) {
+         if (juice.is_undefined(spec.base)) {
              juice.error.raise("base arg for url was undefined");
          }
 
          // Normalize that.base and that.path
-         that.base = that.base.replace(/\/+$/, "");
-         that.path = "/" + that.path.replace(/^\/+/, "");
+         spec.base.replace(/\/+$/, "");
+         spec.path = "/" + spec.path.replace(/^\/+/, "");
+
+         if (parsed_url) {
+             spec.host = parsed_url.host;
+         }
+         else {
+             // Extract host from the base url
+             spec.host = parse_url(spec.base).host;
+         }
+
+         that = {
+             base: spec.base,
+             host: spec.host,
+             port: spec.port,
+             path: spec.path,
+             args: spec.args
+         };
 
          that.to_string = function() {
-             var query = build_query_string(that.args || {});
-             return that.base + that.path +
-                 (query ? ('?' + query) : "");
+             var string = [that.base];
+             if (that.port) {
+                 string.push(":" + that.port);
+             }
+             string.push(that.path);
+             if (!juice.empty(that.args)) {
+                 string.push("?" + build_query_string(that.args));
+             }
+
+             return string.join("");
          };
 
          that.path_join = function(s) {
              return lib.make({base: that.base,
+                              port: that.port,
                               path: juice.path_join(that.path, s),
                               args: that.args});
          };
