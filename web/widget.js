@@ -237,12 +237,6 @@
                  fire_domify_for_linked_widgets();
              };
 
-             // Calls f when the widget enters the domified state.
-             // Warning: has no effect if the widget is already
-             // domified.
-
-             my.on_domify = function(f) { my.subscribe_self('domify', f); };
-
              // Calls f and return true if and only if the widget
              // is in the domified state. Otherwise, returns false.
 
@@ -259,9 +253,7 @@
              // becomes domified.
 
              my.after_domify = function(f) {
-                 if (!my.if_domified(f)) {
-                     my.on_domify(f);
-                 }
+                 my.if_domified(f) || my.subscribe_self('domify', f);
              };
 
              my.register_event('dispose');
@@ -309,7 +301,7 @@
                  }
                  enhancements[name] = true;
                  css_class = 'enhancer_' + name.replace(/[.]/g, '_');
-                 my.on_domify(function() { my.$().addClass(css_class); });
+                 my.after_domify(function() { my.$().addClass(css_class); });
                  enhancers[name](that, my, spec);
                  return that;
              };
