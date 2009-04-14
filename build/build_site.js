@@ -82,8 +82,11 @@
                                                       ['base_url',
                                                        'cookie_name',
                                                        'user',
-                                                       'rpc_mocking',
                                                        'smother_alerts']);
+         runtime_settings.config = {
+             mock_rpcs_by_default: juice.build.config.mock_rpcs_by_default(),
+             rpc_mocking: juice.build.config.rpc_mocking()
+         };
 
          // Since settings are prerequisite for many things, make sure they're set first.
          base.unshift('site.settings=' + JSON.stringify(runtime_settings) + ';');

@@ -21,8 +21,6 @@
                                         global_stylesheet_urls: [],
                                         global_widget_packages: [],
                                         js_base_url: undefined,
-                                        minify: false,
-                                        rpc_mocking: true,
                                         smother_alerts: false,
                                         user: {}});
      };
