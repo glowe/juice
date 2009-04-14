@@ -140,9 +140,9 @@
 
                            dependencies.stylesheet_urls =
                                juice.unique(
+                                   juice.build.site_settings().global_stylesheet_urls,
                                    dependencies.stylesheet_urls,
-                                   page.stylesheet_urls(),
-                                   juice.build.site_settings().global_stylesheet_urls);
+                                   page.stylesheet_urls());
 
                            juice.build.write_final_file(
                                path,
