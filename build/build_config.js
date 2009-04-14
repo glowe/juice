@@ -63,8 +63,13 @@
              juice.sys.write_file(config_filename, JSON.stringify(conf_db), true);
          },
          load: function() {
-             conf_db = juice.spec(juice.build.read_file_json(config_filename), spec);
-             juice.build.eval_file(juice.build.config.site_settings_path());
+             try {
+                 conf_db = juice.spec(juice.build.read_file_json(config_filename), spec);
+                 juice.build.eval_file(juice.build.config.site_settings_path());
+             }
+             catch (e) {
+                 juice.build.fatal("Unable to load build configuration. Perhaps you need to run \"juice config\"?");
+             }
          }
      };
 

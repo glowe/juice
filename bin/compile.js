@@ -35,13 +35,7 @@ juice.sys.chdir(options.cd);
 
 // Before we do anything potentially destructive, make sure we are in a valid,
 // configured site directory.
-
-try {
-    juice.build.config.load();
-}
-catch (e) {
-    juice.build.fatal("Unable to load build configuration. Perhaps you need to run \"juice config\"?");
-}
+juice.build.config.load();
 
 // If the user specified the meta-target "all", recompile all targets.
 

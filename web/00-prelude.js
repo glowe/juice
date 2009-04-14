@@ -145,18 +145,29 @@
          return false;
      };
 
-     // Returns the first value in the given array or dictionary. (Note: The
+     // Returns the first index in the given array or dictionary.  (Note: The
      // de facto order of iteration in dictionaries is based on the order in
      // which properties were defined.)
 
-     lib.first = function(dict) {
+     lib.first_key = function(dict) {
          var i;
          for (i in dict) {
              if (dict.hasOwnProperty(i)) {
-                 return dict[i];
+                 return i;
              }
          }
          return null;
+     };
+
+
+     // Like first_key, but returns the value instead.
+
+     lib.first = function(dict) {
+         var i = lib.first_key(dict);
+         if (lib.is_null(i)) {
+             return null;
+         }
+         return dict[i];
      };
 
      // If a is undefined or null, returns b. Otherwise, returns a.

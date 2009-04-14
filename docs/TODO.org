@@ -1,6 +1,9 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
+* IMPORTANT Revisit JUICE_LIBPATH--it doesn't really work the way we expected.
+* IMPORTANT Upgrade jquery
+* IMPORTANT Add juice.page.define_external
 * IMPORTANT Provide convenient way to globally manipulate page titles.
 * IMPORTANT Need to recompile base whenever an rpc/widget package is added or removed.
 * IMPORTANT Create pagination component for SEO
