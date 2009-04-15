@@ -1,7 +1,7 @@
 var docroot, base_url, js_base_url, options, program_options, po;
 
 program_options = juice.program_options(
-    {"cd=": ["Change to this directory before doing anything.", "."],
+    {"cd=DIR": ["Change to DIR before doing anything.", "."],
      "help": "Display this message."});
 
 po = program_options.parse_arguments(argv);
