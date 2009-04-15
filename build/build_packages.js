@@ -124,6 +124,26 @@
          return lib;
      };
 
+     juice.build.all_library_stubs = function() {
+         var answer = {};
+         juice.foreach(juice.build.config.lib_paths(),
+                       function(lib_name) {
+                           answer[lib_name] = juice.build.library_stubs(lib_name);
+                       });
+         return answer;
+     };
+
+     // Write the JSONified output of juice.build.all_library_stubs() to a
+     // hidden source file, tag it with the "base" target, and return it. This
+     // allows the compiler to force the base target to be recompiled whenever
+     // a package is added to or removed from a library.
+
+     juice.build.make_all_library_stubs_source_file = function() {
+         var filename =  ".juice-all-library-stubs.json";
+         juice.sys.write_file(filename, JSON.stringify(juice.build.all_library_stubs()), true);
+         return juice.build.source_file({target_type: "base", path: filename});
+     };
+
      juice.build.compile_widget_package = function(lib_name, pkg_name, all_source_files) {
          var source_files, templates, widgets;
 
