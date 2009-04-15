@@ -17,7 +17,7 @@ if (@ARGV < 1) {
     print "  newsite    Create scaffolding for a new site.\n";
     print "  runserver  Run a standalone webserver for a site.\n";
     print "\n";
-    print "For help on a specific command run 'juice COMMAND --help\n";
+    print "For help on a specific command run 'juice COMMAND --help'\n";
     exit 1;
 }
 
