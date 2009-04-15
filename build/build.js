@@ -153,4 +153,17 @@
                                          });
                        });
      };
+
+     juice.build.handle_help = function(help, usage, description) {
+         if (!help) {
+             return;
+         }
+         print("Usage: juice " + usage);
+         print("\nDESCRIPTION\n");
+         print(description + "\n");
+         print("\nOPTIONS\n");
+         print(program_options);
+         juice.sys.exit(2);
+     };
+
  })(juice);

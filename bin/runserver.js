@@ -9,10 +9,7 @@ options = po.options;
 juice.foreach(po.unconsumed, function(k) { explicit_targets[k] = true; });
 juice.sys.chdir(options.cd);
 
-if (options.help) {
-    print(program_options);
-    juice.sys.exit(0);
-}
+juice.build.handle_help(options.help, "runserver", "Runs a standalone webserver for a site.");
 
 juice.build.config.load();
 docroot     = juice.build.final_file_path('');

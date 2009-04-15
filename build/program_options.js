@@ -175,9 +175,12 @@
                                function(option, spec) {
                                    var description = [], name;
                                    description.push(spec.description);
-                                   if (spec.default_value) {
-                                       description.push("Defaults to '" + spec.default_value + "'");
+
+                                   if ((juice.is_array(spec.default_value) && spec.default_value.length > 0)
+                                       || (!juice.is_array(spec.default_value) && spec.default_value)) {
+                                       description.push("Defaults to '" + spec.default_value + "'.");
                                    }
+
                                    if (spec.multiple) {
                                        description.push("This option can be specified more than once.");
                                    }

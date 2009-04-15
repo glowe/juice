@@ -30,6 +30,9 @@ program_options = juice.program_options(
 
 po = program_options.parse_arguments(argv);
 options = po.options;
+
+juice.build.handle_help(options.help, "compile", "Compiles a site. juice config must be run first");
+
 juice.foreach(po.unconsumed, function(k) { explicit_targets[k] = true; });
 juice.sys.chdir(options.cd);
 
@@ -43,10 +46,6 @@ if (explicit_targets.all) {
     juice.foreach(targets, function(k) { explicit_targets[k] = true; });
 }
 
-if (options.help) {
-    print(program_options);
-    juice.sys.exit(0);
-}
 
 // If the user specified the "clean" meta-target, reset the build. Also, if
 // that was the only explit target, exit without compiling anything.

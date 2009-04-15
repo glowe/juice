@@ -1,15 +1,18 @@
-var site_name, lib_path, write_template, site_base_url, usage;
+var
+lib_path,
+options,
+po,
+program_options,
+site_base_url,
+site_name,
+write_template;
+
+program_options = juice.program_options(
+    {"help": "Display this message."});
+po = program_options.parse_arguments(argv);
+options = po.options;
 
 site_base_url = "http://localhost:8000";
-
-usage = function(msg) {
-    print("Error: " + msg);
-    print("\nUsage: juice newsite <name>");
-    print("\nDESCRIPTION");
-    print("\nname  Must be a legal javascript identifier (i.e., starts with a");
-    print("      letter or $, then letters, $, numbers, or _s).");
-    juice.sys.exit(2);
-};
 
 write_template = function(filename, output_base_path) {
     var template_path, template;
@@ -24,14 +27,21 @@ write_template = function(filename, output_base_path) {
                          true);
 };
 
-if (argv.length != 1) {
-    usage("Missing site name!");
+juice.build.handle_help(
+    options.help,
+    "newsite <name>",
+    ("Creates scaffolding for a new site. The 'name' argument specifies\n" +
+     "the name of the site; it must be a legal javascript identifier\n" +
+     "(i.e., starts with a letter or $, then letters, $, numbers, or _."));
+
+if (po.unconsumed.length != 1) {
+    juice.build.fatal("Missing site name! Try --help.");
 }
 
-site_name = argv[0];
+site_name = po.unconsumed[0];
 
 if (!/^[a-z]|\$[a-z0-9_\$]*/i.test(site_name)) {
-    usage("Invalid site name: " + site_name);
+    juice.build.fatal("Invalid site name: " + site_name + ". Try --help");
 }
 
 juice.sys.mkdir(site_name);
