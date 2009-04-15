@@ -490,12 +490,6 @@
          return lib.keys(s);
      };
 
-     // Returns the union of arrays.
-     lib.union = function() {
-         var args = juice.args(arguments);
-         return lib.unique(Array.prototype.concat.apply(args[0], args.slice(1)));
-     };
-
      lib.date_to_unix = function(d) {
          return Math.floor(((d || new Date()).getTime() / 1000).toFixed());
      };
