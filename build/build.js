@@ -8,8 +8,18 @@
 
      juice.build = {};
 
+     // Prints help documentation and exits.
+     // TODO: add program name and description to the output.
+
+     juice.build.help = function(options) {
+         print("OPTIONS\n" + options.documentation("\t"));
+         juice.sys.exit(0);
+     };
+
+     // Prints an error message and dies with a non-zero exit code.
+     // TODO: possibly reformat msg when it's too long.
+
      juice.build.fatal = function(msg) {
-         // TODO: possibly reformat msg when it's too long.
          print("FATAL: " + msg);
          juice.sys.exit(2);
      };

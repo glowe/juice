@@ -35,6 +35,7 @@ juice.sys.chdir(options.cd);
 
 // Before we do anything potentially destructive, make sure we are in a valid,
 // configured site directory.
+
 juice.build.config.load();
 
 // If the user specified the meta-target "all", recompile all targets.
@@ -44,8 +45,7 @@ if (explicit_targets.all) {
 }
 
 if (options.help) {
-    print(program_options);
-    juice.sys.exit(0);
+    juice.build.help(program_options);
 }
 
 // If the user specified the "clean" meta-target, reset the build. Also, if
