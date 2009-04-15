@@ -1,7 +1,7 @@
 var docroot, base_url, js_base_url, options, program_options, po;
 
 program_options = juice.program_options(
-    {"cd=": ["Change to this directory before doing anything.", "."],
+    {"cd=DIR": ["Change to DIR before doing anything.", "."],
      "help": "Display this message."});
 
 po = program_options.parse_arguments(argv);
@@ -9,10 +9,7 @@ options = po.options;
 juice.foreach(po.unconsumed, function(k) { explicit_targets[k] = true; });
 juice.sys.chdir(options.cd);
 
-if (options.help) {
-    print(program_options);
-    juice.sys.exit(0);
-}
+juice.build.handle_help(options.help, "runserver", "Runs a standalone webserver for a site.");
 
 juice.build.config.load();
 docroot     = juice.build.final_file_path('');

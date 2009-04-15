@@ -1,6 +1,9 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
+* IMPORTANT Change widget package scoping
+  We shouldn't bother scoping files anymore
+* IMPORTANT RPC packages should probably be in single files
 * IMPORTANT Add juice.page.define_external
 * IMPORTANT Provide convenient way to globally manipulate page titles.
 * IMPORTANT Create pagination component for SEO
@@ -12,8 +15,6 @@
   returns, we shouldn't honor the validation request.
 * IMPORTANT Unify type checking in juice/CTK RPC specification verification code.
 * IMPORTANT Add a widget browser
-* IMPORTANT Fix compile template errors
-  Source files should not have to be reloaded
 * IMPORTANT When widget dependencies are calculated, we should ensure that the packages really exist
 * MAYBE Add server-side validation procedure
 * MAYBE Scope the juice.lib namespace passed to widget packages based on their stated dependencies.
@@ -271,3 +272,6 @@ to use proj.widget.bar.link.
 * DONE automatically determine whether pages have overlapping urls (when possible)
 ======
 * DONE Change proj settings to just be a dictionary--that way more flexible after all
+* DONE Fix compile template errors
+  Source files should not have to be reloaded
+* DONE Implement --help for program options

@@ -46,8 +46,8 @@ find_library = function(name) {
 };
 
 program_options = juice.program_options(
-    {"settings=": ["Specify path to site setting file.", "settings/default.js"],
-     "with-lib=[]": ["Specify path to an external library.", []],
+    {"settings=PATH": ["Specify PATH to site setting file.", "settings/default.js"],
+     "with-lib=[]": ["Specify path to an external library <libname:PATH>.", []],
      "lint-juice": "Lint the juice framework.",
      "rpc-mocking": "Enable mocked remote procedure calls.",
      "mock-rpcs-by-default": "By default, mock all RPCs (requires --rpc-mocking).",
@@ -56,10 +56,7 @@ program_options = juice.program_options(
 
 options = program_options.parse_arguments(argv).options;
 
-if (options.help) {
-    print(program_options);
-    juice.sys.exit(0);
-}
+juice.build.handle_help(options.help, "config [OPTIONS]", "Configures compile-time options for a site.");
 
 if (options["mock-rpcs-by-default"] && !options["rpc-mocking"]) {
     juice.build.fatal("Cannot specify --mock-rpcs-by-default without --rpc-mocking.");

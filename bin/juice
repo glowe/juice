@@ -9,7 +9,15 @@ unless (defined $ENV{'JUICE_HOME'}) {
 }
 
 if (@ARGV < 1) {
-    print "Usage: $PROGRAM_NAME CMD ARGS\n";
+    print "Usage: $PROGRAM_NAME COMMAND [ARGS]\n";
+    print "\n";
+    print "Commands:\n";
+    print "  compile    Compile a site.\n";
+    print "  config     Configure a site.\n";
+    print "  newsite    Create scaffolding for a new site.\n";
+    print "  runserver  Run a standalone webserver for a site.\n";
+    print "\n";
+    print "For help on a specific command run 'juice COMMAND --help'\n";
     exit 1;
 }
 
