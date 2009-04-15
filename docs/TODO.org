@@ -2,7 +2,6 @@
 #+STARTUP: overview
 
 * IMPORTANT Implement --help for program options
-* IMPORTANT Revisit JUICE_LIBPATH--it doesn't really work the way we expected.
 * IMPORTANT Add juice.page.define_external
 * IMPORTANT Provide convenient way to globally manipulate page titles.
 * IMPORTANT Create pagination component for SEO
@@ -59,6 +58,7 @@
 By insulating each package source file, it prevents the programmer from
 declaring common code (e.g. in a "00-prelude.js" file) to be shared throughout
 the package.
+* DONE Revisit JUICE_LIBPATH--it doesn't really work the way we expected.
 * DONE Upgrade jquery
 * DONE Need to recompile base whenever an rpc/widget package is added or removed.
 * DONE Add build instructions for v8 shell
