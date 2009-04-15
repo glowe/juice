@@ -22,6 +22,7 @@
              var
              container_attribs = {},
              container_element = 'div',
+             css_classes = {},
              destroy_event_system,
              dispose_of_domified_and_linked_widgets,
              domified_and_linked = [],
@@ -146,6 +147,24 @@
                  return elems.find(selector);
              };
 
+             that.add_class = function(s) {
+                 if (my.state() == 'initial') {
+                     css_classes[s] = true;
+                 }
+                 else {
+                     my.after_domify(function() { my.$().addClass(s); });
+                 }
+             };
+
+             that.remove_class = function(s) {
+                 if (my.state() == 'initial') {
+                     delete css_classes[s];
+                 }
+                 else {
+                     my.after_domify(function() { my.$().removeClass(s); });
+                 }
+             };
+
              that.show = function() { my.expect_state('domified'); my.$().show(); };
              that.hide = function() { my.expect_state('domified'); my.$().hide(); };
              that.remove = function() { my.expect_state('domified'); my.$().remove(); that.dispose(); };
@@ -176,6 +195,9 @@
              };
 
              my.set_container_element = function(t, attribs) {
+                 if (attribs.hasOwnProperty('id') || attribs.hasOwnProperty('class')) {
+                     juice.error.raise("can't specify id or class as container attribute");
+                 }
                  container_element = t;
                  container_attribs = attribs;
              };
@@ -205,18 +227,8 @@
                                   'class': namespace[0] + ' ' + namespace[2] + ' ' + name + ' widget',
                                   'id': id
                               };
-                              juice.foreach(container_attribs,
-                                            function(k, v) {
-                                                if (k == 'id') {
-                                                    juice.error.raise("can't specify id as container attribute");
-                                                }
-                                                if (k == 'class') {
-                                                    attribs[k] += ' ' + v;
-                                                }
-                                                else {
-                                                    attribs[k] = v;
-                                                }
-                                            });
+                              juice.foreach(container_attribs, function(k, v) { attribs[k] = v; });
+                              juice.foreach(css_classes, function(k) { attribs['class'] += ' ' + k; });
                               transition('initial', 'rendered');
                               return '<' +
                                   container_element + ' ' +
