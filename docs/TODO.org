@@ -1,7 +1,9 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
-* IMPORTANT Implement --help for program options
+* IMPORTANT Change widget package scoping
+  We shouldn't bother scoping files anymore
+* IMPORTANT RPC packages should probably be in single files
 * IMPORTANT Revisit JUICE_LIBPATH--it doesn't really work the way we expected.
 * IMPORTANT Upgrade jquery
 * IMPORTANT Add juice.page.define_external
@@ -271,3 +273,4 @@ to use proj.widget.bar.link.
 * DONE Change proj settings to just be a dictionary--that way more flexible after all
 * DONE Fix compile template errors
   Source files should not have to be reloaded
+* DONE Implement --help for program options
