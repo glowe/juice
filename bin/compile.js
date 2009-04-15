@@ -113,6 +113,7 @@ all_source_files = all_source_files.concat(
               }));
 
 all_source_files.push(juice.build.source_file({target_type: "settings", path: juice.build.config.site_settings_path()}));
+all_source_files.push(juice.build.make_all_library_stubs_source_file());
 
 // Load the user-defined compile hooks, then locate the source files they're
 // interested in and combine them with all_source_files in a new array.

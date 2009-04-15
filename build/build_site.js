@@ -34,11 +34,13 @@
                               return juice.build.read_file_and_scope_js(source.path);
                           });
 
-         // lib_paths() contains all libraries that are used by the site.
-         // Explode out library declarations to allow forward references.
-         juice.foreach(juice.build.config.lib_paths(),
-                       function(lib_name) {
-                           base.push("site.lib."+lib_name+"="+JSON.stringify(juice.build.library_stubs(lib_name))+";");
+         // Get the set of all library stubs and translate them into
+         // javascript declarations. This will allow the client
+         // programmer to make forward references to packages.
+
+         juice.foreach(juice.build.all_library_stubs(),
+                       function(lib_name, lib_stubs) {
+                           base.push("site.lib."+lib_name+"="+JSON.stringify(lib_stubs)+";");
                        });
 
          // Build a dictionary that maps each library name to its

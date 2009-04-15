@@ -8,11 +8,8 @@
 * IMPORTANT Change widget package scoping
   We shouldn't bother scoping files anymore
 * IMPORTANT RPC packages should probably be in single files
-* IMPORTANT Revisit JUICE_LIBPATH--it doesn't really work the way we expected.
-* IMPORTANT Upgrade jquery
 * IMPORTANT Add juice.page.define_external
 * IMPORTANT Provide convenient way to globally manipulate page titles.
-* IMPORTANT Need to recompile base whenever an rpc/widget package is added or removed.
 * IMPORTANT Create pagination component for SEO
 * IMPORTANT Compiled script names should have something unique in them to thwart browser caching (i.e. we need url versioning)
 * IMPORTANT Add facility to ignore success or failure functions when rpc finishes
@@ -65,6 +62,10 @@
 By insulating each package source file, it prevents the programmer from
 declaring common code (e.g. in a "00-prelude.js" file) to be shared throughout
 the package.
+* DONE Implement --help for program options
+* DONE Revisit JUICE_LIBPATH--it doesn't really work the way we expected.
+* DONE Upgrade jquery
+* DONE Need to recompile base whenever an rpc/widget package is added or removed.
 * DONE Add build instructions for v8 shell
 * DONE automatically determine whether pages have overlapping urls (when possible)
 * DONE do another pass on error reporting; make sure we're using juice.error.raise correctly everywhere
