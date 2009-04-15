@@ -1,6 +1,10 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
+* MAYBE Why do we have form.init?
+* IMPORTANT Add a config option to use googleapi jquery
+* IMPORTANT Add a config option to smush.it images
+* IMPORTANT Add a config option to warn about pages exceeding a base # of includes
 * IMPORTANT Change widget package scoping
   We shouldn't bother scoping files anymore
 * IMPORTANT RPC packages should probably be in single files
