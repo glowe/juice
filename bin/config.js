@@ -30,7 +30,14 @@ find_library = function(name) {
     }
     path = juice.find(juice.sys.list_dir(juice.libpath(), {fullpath:true}),
                       function(filename) {
-                          return juice.build.lib_exists(name, filename) ? filename : undefined;
+                          return juice.find(["", "lib"],
+                                            function(dir) {
+                                                var filename2 = juice.path_join(filename, dir);
+                                                if (juice.build.lib_exists(name, filename2)) {
+                                                    return filename2;
+                                                }
+                                                return undefined;
+                                            });
                       });
     if (path) {
         return path;
