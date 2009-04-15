@@ -10,7 +10,8 @@ juice.foreach(po.unconsumed, function(k) { explicit_targets[k] = true; });
 juice.sys.chdir(options.cd);
 
 if (options.help) {
-    juice.build.help(program_options);
+    print(program_options);
+    juice.sys.exit(0);
 }
 
 juice.build.config.load();

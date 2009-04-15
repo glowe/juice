@@ -163,27 +163,9 @@
                  return {options:result, unconsumed:args.unconsumed};
              },
 
-             // Convert our options into human-readable documentation.
-
-             documentation: function(prepend) {
-                 var lines = [];
-                 juice.foreach(options,
-                               function(name, details) {
-                                   var optfmt = "--" + name;
-                                   if (details.expects_value) {
-                                       optfmt += "=VALUE";
-                                   }
-                                   if (details.multiple) {
-                                       optfmt += " [ " + optfmt + " ... ]";
-                                   }
-                                   lines.push("" + optfmt);
-                                   lines.push("\t" + details.description);
-                                   if (!juice.is_undefined(details.default_value)) {
-                                       lines.push("\t(Default: " + juice.dump(details.default_value) + ")");
-                                   }
-                                   lines.push("");
-                               });
-                 return juice.map(lines, function(s) { return s ? (prepend + s) : ""; }).join("\n");
+             toString: function() {
+                 // FIXME: return a nicely formatted help screen.
+                 return juice.dump(options);
              }
          };
      };

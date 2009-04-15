@@ -50,14 +50,15 @@ program_options = juice.program_options(
      "with-lib=[]": ["Specify path to an external library.", []],
      "lint-juice": "Lint the juice framework.",
      "rpc-mocking": "Enable mocked remote procedure calls.",
-     "mock-rpcs-by-default": "By default, mock all RPCs. Requires --rpc-mocking.",
-     "minify": "Optimize JavaScript output for size.",
+     "mock-rpcs-by-default": "By default, mock all RPCs (requires --rpc-mocking).",
+     "minify": "Optimized JavaScript output for size.",
      "help": "Display this message."});
 
 options = program_options.parse_arguments(argv).options;
 
 if (options.help) {
-    juice.build.help(program_options);
+    print(program_options);
+    juice.sys.exit(0);
 }
 
 if (options["mock-rpcs-by-default"] && !options["rpc-mocking"]) {
