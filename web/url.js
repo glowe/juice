@@ -116,21 +116,18 @@
 
          that.to_string = function() {
              var string = [that.base];
-             if (that.port) {
-                 string.push(":" + that.port);
-             }
              string.push(that.path);
              if (!juice.empty(that.args)) {
                  string.push("?" + build_query_string(that.args));
              }
-
              return string.join("");
          };
 
-         that.path_join = function(s) {
+         that.path_join = function() {
+             var args = [that.path].concat(juice.args(arguments));
              return lib.make({base: that.base,
                               port: that.port,
-                              path: juice.path_join(that.path, s),
+                              path: juice.path_join.apply(this, args),
                               args: that.args});
          };
 
