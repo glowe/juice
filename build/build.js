@@ -74,7 +74,12 @@
 
      juice.build.read_file_json = function(filename) {
          var answer;
-         eval('answer = ' + juice.sys.read_file(filename));
+         try {
+             eval('answer = ' + juice.sys.read_file(filename));
+         }
+         catch (e) {
+             juice.build.fatal('parse error in "'+filename+'"');
+         }
          return answer;
      };
 
