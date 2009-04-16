@@ -14,6 +14,19 @@
          juice.sys.exit(2);
      };
 
+     // Removes all files created by the compile command. Does not remove
+     // files created by the config command.
+
+     juice.build.clean = function() {
+         juice.sys.rm_rf("./build");
+         juice.foreach(juice.sys.list_dir(".", {filter_re: /^[.]juice/}),
+                       function(filename) {
+                           if (filename != ".juice-config.json") {
+                               juice.sys.unlink(filename);
+                           }
+                       });
+     };
+
      juice.build.set_site_settings = function(s) {
 
          // stringify searches a javascript data structure for objects with

@@ -25,15 +25,24 @@ targets = {                 // Specifies which targets might require recompilati
 // Parse and process command-line arguments.
 
 program_options = juice.program_options(
-    {"cd=DIR": ["Change to DIR before doing anything.", "."],
-     "help": "Display this message."});
+    {"cd=DIR"  : ["Change to DIR before doing anything.", "."],
+     "help"    : "Display this message.",
+     "all"     : "Recompile all targets.",
+     "clean"   : "Delete all compiled output before doing anything.",
+     "base"    : "Recompile the site base file.",
+     "pages"   : "Recompile all pages.",
+     "rpcs"    : "Recompile all RPC packages.",
+     "widgets" : "Recompile all widget packages.",
+     "user"    : "Recompile all user-supplied hooks."});
 
 po = program_options.parse_arguments(argv);
 options = po.options;
 
-juice.build.handle_help(options.help, "compile", "Compiles a site. juice config must be run first");
+juice.build.handle_help(
+    options.help,
+    "compile",
+    "Compiles a site. juice config must be run first.");
 
-juice.foreach(po.unconsumed, function(k) { explicit_targets[k] = true; });
 juice.sys.chdir(options.cd);
 
 // Before we do anything potentially destructive, make sure we are in a valid,
@@ -42,18 +51,26 @@ juice.build.config.load();
 
 // If the user specified the meta-target "all", recompile all targets.
 
-if (explicit_targets.all) {
+if (options.all) {
     juice.foreach(targets, function(k) { explicit_targets[k] = true; });
+}
+else {
+    juice.foreach(targets,
+                  function(k) {
+                      if (options[k]) {
+                          explicit_targets[k] = true;
+                      }
+                  });
 }
 
 
-// If the user specified the "clean" meta-target, reset the build. Also, if
-// that was the only explit target, exit without compiling anything.
+// If the user specified the "clean" option, reset the build. Also, if that
+// was the only explit target, exit without compiling anything.
 
-if (explicit_targets.clean) {
+if (options.clean) {
     juice.build.clean();
     print("You are now clean.");
-    if (po.unconsumed.length == 1) {
+    if (juice.empty(explicit_targets)) {
         juice.sys.exit(0);
     }
 }

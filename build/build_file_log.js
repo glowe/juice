@@ -1,11 +1,6 @@
 (function(juice) {
      var log_filename = '.juice-file-log.json';
 
-     juice.build.clean = function() {
-         juice.sys.unlink(log_filename);
-         juice.sys.rm_rf('./build');
-     };
-
      juice.build.file_log = function(source_files) {
          var cache = {}, log, sha1_file;
 

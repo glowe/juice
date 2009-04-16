@@ -96,11 +96,11 @@
                                           if (f == "." || f == "..") {
                                               return false;
                                           }
-                                          if (!spec.show_hidden && f[0] == ".") {
-                                              return false;
-                                          }
                                           if (spec.filter_re) {
                                               return spec.filter_re.test(f);
+                                          }
+                                          if (!spec.show_hidden && f[0] == ".") {
+                                              return false;
                                           }
                                           return true;
                                       });
