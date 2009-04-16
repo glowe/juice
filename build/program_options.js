@@ -23,7 +23,7 @@
                                                  +juice.dump(details)+'; '+msg);
                            };
 
-                           if ((match = /^([^=]+)=[^=]*$/.exec(name))) {
+                           if ((match = /^([^=]+)=[^=\[\]]*$/.exec(name))) {
                                name = match[1];
                                expects_value = true;
                            }
@@ -169,7 +169,7 @@
              },
 
              toString: function() {
-                 var column_two_start, fo = {}, longest_name = 0, string = [], break_here = 80;
+                 var column_two_start, fo = {}, longest_name = 0, string = [];
 
                  juice.foreach(options,
                                function(option, spec) {
