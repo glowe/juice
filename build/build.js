@@ -15,14 +15,35 @@
      };
 
      juice.build.set_site_settings = function(s) {
-         site_settings = juice.spec(s, {base_url: undefined,
-                                        cookie_name: undefined,
-                                        global_script_urls: [],
-                                        global_stylesheet_urls: [],
-                                        global_widget_packages: [],
-                                        js_base_url: undefined,
-                                        smother_alerts: false,
-                                        user: {}});
+
+         // stringify searches a javascript data structure for objects with
+         // toString methods and converts those objects into strings. All
+         // other data types are left unadulterated. This is necessary because
+         // we serialize the user-supplied site settings into JSON, and the
+         // settings could include complex data types that know how to
+         // serialize themselves into strings (URL objects, for example).
+
+         var stringify = function(v) {
+             if (juice.is_object(v)) {
+                 if (v.hasOwnProperty('toString')) {
+                     return v.toString();
+                 }
+                 return juice.map(v, stringify);
+             }
+             if (juice.is_array(v)) {
+                 return juice.map(v, stringify);
+             }
+             return v;
+         };
+
+         site_settings = stringify(juice.spec(s, {base_url: undefined,
+                                                  cookie_name: undefined,
+                                                  global_script_urls: [],
+                                                  global_stylesheet_urls: [],
+                                                  global_widget_packages: [],
+                                                  js_base_url: undefined,
+                                                  smother_alerts: false,
+                                                  user: {}}));
      };
 
      juice.build.site_settings = function() {
