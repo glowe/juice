@@ -48,6 +48,7 @@ juice.sys.chdir(options.cd);
 // Before we do anything potentially destructive, make sure we are in a valid,
 // configured site directory.
 juice.build.config.load();
+juice.build.load_versioned_paths();
 
 // If the user specified the meta-target "all", recompile all targets.
 
@@ -62,7 +63,6 @@ else {
                       }
                   });
 }
-
 
 // If the user specified the "clean" option, reset the build. Also, if that
 // was the only explit target, exit without compiling anything.
@@ -229,19 +229,10 @@ grouped_source_files = juice.group_by(all_source_files, function(file) { return 
 
 // Determine which targets need to be recompiled.
 
-
 if (targets.pages) {
     juice.build.lint_page_paths();
     print("Lint pages: OK.");
 }
-
-// FIXME: It'd be nice to only recompile a subset of the affected
-// pages on a widget recompile.
-if (targets.pages || !juice.empty(targets.widgets)) {
-    juice.build.compile_pages();
-    print("Compile pages: OK.");
-}
-
 
 if (targets.pages || targets.base) {
     juice.build.compile_site_base(grouped_source_files);
@@ -285,6 +276,26 @@ if (targets.user) {
     print("User defined hooks: OK.");
 }
 
+// When should we recompile pages?
+//
+// (1) Obvious.
+//
+// (2) Recompiling widgets implies that the widget package dependency graph
+// may have changed, which means the set of javascript urls we have to include
+// on pages may have changed.
+//
+// (3) If we are configured to include content hashes in compiled js urls, we
+// should recompile pages every time we run. It's possible to be smarter about
+// this, but we're going to pretend it isn't worth the trouble.
+
+if (targets.pages ||                       // (1)
+    !juice.empty(targets.widgets) ||       // (2)
+    juice.build.config.version_js_urls())  // (3)
+{
+    juice.build.compile_pages();
+    print("Compile pages: OK.");
+}
+
 if (juice.build.config.minify()) {
     // FIXME: only minify what we have to
     juice.build.minify();
@@ -295,3 +306,5 @@ print("Done.");
 
 juice.foreach(all_source_files_plus_user, function(f) { file_log.update_file(f.path); });
 file_log.save();
+juice.build.save_versioned_paths();
+

@@ -8,7 +8,8 @@
          minify: false,
          mock_rpcs_by_default: false,
          rpc_mocking: false,
-         site_settings_path: undefined
+         site_settings_path: undefined,
+         version_js_urls: false
      };
 
      conf_db = juice.copy_object(spec);
@@ -35,6 +36,9 @@
          set_site_settings_path: function(p) {
              conf_db.site_settings_path = p;
          },
+         set_version_js_urls: function(b) {
+             conf_db.version_js_urls = !!b;
+         },
 
          // Accessors.
 
@@ -55,6 +59,9 @@
          },
          site_settings_path: function() {
              return conf_db.site_settings_path;
+         },
+         version_js_urls: function() {
+             return conf_db.version_js_urls;
          },
 
          // Saving and loading.

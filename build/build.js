@@ -4,7 +4,8 @@
 
 (function(juice) {
 
-     var site_settings = {};
+     var site_settings = {},    // parsed contents of the site-specific settings file
+     versioned_paths = {};      // maps paths to compiled files to their sha1-versioned paths
 
      juice.build = {};
 
@@ -94,7 +95,41 @@
      };
 
      juice.build.write_target_file = function(relpath, contents) {
-         juice.sys.write_file(juice.build.target_file_path(relpath), contents, true);
+         var newpath, parts, relpaths = [relpath];
+
+         // If we're configured to insert content hashes into js urls and this
+         // is a .js file, write an extra copy of the file to the hash path.
+
+         if (juice.build.config.version_js_urls()) {
+             parts = juice.sys.parse_path(relpath);
+             if (parts.ext == "js") {
+                 newpath = juice.path_join(parts.dir, juice.sys.sha1(contents) + "-" + parts.filename);
+                 relpaths.push(newpath);
+                 versioned_paths[relpath] = newpath;
+             }
+         }
+
+         juice.foreach(relpaths,
+                       function(relpath) {
+                           var path = juice.build.target_file_path(relpath);
+                           juice.sys.write_file(path, contents, true);
+                       });
+     };
+
+     (function() {
+          var filename = ".juice-versioned-paths.json";
+          juice.build.save_versioned_paths = function() {
+              juice.sys.write_file(filename, JSON.stringify(versioned_paths), true);
+          };
+          juice.build.load_versioned_paths = function() {
+              if (juice.sys.file_exists(filename)) {
+                  versioned_paths = juice.build.read_file_json(filename);
+              };
+          };
+      })();
+
+     juice.build.versioned_path = function(relpath) {
+         return versioned_paths.hasOwnProperty(relpath) ? versioned_paths[relpath] : relpath;
      };
 
      juice.build.scope_js = function(contents) {
