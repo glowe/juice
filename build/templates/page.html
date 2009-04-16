@@ -1,37 +1,14 @@
 <html>
   <head>
     <title>{{title}}</title>
-
-    <!-- stylesheets -->
-    {%for url in stylesheet_urls%}
-    <link rel="stylesheet" href="{{url}}" type="text/css" media="screen" />
+    {%for url in stylesheet_urls%}<link rel="stylesheet" href="{{url}}" type="text/css" media="screen" />
     {%endfor%}
-
   </head>
   <body>
     <form style="display:none;"><textarea id="juice_session_data">empty</textarea></form>
     <div id="main"></div>
-
-    <!-- base scripts -->
-    <script src="{{js_base_url}}/juice-ext.js"></script>
-    <script src="{{js_base_url}}/juice-web.js"></script>
-    <script src="{{js_base_url}}/base.js"></script>
-
-    <!-- additional scripts -->
-    {%for url in script_urls%}
-    <script src="{{url}}"></script>
+    {%for url in script_urls%}<script src="{{url}}"></script>
     {%endfor%}
-
-    <!-- rpc packages -->
-    {%for pkg in rpc_packages%}
-    <script src="{{js_base_url}}/libs/{{pkg.lib_name}}/rpcs/{{pkg.pkg_name}}.js"></script>
-    {%endfor%}
-
-    <!-- widget packages -->
-    {%for pkg in widget_packages%}
-    <script src="{{js_base_url}}/libs/{{pkg.lib_name}}/widgets/{{pkg.pkg_name}}.js"></script>
-    {%endfor%}
-
     <script>juice.page.init("{{name}}", "#main");</script>
   </body>
 </html>

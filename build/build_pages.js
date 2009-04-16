@@ -115,7 +115,8 @@
 
          juice.foreach(site.pages,
                        function(name, page) {
-                           var dependencies, path;
+                           var dependencies, path, js_base_url = juice.url.make(juice.build.site_settings().js_base_url);
+
                            if (page.path_is_dynamic()) {
                                path = '/__' + name + '.html';
                            }
@@ -134,9 +135,27 @@
 
                            dependencies.script_urls =
                                juice.unique(
+                                   juice.map(["juice-ext.js", "juice-web.js", "base.js"],
+                                             function(filename) {
+                                                 return js_base_url.path_join("js").path_join(filename);
+                                             }),
                                    dependencies.script_urls,
                                    page.script_urls(),
-                                   juice.build.site_settings().global_script_urls);
+                                   juice.build.site_settings().global_script_urls,
+                                   juice.map(dependencies.rpc_pkgs,
+                                             function(pkg) {
+                                                 return js_base_url.path_join("js/libs",
+                                                                              pkg.lib_name,
+                                                                              "rpcs",
+                                                                              pkg.pkg_name + ".js");
+                                             }),
+                                   juice.map(dependencies.widget_pkgs,
+                                             function(pkg) {
+                                                 return js_base_url.path_join("js/libs",
+                                                                              pkg.lib_name,
+                                                                              "widgets",
+                                                                              pkg.pkg_name + ".js");
+                                             }));
 
                            dependencies.stylesheet_urls =
                                juice.unique(
@@ -148,11 +167,8 @@
                                path,
                                page_template({name: name,
                                               title: page.title(),
-                                              js_base_url: juice.build.site_settings().js_base_url,
                                               script_urls: dependencies.script_urls,
-                                              stylesheet_urls: dependencies.stylesheet_urls,
-                                              widget_packages: dependencies.widget_pkgs,
-                                              rpc_packages: dependencies.rpc_pkgs}));
+                                              stylesheet_urls: dependencies.stylesheet_urls}));
 
                        });
      };
