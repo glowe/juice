@@ -160,7 +160,7 @@
 
          widgets = juice.map(source_files.widget,
                              function(source_file) {
-                                 return juice.build.read_file_and_scope_js(source_file.path);
+                                 return juice.sys.read_file(source_file.path);
                              });
 
          templates = juice.build.compile_templates(
