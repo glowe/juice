@@ -169,7 +169,7 @@
                            return source_file.path;
                        }));
 
-         juice.build.write_final_file(
+         juice.build.write_target_file(
              juice.path_join('js/libs', lib_name, 'widgets', pkg_name) + '.js',
              ['juice.widget.define_package("' + lib_name + '", "' + pkg_name + '", function(juice, site, jQuery) {',
               'try {',
@@ -193,7 +193,7 @@
                               return juice.build.read_file_and_scope_js(source_file.path);
                           });
 
-         juice.build.write_final_file(
+         juice.build.write_target_file(
              juice.path_join('js/libs', lib_name, 'rpcs', pkg_name) + '.js',
              ['juice.rpc.define_package("' + lib_name + '", "' + pkg_name + '", function(juice, site, jQuery) {',
               'try {',

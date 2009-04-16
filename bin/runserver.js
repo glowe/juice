@@ -12,7 +12,7 @@ juice.sys.chdir(options.cd);
 juice.build.handle_help(options.help, "runserver", "Runs a standalone webserver for a site.");
 
 juice.build.config.load();
-docroot     = juice.build.final_file_path('');
+docroot     = juice.build.target_file_path('');
 base_url    = juice.url.make(juice.build.site_settings().base_url);
 js_base_url = juice.url.make(juice.build.site_settings().js_base_url);
 

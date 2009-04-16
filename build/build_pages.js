@@ -163,7 +163,7 @@
                                    dependencies.stylesheet_urls,
                                    page.stylesheet_urls());
 
-                           juice.build.write_final_file(
+                           juice.build.write_target_file(
                                path,
                                page_template({name: name,
                                               title: page.title(),

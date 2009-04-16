@@ -93,7 +93,7 @@
          // Since settings are prerequisite for many things, make sure they're set first.
          base.unshift('site.settings=' + JSON.stringify(runtime_settings) + ';');
 
-         juice.build.write_final_file(
+         juice.build.write_target_file(
              'js/base.js',
              base.join("\n"));
      };

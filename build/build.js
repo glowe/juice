@@ -89,17 +89,12 @@
          load(filename);
      };
 
-     juice.build.final_file_path = function(relpath) {
+     juice.build.target_file_path = function(relpath) {
          return juice.path_join('build', 'final', relpath); // FIXME: add site name and mode (e.g. "bp/release")
      };
-     juice.build.intermediate_file_path = function(relpath) {
-         return juice.path_join('build', 'intermediate', relpath); // FIXME: add site name and mode (e.g. "bp/release")
-     };
-     juice.build.write_final_file = function(relpath, contents) {
-         juice.sys.write_file(juice.build.final_file_path(relpath), contents, true);
-     };
-     juice.build.write_intermediate_file = function(relpath, contents) {
-         juice.sys.write_file(juice.build.intermediate_file_path(relpath), contents, true);
+
+     juice.build.write_target_file = function(relpath, contents) {
+         juice.sys.write_file(juice.build.target_file_path(relpath), contents, true);
      };
 
      juice.build.scope_js = function(contents) {
@@ -174,11 +169,11 @@
 
 
      juice.build.minify = function() {
-         juice.foreach(juice.sys.list_dir(juice.build.final_file_path("js"), {fullpath: true, filter_re: /[.]js$/}),
+         juice.foreach(juice.sys.list_dir(juice.build.target_file_path("js"), {fullpath: true, filter_re: /[.]js$/}),
                        function(path) {
                            juice.sys.write_file(path, jsmin("", juice.sys.read_file(path), 3), true);
                        });
-         juice.foreach(juice.sys.list_dir(juice.build.final_file_path("js/libs"), {fullpath: true}),
+         juice.foreach(juice.sys.list_dir(juice.build.target_file_path("js/libs"), {fullpath: true}),
                        function(lib_path) {
                            juice.foreach(["rpcs", "widgets"],
                                          function(type) {
