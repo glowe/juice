@@ -12,7 +12,7 @@
      parse_url = function(url) {
          var result, answer;
 
-         result = /^(?:([a-z]+):)\/\/([a-z\d.\-]+)?(?::(\d+))?(\/[^?#]*)?(?:\?([^#]*))?(?:#(.*))?$/i.exec(url);
+         result = /^(?:([a-z]+):)\/\/([a-z\d.\-\_]+)?(?::(\d+))?(\/[^?#]*)?(?:\?([^#]*))?(?:#(.*))?$/i.exec(url);
          if (!result) {
              return null;
          }
