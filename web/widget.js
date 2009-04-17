@@ -185,7 +185,7 @@
              my.expect_state = function() {
                  var args = juice.args(arguments);
                  if (!juice.any(args, function(arg) { return state === arg; })) {
-                     my.raise("Bad state: expected " + args.join(", ") +"--actual was " + state);
+                     my.raise("Bad state: expected " + args.join(", ") +"--actual was " + state + " in " + my.name);
                  }
              };
 
@@ -195,6 +195,7 @@
              };
 
              my.set_container_element = function(t, attribs) {
+                 attribs = attribs || {};
                  if (attribs.hasOwnProperty('id') || attribs.hasOwnProperty('class')) {
                      juice.error.raise("can't specify id or class as container attribute");
                  }
