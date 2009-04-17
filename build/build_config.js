@@ -75,6 +75,7 @@
                  juice.build.eval_file(juice.build.config.site_settings_path());
              }
              catch (e) {
+                 print(e);
                  juice.build.fatal("Unable to load build configuration. Perhaps you need to run \"juice config\"?");
              }
          }
