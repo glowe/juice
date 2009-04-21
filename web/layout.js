@@ -1,13 +1,13 @@
 (function(juice, site) {
 
      var panel_exists = function(panel_name, panels) {
-         var i, child, children;
+         var i, panel;
          if (panels.hasOwnProperty(panel_name)) {
              return true;
          }
-         for (i = 0; i < children.length; i++) {
-             child = children[i];
-             if (juice.is_object(child) && panel_exists(panel_name, child)) {
+         for (i = 0; i < panels.length; i++) {
+             panel = panels[i];
+             if (juice.is_object(panel) && panel_exists(panel_name, panel)) {
                  return true;
              }
          }
