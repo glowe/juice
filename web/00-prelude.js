@@ -539,44 +539,57 @@
          }
      };
 
-     lib.spec = function(spec) {
-         var copy_of_spec, meta_specs, unrecog_keys = [];
+     (function() {
+          var make_spec_fn = function(forbid_unrecog_keys) {
+              return function(spec) {
+                  var copy_of_spec, meta_specs, unrecog_keys = [];
 
-         // Copy spec into a copy, defaulting values from meta_spec and
-         // optionally extended_meta_spec.
+                  // Copy spec into a copy, defaulting values from meta_spec and
+                  // optionally extended_meta_spec.
 
-         meta_specs = lib.args(arguments).slice(1);
-         spec = spec || {};
-         copy_of_spec = {};
-         juice.foreach(meta_specs,
-                       function(meta_spec) {
-                           juice.foreach(meta_spec,
-                                         function(k, v) {
-                                             if (juice.is_undefined(v)) { // Required args
-                                                 if (!spec.hasOwnProperty(k)) {
-                                                     throw 'missing required argument: ' + k;
-                                                 }
-                                                 copy_of_spec[k] = spec[k];
-                                             }
-                                             else { // Optional args
-                                                 copy_of_spec[k] = spec.hasOwnProperty(k) ? spec[k] : meta_spec[k];
-                                             }
-                                         });
-                       });
+                  meta_specs = lib.args(arguments).slice(1);
+                  spec = spec || {};
+                  copy_of_spec = {};
+                  juice.foreach(meta_specs,
+                                function(meta_spec) {
+                                    juice.foreach(meta_spec,
+                                                  function(k, v) {
+                                                      if (juice.is_undefined(v)) { // Required args
+                                                          if (!spec.hasOwnProperty(k)) {
+                                                              throw 'missing required argument: ' + k;
+                                                          }
+                                                          copy_of_spec[k] = spec[k];
+                                                      }
+                                                      else { // Optional args
+                                                          copy_of_spec[k] = spec.hasOwnProperty(k) ? spec[k] : meta_spec[k];
+                                                      }
+                                                  });
+                                });
 
-         juice.foreach(spec,
-                       function(key) {
-                           if (!copy_of_spec.hasOwnProperty(key)) {
-                               unrecog_keys.push(key);
-                           }
-                       });
+                  if (forbid_unrecog_keys) {
+                      juice.foreach(spec,
+                                    function(key) {
+                                        if (!copy_of_spec.hasOwnProperty(key)) {
+                                            unrecog_keys.push(key);
+                                        }
+                                    });
 
-         if (unrecog_keys.length > 0) {
-             throw "spec contained unrecognized keys: " + unrecog_keys.join(", ");
-         }
+                      if (unrecog_keys.length > 0) {
+                          throw "spec contained unrecognized keys: " + unrecog_keys.join(", ");
+                      }
+                  }
 
-         return copy_of_spec;
-     };
+                  return copy_of_spec;
+              };
+          };
+
+          lib.spec = make_spec_fn(true);
+
+          // Like juice.spec, but forbids unrecognized parameters.
+          lib.sloppy_spec = make_spec_fn(false);
+
+      })();
+
 
      // TODO: docs!
 
