@@ -22,9 +22,9 @@
              scheme: result[1],
              host:   result[2],
              port:   result[3],
-             path:   result[4],
-             query:  result[5],
-             hash:   result[6],
+             path:   result[4] || "",
+             query:  result[5] || "",
+             hash:   result[6] || "",
              args:   {}
          };
 
