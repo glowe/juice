@@ -5,13 +5,10 @@
 * IMPORTANT Add a config option to use googleapi jquery
 * IMPORTANT Add a config option to smush.it images
 * IMPORTANT Add a config option to warn about pages exceeding a base # of includes
-* IMPORTANT Change widget package scoping
-  We shouldn't bother scoping files anymore
 * IMPORTANT RPC packages should probably be in single files
 * IMPORTANT Add juice.page.define_external
 * IMPORTANT Provide convenient way to globally manipulate page titles.
 * IMPORTANT Create pagination component for SEO
-* IMPORTANT Compiled script names should have something unique in them to thwart browser caching (i.e. we need url versioning)
 * IMPORTANT Add facility to ignore success or failure functions when rpc finishes
   This will be important when adding rpc-based form validation. If
   the user starts a validation RPC (e.g., check if username
@@ -279,3 +276,7 @@ to use proj.widget.bar.link.
 * DONE Fix compile template errors
   Source files should not have to be reloaded
 * DONE Implement --help for program options
+* DONE Change widget package scoping
+  We shouldn't bother scoping files anymore
+
+* DONE Compiled script names should have something unique in them to thwart browser caching (i.e. we need url versioning)
