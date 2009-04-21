@@ -1,12 +1,12 @@
 (function(juice, site) {
 
      var panel_exists = function(panel_name, panels) {
-         var i, panel;
+         var i, keys, panel;
          if (panels.hasOwnProperty(panel_name)) {
              return true;
          }
-         for (i = 0; i < panels.length; i++) {
-             panel = panels[i];
+         for (i = 0, keys = juice.keys(panels); i < keys.length; i++) {
+             panel = panels[keys[i]];
              if (juice.is_object(panel) && panel_exists(panel_name, panel)) {
                  return true;
              }
@@ -31,7 +31,7 @@
                      },
                      add_widget: function(panel_name, widget) {
                          if (!panel_exists(panel_name, panels)) {
-                             juice.error.raise('unrecognized_panel_name', {layout: name, unrecognized: panel_name, panels: panels});
+                             juice.error.raise('panel "'+panel_name+'" not found in layout "'+name+'"');
                          }
                          jQuery('#panel_' + panel_name).append(widget.unsafe_render());
                          widget.fire_domify();
