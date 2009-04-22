@@ -2,10 +2,11 @@
 #+STARTUP: overview
 
 * MAYBE Why do we have form.init?
+* IMPORTANT Code cleanup (e.g., consistent use of double-quotes, better exception messages)
 * IMPORTANT Add a config option to use googleapi jquery
 * IMPORTANT Add a config option to smush.it images
 * IMPORTANT Add a config option to warn about pages exceeding a base # of includes
-* IMPORTANT RPC packages should probably be in single files
+* IMPORTANT RPC packages should probably be in single files?
 * IMPORTANT Add juice.page.define_external
 * IMPORTANT Provide convenient way to globally manipulate page titles.
 * IMPORTANT Create pagination component for SEO
@@ -17,6 +18,9 @@
 * IMPORTANT Unify type checking in juice/CTK RPC specification verification code.
 * IMPORTANT Add a widget browser
 * IMPORTANT When widget dependencies are calculated, we should ensure that the packages really exist
+* MAYBE Firebug plugin
+  - Better stack traces
+  - Linked to generated source
 * MAYBE Add server-side validation procedure
 * MAYBE Scope the juice.lib namespace passed to widget packages based on their stated dependencies.
 * MAYBE be consistent about event names (use present-tense everywhere?)
