@@ -93,8 +93,16 @@
                       publishers[publisher.uuid()] = publisher;
                   };
 
+                  my.unsubscribe = function(publisher, event_name, fn) {
+                      publisher.__remove_subscriber_fn(that.uuid(), event_name, fn);
+                  };
+
                   my.subscribe_self = function(event_name, fn) {
                       my.subscribe(that, event_name, fn);
+                  };
+
+                  my.unsubscribe_self = function(event_name, fn) {
+                      my.unsubscribe(that, event_name, fn);
                   };
 
                   my.propagate_event = function(publisher, event_name, new_event_name) {
@@ -109,15 +117,24 @@
                       subscribers[event_name].push({id: subscriber_uuid, fn: fn});
                   };
 
-                  that.__remove_subscriber = function(subscriber_uuid) {
+                  that.__remove_subscriber_fn = function(subscriber_uuid, event_name, fn) {
+                      subscribers[event_name] =
+                          juice.filter(subscribers[event_name],
+                                       function(pair) {
+                                           return pair.id !== subscriber_uuid || pair.fn != fn;
+                                       });
+                  };
+
+                  that.__remove_subscriber = function(subscriber_uuid, event_name, fn) {
                       juice.foreach(subscribers,
-                                    function(event_name, pairs) {
+                                    function(ename, pairs) {
                                         pairs = juice.filter(pairs,
                                                              function(pair) {
                                                                  return pair.id !== subscriber_uuid;
                                                              });
                                     });
                   };
+
               })();
 
              if (arguments.length === 0) {
