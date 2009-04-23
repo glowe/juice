@@ -18,6 +18,9 @@
 * IMPORTANT Unify type checking in juice/CTK RPC specification verification code.
 * IMPORTANT Add a widget browser
 * IMPORTANT When widget dependencies are calculated, we should ensure that the packages really exist
+* IMPORTANT Revisit c1_std form inputs etc.
+  Ensure that they work well regardless of widget state
+  Rename input.template param to input.render
 * MAYBE Firebug plugin
   - Better stack traces
   - Linked to generated source
