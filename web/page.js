@@ -1,37 +1,107 @@
+//
+// TODO: statically verify that dynamic arguments in page paths are also
+// specified in those pages' parameter objects, and that the parameters have
+// associated regular expressions.
+//
+
 (function(juice, site) {
 
      var
      active_layout,
      constructor,
      create_page,
-     dynamic_path_var_re,
-     page_404;
-
-     dynamic_path_var_re = /\[\[(\w+) (.*?)\]\]/g;
+     error_page;
 
      create_page = function(spec) {
-         var extract_args, my = {}, that = {};
+         var categorize_arguments,
+         extract_dynamic_path_arguments,
+         raise_error,
+         that = {};
 
-         // args is optional but must be an object if provided.
-         extract_args = function(args) {
-             var recognized = {}, missing = [];
+         spec.path = juice.canonicalize_path(spec.path);
 
-             if (juice.is_object(args)) {
-                 juice.foreach(spec.parameters,
-                               function(k) {
-                                   if (args.hasOwnProperty(k)) {
-                                       recognized[k] = args[k];
+         raise_error = function(msg) {
+             juice.error.raise('in page "'+spec.name+'": '+msg);
+         };
+
+         //
+         // Given the arguments provided to this page, divides them into three
+         // categories: key-value pairs of recognized parameters; mandatory
+         // parameters that were not provided; and parameters whose values did
+         // not match the expected pattern.
+         //
+
+         categorize_arguments = function(args) {
+             var answer = {invalid: [], missing: [], valid: {}};
+
+             if (juice.is_undefined(args)) {
+                 args = {};
+             }
+             else if (!juice.is_object(args)) {
+                 raise_error("args type error; actual="+(typeof args));
+             }
+
+             juice.foreach(spec.parameters,
+                           function(k, details) {
+                               if (!juice.is_object(details)) {
+                                   details = {}; // to avoid doing repeated type checks
+                               }
+                               var alias = details.alias || k;
+                               if (args.hasOwnProperty(alias)) {
+                                   if (details.regexp && !details.test(args[alias])) {
+                                       answer.invalid.push(k);              // provided, does not match pattern
                                    }
                                    else {
-                                       missing.push(k);
+                                       answer.valid[k] = args[alias];       // provided, matches pattern
                                    }
-                               });
-             }
-             else if (!juice.is_undefined(args)) {
-                 juice.error.raise('page_args_bad_type', {expected: 'object', actual: typeof args});
+                               }
+                               else if (details.hasOwnProperty("default_value")) {
+                                   answer.valid[k] = details.default_value; // not provided, has default value
+                               }
+                               else {
+                                   answer.missing.push(k);                  // not provided, required
+                               }
+                           });
+
+             answer.has_errors = answer.invalid.length || answer.missing.length;
+             return answer;
+         };
+
+         //
+         // Given the path for this current request and an existing dictionary
+         // of page arguments, parses dynamic arguments from the path (if any)
+         // and injects them into args (and returns it). Because the path is
+         // parsed at run-time, it's possible the parse will fail and this
+         // function will raise an error; this is the equivalent of a 404.
+         //
+
+         extract_dynamic_path_arguments = function(request_path, args) {
+             var key, keys = [], match, vals_pat, vals_re;
+
+             if (!that.path_is_dynamic()) {
+                 return args;
              }
 
-             return {recognized: recognized, missing: missing};
+             // Extract key names from the spec.path and construct a regexp pattern in
+             // vals_pat that will extract their values from the actual request path.
+
+             vals_pat = "^" + spec.path + "$";
+             while ((match = /\[\[(\w+)\]\]/gi.exec(spec.path))) {
+                 key = match[1];
+                 keys.push(spec.parameters[key].alias || key);
+                 vals_pat = vals_pat.replace("[[" + key + "]]", "(" + spec.parameters[key].pattern + ")");
+             }
+             vals_re = new RegExp(vals_pat, "i");
+             match = vals_re.exec(request_path);
+             if (!match) {
+                 raise_error("request path ("+request_path+") match failed");
+             }
+             juice.foreach(juice.combine(keys, match.slice(1)), function(k, v) { args[k] = v; });
+             return args;
+         };
+
+         that.is_external = function() {
+             return spec.external;
          };
 
          that.title = function() {
@@ -43,7 +113,7 @@
          };
 
          that.path_is_dynamic = function() {
-             return dynamic_path_var_re.test(spec.path);
+             return /\[\[\w+\]\]/.test(spec.path);
          };
 
          that.script_urls = function() {
@@ -58,65 +128,47 @@
              return spec.widget_packages;
          };
 
-         that.url = function(args) {
-             var cmp, path, path_args, query_args;
+         //
+         // Returns a url object that points to this page. If args not
+         // undefined, it must be a dictionary of valid page arguments.
+         //
 
-             cmp = extract_args(args);
-             if (cmp.missing.length !== 0) {
-                 juice.error.raise('missing_parameters', {page_name: name, parameters: cmp.missing});
+         that.url = function(args) {
+             var categorized_args, query_args = {}, path = spec.path, path_args = {};
+
+             categorized_args = categorize_arguments(args);
+             if (categorized_args.has_errors) {
+                 raise_error("cannot create url; bad page arguments: "+juice.dump(categorized_args));
              }
 
-             path = spec.path;
-             path_args = {};
-             juice.foreach(cmp.recognized,
-                          function(k, v) {
-                              var match, re;
-                              re = new RegExp('\\[\\[' + k + ' (.*?)\\]\\]');
-                              for (;;) {
-                                  match = re.exec(path);
-                                  if (!match) {
-                                      break;
-                                  }
-                                  if (!((new RegExp(match[1])).test(v))) {
-                                      juice.error.raise('argument_pattern_mismatch', {argument: v, pattern: match[1]});
-                                  }
-                                  path = path.replace(match[0], v);
-                                  path_args[k] = true;
-                              }
-                          });
-
-             query_args = juice.filter(cmp.recognized, function(k, v) { return !path_args[k]; });
-             return juice.url.make({path: path, args: query_args});
-         };
-
-         // If this page's URL matches the request, returns the dictionary of
-         // parameters expected by the page. Otherwise, returns null.
-
-         that.match_url = function(req) {
-             var
-             args = {},
-             keys_re,       // matches dynamic path variable names
-             vals_re,       // matches dynamic path variable values
-             keys,          // dynamic path variable names
-             cmp,
-             dynamic_path_args,
-             match_result;
-
-             juice.foreach(req.args, function(k,v) { args[k] = v; });
+             // If our path is dynamic, try to inject each argument into the
+             // path. Keep track of which arguments were successfully
+             // injected, because they won't be added to the query string.
 
              if (that.path_is_dynamic()) {
-                 vals_re = new RegExp('^' + spec.path.replace(dynamic_path_var_re, '($2)') + '$');
-                 if (!(match_result = req.path.match(vals_re))) {
-                     return null;
-                 }
-                 keys_re = new RegExp('^' + spec.path.replace(dynamic_path_var_re, '\\[\\[($1).*?\\]\\]') + '$');
-                 keys = spec.path.match(keys_re).slice(1);
-                 dynamic_path_args = juice.combine(keys, match_result.slice(1));
-                 juice.foreach(dynamic_path_args, function(k, v) { args[k] = v; });
+                 juice.foreach(categorized_args.valid,
+                               function(k, v) {
+                                   var new_path, regexp;
+                                   regexp = new RegExp("\\[\\[" + k + "\\]\\]", "g");
+                                   new_path = path.replace(regexp, v);
+                                   if (path !== new_path) {
+                                       path = new_path;
+                                       path_args[k] = true;
+                                   }
+                               });
              }
 
-             cmp = extract_args(args);
-             return cmp.missing.length === 0 ? cmp.recognized : null;
+             // Create a url object, specifying as query string arguments only
+             // those that were not injected into the path above.
+
+             juice.foreach(categorized_args.valid,
+                           function(k, v) {
+                               if (!path_args[k]) {
+                                   query_args[(spec.parameters[k].alias || k)] = v;
+                               }
+                           });
+
+             return juice.url.make({path: path, args: query_args});
          };
 
          that.draw = function(container, args) {
@@ -138,23 +190,40 @@
                            });
          };
 
+         //
+         // Extract the page arguments from the request path and query string,
+         // verify their correctness, draw the page in the given DOM
+         // container, and start the RPC subsystem. If the page arguments are
+         // invalid, the error page will be initialized instead.
+         //
+
          that.init = function(container) {
-             var args = that.match_url(juice.url.request());
-             if (args) {
-                     that.draw(container, args);
+             var args, page, req = juice.url.request();
+
+             try {
+                 args = juice.copy_object(req.args);
+                 args = extract_dynamic_path_arguments(req.path, args);
+                 args = categorize_arguments(args);
+                 if (args.has_errors) {
+                     throw "page initialization failed; bad arguments";
                  }
-                 else if (page_404) {
-                     page_404.draw(container);
+                 that.draw(container, args.valid);
+             }
+             catch (e) {
+                 if (error_page) {
+                     error_page.draw(container, {exception: e.toString(), args: args});
                  }
                  else {
-                     juice.error.raise('404_page_not_defined');
+                     juice.error.handle(juice.error.chain("error_page not defined", e));
                  }
-                 juice.event.subscribe(undefined,
-                                       'service-failure',
-                                       function(event) {
-                                           juice.util.message.error('Backend failure: ' + juice.dump(event));
-                                       });
-                 juice.rpc.start();
+             }
+
+             juice.event.subscribe(undefined,
+                                   "service-failure",
+                                   function(event) {
+                                       juice.error.raise("backend failure: "+juice.dump(event));
+                                   });
+             juice.rpc.start();
          };
 
          return that;
@@ -162,33 +231,71 @@
 
      juice.page = {
 
+         //
+         // Defines a juice-managed page. Every page defined using this
+         // function will be compiled into an actual html document.
+         //
+
          define: function(spec) {
              spec = juice.spec(spec,
                                {init_widgets: undefined,
                                 layout: undefined,
                                 name: undefined,
-                                parameters: [],
+                                parameters: {},
                                 path: undefined,
                                 script_urls: [],
                                 stylesheet_urls: [],
                                 title: undefined,
                                 widget_packages: []
                                });
-             if (site.pages.hasOwnProperty(spec.name)) {
-                 juice.error.raise("Attempting to define page with duplicate name: " + spec.name);
-             }
 
+             if (site.pages.hasOwnProperty(spec.name)) {
+                 juice.error.raise("tried to define page duplicate name: " + spec.name);
+             }
              site.pages[spec.name] = create_page(spec);
          },
 
-         define_404: function(spec) {
-             spec.name = '_404';
-             page_404 = create_page(spec);
+         //
+         // Defines a page that is not managed by the juice framework. Pages
+         // defined in this way will not be compiled into a html document.
+         //
+
+         define_external: function(spec) {
+             spec = juice.spec(spec,
+                               {name: undefined,
+                                parameters: {},
+                                path: undefined
+                               });
+
+             if (site.pages.hasOwnProperty(spec.name)) {
+                 juice.error.raise("tried to define page duplicate name: " + spec.name);
+             }
+             spec.external = true;
+             site.pages[spec.name] = create_page(spec);
          },
+
+         //
+         // Defines the page that is displayed when an unrecoverable error
+         // occurs during page initialization. E.g. mandatory page arguments
+         // were not provided, or an argument was improperly formatted.
+         //
+
+         define_error_page: function(spec) {
+             if (error_page) {
+                 juice.error.raise("error_page already defined");
+             }
+             spec.name = "__" + spec.name + "_error__";
+             error_page = create_page(spec);
+         },
+
+         //
+         // Inserts a widget into the specified panel of the currently active
+         // page. Will throw an exception if no page has been initialized.
+         //
 
          add_widget: function(panel, widget) {
              if (!active_layout) {
-                 juice.error.raise('page_not_initialized');
+                 juice.error.raise("add_widget failed: page not initialized");
              }
              active_layout.add_widget(panel, widget);
          },

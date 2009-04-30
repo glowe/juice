@@ -673,6 +673,28 @@
          return juice.args(arguments).join("/").replace(/\/{2,}/g, "/");
      };
 
+     // JUICE is relatively formal about the way it handles URL paths. (Note
+     // that we're NOT talking about filesystem paths here.) In JUICE, paths
+     // should: never begin with a leading slash; always end with a trailing
+     // slash or filename; never end with the default index filename, e.g.
+     // "index.html". They also never include consecutive slashes.
+     //
+     // FIXME: "index.html" should be a site setting, not hardcoded here.
+
+     lib.canonicalize_path = function(path) {
+         if (!juice.is_string(path) || path === "") {
+             return "";                                 // we were given an empty or invalid path
+         }
+         if (/\/[^\/.]+$/.test(path)) {                 // if path ends with neither slash nor filename
+             path += "/";                               // ...end it with a slash
+         }
+         else if (/(^|\/)index[.]html$/.test(path) ) {  // otherwise, if it ends with "index.html"
+             path = path.slice(0, -10);                 // ...remove the filename
+         }
+         return path.replace(/^\/+/, "")                // delete leading slashes
+             .replace(/\/{2,}/g, "/");                  // collapse consecutive slashes
+     };
+
      lib.use = function(lib_obj) {
          var i, parts = lib_obj.split("."), o;
          o = site.lib;
