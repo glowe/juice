@@ -207,13 +207,12 @@ if (lint) {
                           return;
                       }
                       ext = juice.sys.parse_path(f.path).ext;
-                      if (ext != "js" && ext != "json") {
-                          return;
-                      }
-                      if (f.target_type == "juice_ext_web") {
-                          return;
-                      }
-                      if (f.target_type == "juice_web" && !juice.build.config.lint_juice()) {
+                      if ((ext != "js" && ext != "json")     ||     // only lint javascript files
+                          (f.target_type == "juice_ext_web") ||     // skip external source code
+                          (f.category == "build")            ||     // skip internal build files
+                          (f.target_type == "juice_web" &&          // skip juice files...
+                           !juice.build.config.lint_juice()))       // ...unless configured to do so
+                      {
                           return;
                       }
                       errors = juice.build.lint_js(f.path);
