@@ -28,11 +28,14 @@
          stylesheet_urls = [],
          widget_pkgs = [];
 
-         build_dependency_map = function(widget_pkg_names) {
+         build_dependency_map = function() {
              var dependency_map = {};
              juice.foreach(widget_pkg_names,
                            function(widget_pkg_name) {
                                var lib_name, type, pkg_name, parts = widget_pkg_name.split('.');
+                               if (parts.length != 3) {
+                                   juice.error.raise('invalid widget package specification: "'+widget_pkg_name+'"');
+                               }
                                lib_name = parts[0];
                                type = parts[1];
                                pkg_name = parts[2];
@@ -81,7 +84,7 @@
                            });
          };
 
-         helper(build_dependency_map(widget_pkg_names));
+         helper(build_dependency_map());
 
          return {widget_pkgs: widget_pkgs,
                  rpc_pkgs: rpc_pkgs,
