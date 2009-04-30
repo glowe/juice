@@ -134,6 +134,7 @@
 
              my.namespace = namespace;
              my.name = name;
+             my.pretty_name = my.namespace.join(".") + "." + my.name;
              my.selector = '#' + id;
 
              my.$ = function(selector) {
@@ -212,7 +213,7 @@
                           render_stack[render_stack.length-1](that);
                       }
                       else if (!unsafe) {
-                          juice.error.raise('tried to render an unlinked widget ('+my.namespace.join('.')+'.'+my.name+')');
+                          juice.error.raise("widget "+my.pretty_name+": tried to render while unlinked");
                       }
                       render_stack.push(function(w) { linked.push(w); });
                       answer = f();
@@ -228,6 +229,9 @@
                                   'class': namespace[0] + ' ' + namespace[2] + ' ' + name + ' widget',
                                   'id': id
                               };
+                              if (!juice.is_function(my.render)) {
+                                  juice.error.raise("widget "+my.pretty_name+": my.render is not a function");
+                              }
                               juice.foreach(container_attribs, function(k, v) { attribs[k] = v; });
                               juice.foreach(css_classes, function(k) { attribs['class'] += ' ' + k; });
                               transition('initial', 'rendered');
