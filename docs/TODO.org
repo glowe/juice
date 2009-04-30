@@ -6,7 +6,6 @@
 * IMPORTANT Add a config option to smush.it images
 * IMPORTANT Add a config option to warn about pages exceeding a base # of includes
 * IMPORTANT RPC packages should probably be in single files
-* IMPORTANT Add juice.page.define_external
 * IMPORTANT Provide convenient way to globally manipulate page titles.
 * IMPORTANT Create pagination component for SEO
 * IMPORTANT Add facility to ignore success or failure functions when rpc finishes
@@ -25,7 +24,17 @@
   Also: consider adding ability to un-mock single RPCs to ease backend development/integration.
 * MAYBE All services that provide counts should only count up a certain limit and then on front end, through a number modifier, we print something nice like "10,000+"
 * MAYBE To facilitate debugging, templates should try catch and spit out their name when there is an error
-* MAYBE support optional page parameters and default values
+* MAYBE Template compiler should throw a compile time error if you use a modifier that is undefined
+* MAYBE Tests
+* MAYBE More modifiers
+
+  - [ ] date formatting modifier
+  - [ ] ellipsis formatter
+* MAYBE Change the way we scope individual js files in packages.
+By insulating each package source file, it prevents the programmer from
+declaring common code (e.g. in a "00-prelude.js" file) to be shared throughout
+the package.
+* DONE support optional page parameters and default values
 
 
     E.g. (pseudo-code):
@@ -49,16 +58,7 @@
     Also: we should probably be more formal (or more robust) about slashes on
     the end of paths. Suggestion: We should omit them from the beginning of
     paths and require that they be explicitly put on the ends of paths.
-* MAYBE Template compiler should throw a compile time error if you use a modifier that is undefined
-* MAYBE Tests
-* MAYBE More modifiers
-
-  - [ ] date formatting modifier
-  - [ ] ellipsis formatter
-* MAYBE Change the way we scope individual js files in packages.
-By insulating each package source file, it prevents the programmer from
-declaring common code (e.g. in a "00-prelude.js" file) to be shared throughout
-the package.
+* DONE Add juice.page.define_external
 * DONE Implement --help for program options
 * DONE Revisit JUICE_LIBPATH--it doesn't really work the way we expected.
 * DONE Upgrade jquery
