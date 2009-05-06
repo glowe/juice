@@ -4,8 +4,8 @@
 
 (function(juice) {
 
-     var site_settings = {},    // parsed contents of the site-specific settings file
-     versioned_paths = {};      // maps paths to compiled files to their sha1-versioned paths
+     var site_settings_initialized = false,  // true after juice.build.set_site_settings has been called
+     versioned_paths = {};  // maps paths to compiled files to their sha1-versioned paths
 
      juice.build = {};
 
@@ -50,7 +50,8 @@
              return v;
          };
 
-         site_settings = stringify(juice.spec(s, {base_url: undefined,
+         site_settings_initialized = true;
+         site.settings = stringify(juice.spec(s, {base_url: undefined,
                                                   cookie_name: undefined,
                                                   global_script_urls: [],
                                                   global_stylesheet_urls: [],
@@ -61,7 +62,10 @@
      };
 
      juice.build.site_settings = function() {
-         return site_settings;
+         if (!site_settings_initialized) {
+             juice.build.fatal("site.settings not initialized");
+         }
+         return site.settings;
      };
 
      juice.build.source_file = function(spec) {
@@ -73,15 +77,31 @@
                             target_type: undefined});
      };
 
-     juice.build.read_file_json = function(filename) {
+     //
+     // Reads the specified JSON-formatted file, parses its contents, and
+     // returns them as a javascript object. Throws an exception if the file
+     // does not exist or it doesn't contain validly formatted JSON.
+     //
+
+     juice.build.read_file_json_unsafe = function(filename) {
          var answer;
+         eval('answer = ' + juice.sys.read_file(filename));
+         return answer;
+     };
+
+     //
+     // Identifical to read_file_json_unsafe, except this function calls
+     // juice.build.fatal if an error occurs.
+     //
+
+     juice.build.read_file_json = function(filename) {
          try {
-             eval('answer = ' + juice.sys.read_file(filename));
+             return juice.build.read_file_json_unsafe(filename);
          }
          catch (e) {
-             juice.build.fatal('parse error in "'+filename+'"');
+             juice.build.fatal('error reading json file "'+filename+'": ' + e);
          }
-         return answer;
+         return undefined; // quiets js2-mode
      };
 
      juice.build.eval_file = function(filename) {
