@@ -229,7 +229,7 @@ grouped_source_files = juice.group_by(all_source_files, function(file) { return 
 // Determine which targets need to be recompiled.
 
 if (targets.pages) {
-    juice.build.lint_page_paths();
+    juice.build.lint_pages();
     print("Lint pages: OK.");
 }
 

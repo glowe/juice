@@ -18,6 +18,7 @@
          raise_error,
          that = {};
 
+         spec.base = spec.base || site.settings.base_url;
          spec.path = juice.canonicalize_path(spec.path);
 
          raise_error = function(msg) {
@@ -82,15 +83,16 @@
                  return args;
              }
 
-             // Extract key names from the spec.path and construct a regexp pattern in
-             // vals_pat that will extract their values from the actual request path.
+             // Accumulate the list of parameter aliases in the path and
+             // construct a regexp pattern in vals_pat that will extract their
+             // values from the actual request path.
 
              vals_pat = "^" + spec.path + "$";
-             while ((match = /\[\[(\w+)\]\]/gi.exec(spec.path))) {
-                 key = match[1];
-                 keys.push(spec.parameters[key].alias || key);
-                 vals_pat = vals_pat.replace("[[" + key + "]]", "(" + spec.parameters[key].pattern + ")");
-             }
+             juice.foreach(that.path_parameters(),
+                           function(name) {
+                               keys.push(spec.parameters[name].alias || name);
+                               vals_pat = vals_pat.replace("[[" + name + "]]", "(" + spec.parameters[name].pattern + ")");
+                           });
              vals_re = new RegExp(vals_pat, "i");
              match = vals_re.exec(request_path);
              if (!match) {
@@ -100,32 +102,37 @@
              return args;
          };
 
-         that.is_external = function() {
-             return spec.external;
-         };
+         // simple accessor functions:
+         that.name            = function() { return spec.name; };
+         that.is_external     = function() { return spec.external; };
+         that.title           = function() { return spec.title; };
+         that.base            = function() { return spec.base; };
+         that.path            = function() { return spec.path; };
+         that.parameters      = function() { return spec.parameters; };
+         that.script_urls     = function() { return spec.script_urls; };
+         that.stylesheet_urls = function() { return spec.stylesheet_urls; };
+         that.widget_packages = function() { return spec.widget_packages; };
 
-         that.title = function() {
-             return spec.title;
-         };
-
-         that.path = function() {
-             return spec.path;
-         };
+         //
+         // Returns true if this page expects some of its arguments to be
+         // passed in via the path, as opposed to the query string.
+         //
 
          that.path_is_dynamic = function() {
              return /\[\[\w+\]\]/.test(spec.path);
          };
 
-         that.script_urls = function() {
-             return spec.script_urls;
-         };
+         //
+         // Returns a list containing the parameters names found in the path.
+         // If the path is not dynamic, this function returns [].
+         //
 
-         that.stylesheet_urls = function() {
-             return spec.stylesheet_urls;
-         };
-
-         that.widget_packages = function() {
-             return spec.widget_packages;
+         that.path_parameters = function() {
+             var answer = [], match;
+             while ((match = /\[\[(\w+)\]\]/gi.exec(spec.path))) {
+                 answer.push(match[1]);
+             }
+             return answer;
          };
 
          //
@@ -168,7 +175,7 @@
                                }
                            });
 
-             return juice.url.make({path: path, args: query_args});
+             return juice.url.make({base: spec.base, path: path, args: query_args});
          };
 
          that.draw = function(container, args) {
@@ -242,6 +249,7 @@
                                 layout: undefined,
                                 name: undefined,
                                 parameters: {},
+                                base: site.settings.base_url,
                                 path: undefined,
                                 script_urls: [],
                                 stylesheet_urls: [],
@@ -250,25 +258,26 @@
                                });
 
              if (site.pages.hasOwnProperty(spec.name)) {
-                 juice.error.raise("tried to define page duplicate name: " + spec.name);
+                 juice.error.raise("duplicate page name: " + spec.name);
              }
              site.pages[spec.name] = create_page(spec);
          },
 
          //
          // Defines a page that is not managed by the juice framework. Pages
-         // defined in this way will not be compiled into a html document.
+         // defined in this way are not compiled into html documents.
          //
 
          define_external: function(spec) {
              spec = juice.spec(spec,
                                {name: undefined,
                                 parameters: {},
+                                base: site.settings.base_url,
                                 path: undefined
                                });
 
              if (site.pages.hasOwnProperty(spec.name)) {
-                 juice.error.raise("tried to define page duplicate name: " + spec.name);
+                 juice.error.raise("duplicate page name: " + spec.name);
              }
              spec.external = true;
              site.pages[spec.name] = create_page(spec);
@@ -284,6 +293,14 @@
              if (error_page) {
                  juice.error.raise("error_page already defined");
              }
+             spec = juice.spec(spec,
+                               {init_widgets: undefined,
+                                layout: undefined,
+                                script_urls: [],
+                                stylesheet_urls: [],
+                                title: undefined,
+                                widget_packages: []
+                               });
              spec.name = "__" + spec.name + "_error__";
              error_page = create_page(spec);
          },
