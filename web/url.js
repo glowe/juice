@@ -2,7 +2,6 @@
 
      var
      build_query_string,
-     canonicalize_path,
      lib,
      parse_location,
      parse_url;
@@ -22,7 +21,7 @@
              scheme: result[1],
              host:   result[2],
              port:   result[3],
-             path:   result[4] || "",
+             path:   result[4],
              query:  result[5] || "",
              hash:   result[6] || "",
              args:   {}
@@ -49,24 +48,13 @@
          return juice.map_dict(args, function(k, v) { return k + '=' + escape(v); }).join('&');
      };
 
-     canonicalize_path = function(path) {
-         if (path) {
-             if (/\/[^\/.]+$/.test(path)) {
-                 path += '/';
-             }
-             if (path.charAt(path.length-1) === '/') {
-                 path += 'index.html';
-             }
-         }
-         return path;
-     };
-
      parse_location = function(location) {
          var parts = parse_url(location);
-         parts.path = canonicalize_path(parts.path);
+         parts.path = juice.canonicalize_path(parts.path);
          return parts;
      };
 
+     // FIXME: memoize
      lib.request = function() {
          return parse_location(window.location);
      };
@@ -96,7 +84,7 @@
 
          // Normalize that.base and that.path
          spec.base = spec.base.replace(/\/+$/, "");
-         spec.path = "/" + spec.path.replace(/^\/+/, "");
+         spec.path = juice.canonicalize_path(spec.path);
 
          if (parsed_url) {
              spec.host = parsed_url.host;
@@ -115,8 +103,7 @@
          };
 
          that.to_string = function() {
-             var string = [that.base];
-             string.push(that.path);
+             var string = [that.base + "/" + that.path];
              if (!juice.empty(that.args)) {
                  string.push("?" + build_query_string(that.args));
              }

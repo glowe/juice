@@ -141,7 +141,7 @@
      juice.build.make_all_library_stubs_source_file = function() {
          var filename =  ".juice-all-library-stubs.json";
          juice.sys.write_file(filename, JSON.stringify(juice.build.all_library_stubs()), true);
-         return juice.build.source_file({target_type: "base", path: filename});
+         return juice.build.source_file({target_type: "base", path: filename, category: "build"});
      };
 
      juice.build.compile_widget_package = function(lib_name, pkg_name, all_source_files) {
