@@ -76,7 +76,7 @@ if (options.clean) {
 }
 
 // Make sure required source files exist. E.g. pages.js, layouts.js.
-required_source_files = ["macros.json", "pages.js", "layouts.js", "proxies.js"];
+required_source_files = ["pages.js", "layouts.js", "proxies.js"];
 juice.foreach(required_source_files,
               function(filename) {
                   if (juice.sys.file_exists(filename) !== "file") {
@@ -207,13 +207,12 @@ if (lint) {
                           return;
                       }
                       ext = juice.sys.parse_path(f.path).ext;
-                      if (ext != "js" && ext != "json") {
-                          return;
-                      }
-                      if (f.target_type == "juice_ext_web") {
-                          return;
-                      }
-                      if (f.target_type == "juice_web" && !juice.build.config.lint_juice()) {
+                      if ((ext != "js" && ext != "json")     ||     // only lint javascript files
+                          (f.target_type == "juice_ext_web") ||     // skip external source code
+                          (f.category == "build")            ||     // skip internal build files
+                          (f.target_type == "juice_web" &&          // skip juice files...
+                           !juice.build.config.lint_juice()))       // ...unless configured to do so
+                      {
                           return;
                       }
                       errors = juice.build.lint_js(f.path);
