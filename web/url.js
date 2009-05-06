@@ -78,10 +78,6 @@
                                   port: null,
                                   args: {}});
 
-         if (juice.is_undefined(spec.base)) {
-             juice.error.raise("base arg for url was undefined");
-         }
-
          // Normalize that.base and that.path
          spec.base = spec.base.replace(/\/+$/, "");
          spec.path = juice.canonicalize_path(spec.path);
