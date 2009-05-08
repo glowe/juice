@@ -38,6 +38,10 @@ program_options = juice.program_options(
 po = program_options.parse_arguments(argv);
 options = po.options;
 
+if (!juice.empty(po.unconsumed)) {
+    juice.build.fatal("Unrecognized arguments: " + po.unconsumed.join(", "));
+}
+
 juice.build.handle_help(
     options.help,
     "compile",
