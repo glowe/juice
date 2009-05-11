@@ -142,7 +142,10 @@
 
          page_template = juice.build.compile_template(juice.path_join(juice.home(), 'build/templates/page.html'));
 
-         juice.foreach(site.pages,
+         juice.foreach(juice.filter(site.pages,
+                                    function(name, page) {
+                                        return !page.is_external();
+                                    }),
                        function(name, page) {
                            var dependencies, path, js_base_url = juice.url.make(juice.build.site_settings().js_base_url);
 
