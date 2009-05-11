@@ -1,9 +1,3 @@
-//
-// TODO: statically verify that dynamic arguments in page paths are also
-// specified in those pages' parameter objects, and that the parameters have
-// associated regular expressions.
-//
-
 (function(juice, site) {
 
      var
