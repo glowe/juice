@@ -33,7 +33,9 @@
                      juice.map(answer.query.split('&'),
                               function(s) {
                                   var kv = s.split('=');
-                                  return [kv[0], unescape(kv[1])];
+                                  // For convenience and consistency, we
+                                  // convert the empty string to null.
+                                  return [kv[0], kv[1] === '' ? null : unescape(kv[1])];
                               }));
          }
 
@@ -45,7 +47,14 @@
      };
 
      build_query_string = function(args) {
-         return juice.map_dict(args, function(k, v) { return k + '=' + escape(v); }).join('&');
+         return juice.map_dict(args,
+                               function(k, v) {
+                                   // We must take care not to output nulls as
+                                   // String(null); likewise with undefined.
+                                   return juice.is_null(v) || juice.is_undefined(v)
+                                       ? (k + '=')
+                                       : (k + '=' + escape(v));
+                               }).join('&');
      };
 
      parse_location = function(location) {
@@ -77,10 +86,6 @@
                                   path: "",
                                   port: null,
                                   args: {}});
-
-         if (juice.is_undefined(spec.base)) {
-             juice.error.raise("base arg for url was undefined");
-         }
 
          // Normalize that.base and that.path
          spec.base = spec.base.replace(/\/+$/, "");

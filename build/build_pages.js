@@ -93,18 +93,44 @@
      };
 
 
-     juice.build.lint_page_paths = function() {
+     juice.build.lint_pages = function() {
          var seen = {};
 
          init();
 
+         // Verify that:
+         //
+         // (1) No two pages refer to the same path. We have to take it on
+         // faith that dynamic paths won't collide.
+         //
+         // (2) All dynamic parameters (i.e. arguments passed via a page's
+         // path) are specified in their page's parameter lists.
+         //
+         // (3) All dynamic parameters have associated pattern attributes.
+
          juice.foreach(site.pages,
                        function(name, page) {
-                           if (!page.path_is_dynamic()) {
-                               if (seen.hasOwnProperty(page.path())) {
-                                   juice.build.fatal("Duplicate page path: " + page.path());
+                           var fail, key, parameters = page.parameters();
+                           fail = function(msg) {
+                               juice.build.fatal('in page "'+page.name()+'": '+msg);
+                           };
+                           if (page.path_is_dynamic()) {
+                               juice.foreach(page.path_parameters(),
+                                             function(param_name) {
+                                                 if (!parameters.hasOwnProperty(param_name)) {
+                                                     fail('dynamic parameter "'+param_name+'" not in parameter list');
+                                                 }
+                                                 if (!parameters[param_name].hasOwnProperty("pattern")) {
+                                                     fail('dynamic parameter "'+param_name+'" requires a "pattern" attribute');
+                                                 }
+                                             });
+                           }
+                           else {
+                               key = page.base() + page.path();
+                               if (seen.hasOwnProperty(key)) {
+                                   fail('duplicate page path: ' + key);
                                }
-                               seen[page.path()] = true;
+                               seen[key] = true;
                            }
                        });
      };
@@ -116,7 +142,10 @@
 
          page_template = juice.build.compile_template(juice.path_join(juice.home(), 'build/templates/page.html'));
 
-         juice.foreach(site.pages,
+         juice.foreach(juice.filter(site.pages,
+                                    function(name, page) {
+                                        return !page.is_external();
+                                    }),
                        function(name, page) {
                            var dependencies, path, js_base_url = juice.url.make(juice.build.site_settings().js_base_url);
 

@@ -328,7 +328,7 @@
      // to return a successful response.
 
      lib.mock_success = function(data) {
-         return {data: data};
+         return {data: juice.deep_copy(data)};
      };
 
      // The function passed to juice.rpc.define_mock should use this function

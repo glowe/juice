@@ -71,7 +71,7 @@
          },
          load: function() {
              try {
-                 conf_db = juice.spec(juice.build.read_file_json(config_filename), spec);
+                 conf_db = juice.spec(juice.build.read_file_json_unsafe(config_filename), spec);
                  juice.build.eval_file(juice.build.config.site_settings_path());
              }
              catch (e) {

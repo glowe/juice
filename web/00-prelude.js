@@ -463,6 +463,29 @@
          return copy;
      };
 
+     // Add key-value pairs to a target object, taking them from one or more
+     // additional objects. This function accepts a variable number of
+     // arguments, e.g. juice.extend(target, object1, ... objectN). Note that
+     // the target object is copied and returned, not modified in place.
+
+     lib.extend = function() {
+         var answer = juice.copy_object(arguments[0]), i;
+         for (i = 1; i < arguments.length; i++) {
+             juice.foreach(arguments[i], function(k,v) { answer[k] = v; });
+         }
+         return answer;
+     };
+
+     // Performs a recursive copy of `x` and returns the result. If `x` is a
+     // scalar data type, this function simply returns `x`. If `x` is an
+     // array, returns a list containing `juice.deep_copy(v)` for each value
+     // `v` in `x`. Finally, if `x` is an object, returns an object containing
+     // `k:juice.deep_copy(v)` for each key-value pair `k:v` in `x`.
+
+     lib.deep_copy = function(x) {
+         return (juice.is_object(x) || juice.is_array(x)) ? juice.map(x, juice.deep_copy) : x;
+     };
+
      lib.delegate = function(delegator, implementation) {
          lib.foreach(implementation,
                      function(property) {
