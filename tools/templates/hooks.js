@@ -6,7 +6,7 @@ juice.build.categorize_source_files(
 
 juice.build.apply_to_source_files(
     function(source_files) {
-        var target_dir = juice.build.final_file_path("style");
+        var target_dir = juice.build.target_file_path("style");
         juice.sys.mkdir(target_dir);
 
         juice.foreach(source_files,

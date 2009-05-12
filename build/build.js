@@ -111,7 +111,7 @@
      };
 
      juice.build.target_file_path = function(relpath) {
-         return juice.path_join('build', 'final', relpath); // FIXME: add site name and mode (e.g. "bp/release")
+         return juice.path_join('build', relpath);
      };
 
      juice.build.write_target_file = function(relpath, contents) {
