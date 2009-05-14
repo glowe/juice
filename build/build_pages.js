@@ -156,7 +156,15 @@
                                path = page.path();
                            }
 
-                           if (path.slice(-1) === '/') { // FIXME: this is error-prone
+                           // FIXME: The following conditional is a kludge.
+                           // The problem is that we're dealing with canonical
+                           // juice URL paths here, which means they will
+                           // never end with "index.html" or begin with a path
+                           // separator. (Thus, "foo/index.html" will appear
+                           // as "foo/", and "index.html" as an empty string.)
+                           // There must be a cleaner way to accomplish this.
+
+                           if (path.slice(-1) === '/' || path === "") {
                                path += 'index.html';
                            }
 
