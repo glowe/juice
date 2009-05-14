@@ -55,11 +55,11 @@
              if (spec !== 'scalar' &&
                  spec !== 'any' &&
                  spec !== 'boolean' &&
-                 spec !== 'number' &&
+                 spec !== 'integer' &&
                  spec !== 'string')
              {
                  juice.error.raise('bad_spec', {spec_type: 'string',
-                                                legal_string_values: 'scalar, any, boolean, number, or string',
+                                                legal_string_values: 'scalar, any, boolean, integer, or string',
                                                 actual: spec});
              }
          }
@@ -85,14 +85,14 @@
      // defined data structure:
      //
      //     spec   := object | array | scalar | null
-     //     scalar := "boolean" | "number" | "string" | "any" | "scalar"
+     //     scalar := "boolean" | "integer" | "string" | "any" | "scalar"
      //     array  := [ spec ]
      //     object := { key_0: spec_0, ... key_N: spec_N }
      //     object := { _: spec }
      //
      // Notes: (1) Any of the scalar strings may end in "?", indicating that
      // null is an acceptable substitute. (2) "scalar" indicates that a
-     // boolean, number, or string is acceptable. (3) "any" indicates that any
+     // boolean, integer, or string is acceptable. (3) "any" indicates that any
      // value is acceptable. (4) The array spec must be contain precisely one
      // spec. (5) The object spec may contain zero or more key-spec pairs. (6)
      // The {_:spec} notation specifies a dictionary with zero or more
@@ -102,10 +102,10 @@
      // Example specification:
      //
      //     {
-     //       foo: "number",
+     //       foo: "integer",
      //       bar: {x: [ "boolean" ], y: { z: "any", w: "string" } },
      //       baz: [ "scalar?" ],
-     //       xyz: {_: ["number"]}
+     //       xyz: {_: ["integer"]}
      //     }
      //
      // Returns true if the data matches the specification, false otherwise.
@@ -130,8 +130,8 @@
                      spec = spec.slice(0, -1);
                  }
                  if (spec === 'scalar') {
-                     if (!juice.is_boolean(data) && !juice.is_number(data) && !juice.is_string(data)) {
-                         add_error('boolean, number, or string', data);
+                     if (!juice.is_boolean(data) && !juice.looks_like_integer(data) && !juice.is_string(data)) {
+                         add_error('boolean, integer, or string', data);
                      }
                  }
                  else if (spec === 'any') {
@@ -142,9 +142,9 @@
                          add_error('boolean', data);
                      }
                  }
-                 else if (spec === 'number') {
-                     if (!juice.is_number(data)) {
-                         add_error('number', data);
+                 else if (spec === 'integer') {
+                     if (!juice.looks_like_integer(data)) {
+                         add_error('integer', data);
                      }
                  }
                  else {

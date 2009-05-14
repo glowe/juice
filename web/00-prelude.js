@@ -101,6 +101,10 @@
              !value.propertyIsEnumerable('length');
      };
 
+     lib.looks_like_integer = function(s) {
+         return /^\d+$/.test(s);
+     };
+
      // Tests whether the given value is empty. For an array, this means
      // having length=0. For a dictionary, this means not having any
      // properties. For any other type, it is simply converted to a bool.
