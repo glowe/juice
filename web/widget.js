@@ -334,10 +334,12 @@
                                       if (e.hasClass('widget')) {
                                           ids[this.id] = true;
                                       }
-                                      e.find('.widget').each(
-                                          function() {
-                                              ids[this.id] = true;
-                                          });
+                                      else {
+                                          e.find('.widget').each(
+                                              function() {
+                                                  ids[this.id] = true;
+                                              });
+                                      }
                                   });
 
                               // We have got our widget ids; it is now safe to
