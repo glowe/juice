@@ -6,7 +6,6 @@
 * IMPORTANT Add a config option to use googleapi jquery
 * IMPORTANT Add a config option to smush.it images
 * IMPORTANT Add a config option to warn about pages exceeding a base # of includes
-<<<<<<< HEAD:docs/TODO.org
 * IMPORTANT RPC packages should probably be in single files?
 * IMPORTANT Provide convenient way to globally manipulate page titles.
 * IMPORTANT Create pagination component for SEO
