@@ -5,57 +5,57 @@ digraph build_process
     center=true;
     rankdir=LR;
 
-build_settings         [label="Create build settings file"];
-concatenate            [label="Concatenate invariant JS"];
-external_pkg           [label="Package ext JS "];
-juice_web              [label="Compile and package juice web"];
-unique_pages           [label="Ensure no duplicate page paths"];
+config                 [label="Create config file"];
+lint_js                [label="Lint JavaScript"]
+lint_pages             [label="Lint juice page definitions"]
+concatenate_base       [label="Concatenate invariant JS"];
+package_widgets        [label="Package widgets (incl. compile templates)"]
+package_rpcs           [label="Package rpcs"]
+juice                  [label="Concatenate juice JS"];
+package_ext            [label="Package ext JS"];
 minify                 [label="Minify JS"];
 pages                  [label="Compile page definitions into HTML"];
-proj_base              [label="Package proj base files"];
-proj_special           [label="Run project specific build"];
-rpc_pkgs               [label="Package RPCs"];
+proj_special           [label="Run user build hooks"];
 start                  [label="start"];
-syntactically_valid_js [label="Lint all JS"];
-widget_pkgs            [label="Package widgets (incl. compile templates)"];
+done                   [label="done"];
 
-start                  -> build_settings;
 
-build_settings         -> syntactically_valid_js;
+start  -> config;
+config -> lint_js;
 
-build_settings         -> juice_web;
-syntactically_valid_js -> juice_web;
 
-build_settings         -> external_pkg;
-syntactically_valid_js -> external_pkg;
+config -> lint_pages;
+config -> concatenate_base;
+config -> package_widgets;
+config -> package_rpcs;
+config -> juice;
+config -> package_ext;
+config -> minify;
+config -> pages;
+config -> concatenate_base;
+config -> proj_special;
 
-build_settings         -> proj_base;
-syntactically_valid_js -> proj_base;
+lint_js -> lint_pages;
+lint_js -> concatenate_base;
+lint_js -> package_widgets;
+lint_js -> package_rpcs;
+lint_js -> juice;
+lint_js -> package_ext;
+lint_js -> minify;
+lint_js -> pages;
+lint_js -> concatenate_base;
+lint_js -> proj_special;
 
-build_settings         -> rpc_pkgs;
-syntactically_valid_js -> rpc_pkgs;
+lint_pages -> pages;
+concatenate_base -> pages;
+package_widgets -> pages;
+package_rpcs -> pages;
+juice -> pages;
+package_ext -> pages;
+minify -> pages;
+concatenate_base -> pages;
+proj_special -> pages;
 
-build_settings         -> widget_pkgs;
-syntactically_valid_js -> widget_pkgs;
-
-build_settings         -> unique_pages;
-syntactically_valid_js -> unique_pages;
-
-build_settings         -> pages;
-syntactically_valid_js -> pages;
-unique_pages           -> pages;
-
-build_settings         -> concatenate;
-external_pkg           -> concatenate;
-proj_base              -> concatenate;
-syntactically_valid_js -> pages;
-
-build_settings         -> minify;
-concatenate            -> minify;
-widget_pkgs            -> minify;
-rpc_pkgs               -> minify;
-syntactically_valid_js -> minify;
-
-build_settings         -> proj_special;
+pages->done;
 
 }
