@@ -1,12 +1,12 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
-* MAYBE Why do we have form.init?
+* IMPORTANT Provide facility to specify a data-translation/cleansing function for an RPC.
+* IMPORATNT RPC back-end doesn't handle certain catastrophic failure scenarios, e.g. a failed require_once in PHP.
 * IMPORTANT Code cleanup (e.g., consistent use of double-quotes, better exception messages)
 * IMPORTANT Add a config option to use googleapi jquery
 * IMPORTANT Add a config option to smush.it images
 * IMPORTANT Add a config option to warn about pages exceeding a base # of includes
-<<<<<<< HEAD:docs/TODO.org
 * IMPORTANT RPC packages should probably be in single files?
 * IMPORTANT Provide convenient way to globally manipulate page titles.
 * IMPORTANT Create pagination component for SEO
@@ -20,6 +20,9 @@
 * IMPORTANT Revisit c1_std form inputs etc.
   Ensure that they work well regardless of widget state
   Rename input.template param to input.render
+* MAYBE Error reporting in jQuery's AJAX utility may not be adequate for our needs.
+* MAYBE Should it be possible to specify a different proxies.js file via settings?
+* MAYBE Why do we have form.init?
 * MAYBE Firebug plugin
   - Better stack traces
   - Linked to generated source
@@ -28,7 +31,6 @@
 * MAYBE be consistent about event names (use present-tense everywhere?)
 * MAYBE write test for templates and start on 2-pass fix
 * MAYBE RPC testing harness, documentation, stub-generation, etc.
-  Also: consider adding ability to un-mock single RPCs to ease backend development/integration.
 * MAYBE All services that provide counts should only count up a certain limit and then on front end, through a number modifier, we print something nice like "10,000+"
 * MAYBE To facilitate debugging, templates should try catch and spit out their name when there is an error
 * MAYBE Template compiler should throw a compile time error if you use a modifier that is undefined
