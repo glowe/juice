@@ -15,7 +15,6 @@
   the user starts a validation RPC (e.g., check if username
   exists) and then submits the form before the original RPC
   returns, we shouldn't honor the validation request.
-* IMPORTANT Unify type checking in juice/CTK RPC specification verification code.
 * IMPORTANT Add a widget browser
 * IMPORTANT When widget dependencies are calculated, we should ensure that the packages really exist
 * IMPORTANT Revisit c1_std form inputs etc.
@@ -42,6 +41,7 @@
 By insulating each package source file, it prevents the programmer from
 declaring common code (e.g. in a "00-prelude.js" file) to be shared throughout
 the package.
+* DONE Unify type checking in juice/CTK RPC specification verification code.
 * DONE support optional page parameters and default values
 
 
