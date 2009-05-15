@@ -7,6 +7,8 @@
 
      juice.widget = lib = {};
 
+     lib.num_live = 0;  // a "live" widget hasn't been disposed of
+
      lib.define = function(name, constructor) {
 
          var def, namespace, pkg;
@@ -32,7 +34,7 @@
              linked = [],
              my = {},
              state = 'initial',
-             that = {},
+             that = {__widget__: true},
              transition;
 
              (function() {
@@ -190,6 +192,8 @@
                  transition('domified', 'disposed');
                  my.publish('dispose');
                  destroy_event_system();
+                 dispose_of_domified_and_linked_widgets();
+                 lib.num_live -= 1
              };
 
              my.render = function() {
@@ -266,21 +270,114 @@
                   that.unsafe_render = function() { return render_impl(true); };
                   that.toString = that.render; // for convenience in templates
 
-                  my.refresh = function(p) {
-                      p = p || my.render;
-                      dispose_of_domified_and_linked_widgets();
-                      call_linked_render(
-                          true, // ok to be unsafe; we're already domified
-                          function() {
-                              var r = juice.is_function(p) ? p() : p;
-                              if (!juice.is_string(r)) {
-                                  juice.error.raise('type_mismatch', {expected: 'String', actual: typeof r});
-                              }
-                              my.expect_state('domified');
-                              my.$().html(r);
-                              fire_domify_for_linked_widgets();
-                          });
+                  // my.partial_update provides a safe and convenient way to
+                  // refresh specific parts of a widget's DOM tree.
+
+                  my.partial_update = function(selector) {
+                      var update = function(p, f) {
+                          call_linked_render(
+                              true,
+                              function() {
+                                  var s = p;
+                                  if (juice.is_object(s) && s.__widget__) {
+                                      s = s.render();   // s is a widget--render it
+                                  }
+                                  else if (juice.is_function(s)) {
+                                      s = s();          // s is a function--call it
+                                  }
+                                  if (!juice.is_string(s)) {
+                                      juice.error.raise('type_mismatch', {expected: 'String', actual: typeof s});
+                                  }
+                                  f(s);
+                              });
+                          fire_domify_for_linked_widgets();
+                      };
+
+                      my.expect_state('domified');
+
+                      return {
+
+                          // Insert content after the selected elements.
+
+                          after: function(p) {
+                              update(p, function(s) { my.$(selector).after(s); });
+                          },
+
+                          // Insert content before the selected elements.
+
+                          before: function(p) {
+                              update(p, function(s) { my.$(selector).before(s); });
+                          },
+
+                          // Replace the selected elements with new content.
+
+                          html: function(p) {
+                              this.remove();
+                              this.__html(p);
+                          },
+
+                          // Remove the selected elements.
+
+                          remove: function() {
+                              var ids = {};
+
+                              // Removing DOM elements is tricky because we
+                              // need to make sure any widgets contained
+                              // within them are disposed of. We must be
+                              // careful to examine both the children of the
+                              // selected elements and the selected elements
+                              // themselves.
+
+                              my.$(selector).each(
+                                  function() {
+                                      var e = jQuery(this);
+                                      if (e.hasClass('widget')) {
+                                          ids[this.id] = true;
+                                      }
+                                      e.find('.widget').each(
+                                          function() {
+                                              ids[this.id] = true;
+                                          });
+                                  });
+
+                              // We have got our widget ids; it is now safe to
+                              // destroy the DOM subtree.
+
+                              my.$(selector).remove();
+
+                              // Dispose of and remove from
+                              // domified_and_linked any widgets that were
+                              // found in the search above.
+
+                              domified_and_linked = juice.filter(domified_and_linked,
+                                                                 function(w) {
+                                                                     if (ids[w.uuid()]) {
+                                                                         w.dispose();
+                                                                         return false;
+                                                                     }
+                                                                     return true;
+                                                                 });
+                          },
+
+                          // Internal function: do not call! This is here only
+                          // so that it can be accessed by my.refresh.
+
+                          __html: function(p) {
+                              update(p, function(s) { my.$(selector).html(s); });
+                          }
+                      };
                   };
+
+                  // Calling my.refresh(p) is equivalent to calling
+                  // my.partial_update().html(p), i.e. not using a selector.
+                  // Because we know we're destroying every one our child
+                  // widgets, we can be more efficient.
+
+                  my.refresh = function(p) {
+                      dispose_of_domified_and_linked_widgets();
+                      my.partial_update().__html(p || my.render);
+                  };
+
               })();
 
              my.register_event('domify');
@@ -360,6 +457,7 @@
                  juice.error.raise('widget constructor failed for ' + name);
              }
 
+             lib.num_live += 1;
              return that;
          };
 
