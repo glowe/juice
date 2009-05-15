@@ -14,7 +14,9 @@
 
          sha1_file = function(filename) {
              if (!cache[filename]) {
-                 cache[filename] = juice.sys.sha1(juice.sys.read_file(filename));
+                 if (juice.sys.file_exists(filename) == "file") {
+                     cache[filename] = juice.sys.sha1(juice.sys.read_file(filename));
+                 }
              }
              return cache[filename];
          };
