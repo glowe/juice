@@ -7,7 +7,6 @@
 * IMPORTANT Add a config option to use googleapi jquery
 * IMPORTANT Add a config option to smush.it images
 * IMPORTANT Add a config option to warn about pages exceeding a base # of includes
-* IMPORTANT RPC packages should probably be in single files?
 * IMPORTANT Provide convenient way to globally manipulate page titles.
 * IMPORTANT Create pagination component for SEO
 * IMPORTANT Add facility to ignore success or failure functions when rpc finishes
@@ -43,6 +42,7 @@
 By insulating each package source file, it prevents the programmer from
 declaring common code (e.g. in a "00-prelude.js" file) to be shared throughout
 the package.
+* DONE RPC packages should probably be in single files?
 * DONE Unify type checking in juice/CTK RPC specification verification code.
 * DONE support optional page parameters and default values
 

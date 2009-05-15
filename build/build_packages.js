@@ -1,27 +1,44 @@
 (function(juice) {
-     var find_packages = function(lib_name, type) {
-         var base_path, packages = [];
-         // No need to check "type" because this function is private
-         base_path = juice.path_join(juice.build.find_library(lib_name), type);
+     var find_rpc_packages, find_widget_packages;
 
-         // Each sub-directory contains a package.
+     // Each widget package is represented by a set of javascript source files
+     // under [lib_path]/lib/widgets/[pkg_name]/, with html template source
+     // files under [lib_path]/lib/widgets/[pkg_name]/templates/.
+
+     find_widget_packages = function(lib_name) {
+         var base_path, packages = [];
+         base_path = juice.path_join(juice.build.find_library(lib_name), "widgets");
          juice.foreach(juice.sys.list_dir(base_path, {fullpath:true}),
                        function(filepath) {
-                           if (juice.sys.file_exists(filepath) !== "dir") {
-                               return;
+                           if (juice.sys.file_exists(filepath) == "dir") {
+                               packages.push({name: juice.sys.basename(filepath),
+                                              path: filepath});
                            }
-                           packages.push({name: juice.sys.basename(filepath),
-                                          path: filepath});
+                       });
+         return packages;
+     };
+
+     // Each rpc package is represented by a single source file at
+     // [lib_path]/lib/rpcs/[pkg_name].js, with an optional source file
+     // containing mocking code at [lib_path]/lib/rpcs/mock/[pkg_name].js.
+
+     find_rpc_packages = function(lib_name) {
+         var base_path, packages = [];
+         base_path = juice.path_join(juice.build.find_library(lib_name), "rpcs");
+         juice.foreach(juice.sys.list_dir(base_path, {fullpath:true}),
+                       function(path) {
+                           if (juice.sys.file_exists(path) == "file") {
+                               packages.push({name: juice.sys.parse_path(path).without_ext,
+                                              path: path});
+                           }
                        });
          return packages;
      };
 
      juice.build.find_widget_source_files = function(lib_name) {
-         var pkgs, source_files = [];
+         var source_files = [];
 
-         pkgs = find_packages(lib_name, "widgets");
-
-         juice.foreach(pkgs,
+         juice.foreach(find_widget_packages(lib_name, "widgets"),
                        function(pkg) {
                            var package_json_path, templates_path;
 
@@ -75,30 +92,26 @@
      };
 
      juice.build.find_rpc_source_files = function(lib_name) {
-         var pkgs, source_files = [];
+         var source_files = [];
 
-         pkgs = find_packages(lib_name, "rpcs");
-
-         juice.foreach(pkgs,
+         juice.foreach(find_rpc_packages(lib_name),
                        function(pkg) {
-                           var dirs = [pkg.path], mock_dir = juice.path_join(pkg.path, 'mock');
+                           var mock_path, paths = [pkg.path], parsed_path;
 
-                           // If rpc mocking is enabled and the mock dir exists, scan it too.
-                           if (juice.build.config.rpc_mocking() && juice.sys.file_exists(mock_dir) == "dir") {
-                               dirs.push(mock_dir);
+                           // If rpc mocking is enabled and the mock source file exists, add it too.
+                           parsed_path = juice.sys.parse_path(pkg.path);
+                           mock_path = juice.path_join(parsed_path.dir, "mock", parsed_path.filename);
+                           if (juice.build.config.rpc_mocking() && juice.sys.file_exists(mock_path) == "file") {
+                               paths.push(mock_path);
                            }
 
-                           // Tag each .js file with the "rpcs" target type.
-                           juice.foreach(dirs,
-                                         function(dir) {
-                                             juice.foreach(juice.sys.list_dir(dir, {filter_re: /[.]js$/, fullpath: true}),
-                                                           function(path) {
-                                                               source_files.push(
-                                                                   juice.build.source_file({lib_name: lib_name,
-                                                                                            path: path,
-                                                                                            pkg_name: pkg.name,
-                                                                                            target_type: "rpcs"}));
-                                                           });
+                           juice.foreach(paths,
+                                         function(path) {
+                                             source_files.push(
+                                                 juice.build.source_file({lib_name: lib_name,
+                                                                          path: path,
+                                                                          pkg_name: pkg.name,
+                                                                          target_type: "rpcs"}));
                                          });
                        });
 
@@ -113,12 +126,14 @@
              widgets:   {}
          };
 
-         juice.foreach(["rpcs", "widgets"],
-                       function(type) {
-                           juice.foreach(find_packages(lib_name, type),
-                                         function(pkg) {
-                                             lib[type][pkg.name] = {};
-                                         });
+         juice.foreach(find_widget_packages(lib_name),
+                       function(pkg) {
+                           lib.widgets[pkg.name] = {};
+                       });
+
+         juice.foreach(find_rpc_packages(lib_name),
+                       function(pkg) {
+                           lib.rpcs[pkg.name] = {};
                        });
 
          return lib;
