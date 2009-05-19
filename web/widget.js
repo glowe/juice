@@ -17,13 +17,13 @@
          pkg = juice.mget(site.lib, namespace);
 
          if (pkg[name]) {
-             juice.error.raise('widget_already_defined', {namespace: current_namespace, name: name});
+             juice.error.raise("widget_already_defined", {namespace: current_namespace, name: name});
          }
 
          def = function(spec) {
              var
              container_attribs = {},
-             container_element = 'div',
+             container_element = "div",
              css_classes = {},
              destroy_event_system,
              dispose_of_domified_and_linked_widgets,
@@ -33,9 +33,13 @@
              id = juice.newid(),
              linked = [],
              my = {},
-             state = 'initial',
+             state = "initial",
              that = {__widget__: true},
              transition;
+
+             if (arguments.length === 0) {
+                 spec = {};
+             }
 
              (function() {
                   var
@@ -45,7 +49,7 @@
 
                   assert_registered = function(name, where) {
                       if (!juice.is_array(subscribers[name])) {
-                          juice.error.raise('event_not_registered', {name: name, where: where});
+                          juice.error.raise("event_not_registered", {name: name, where: where});
                       }
                   };
 
@@ -62,7 +66,7 @@
                       juice.foreach(juice.args(arguments),
                                     function(name) {
                                         if (subscribers[name]) {
-                                            juice.error.raise('event_already_registered', {event_name: name});
+                                            juice.error.raise("event_already_registered", {event_name: name});
                                         }
                                         else {
                                             subscribers[name] = [];
@@ -77,7 +81,7 @@
 
                   my.publish = function(event_name, payload) {
                       var i, subs = subscribers[event_name];
-                      assert_registered(event_name, 'publish');
+                      assert_registered(event_name, "publish");
                       for (i = subs.length-1; i >= 0; --i) {
                           try {
                               if (subs[i].fn(payload) === false) {
@@ -115,7 +119,7 @@
                   };
 
                   that.__add_subscriber = function(subscriber_uuid, event_name, fn) {
-                      assert_registered(event_name, '__add_subscriber');
+                      assert_registered(event_name, "__add_subscriber");
                       subscribers[event_name].push({id: subscriber_uuid, fn: fn});
                   };
 
@@ -139,10 +143,6 @@
 
               })();
 
-             if (arguments.length === 0) {
-                 spec = {};
-             }
-
              that.uuid = function() {
                  return id;
              };
@@ -154,12 +154,12 @@
              my.namespace = namespace;
              my.name = name;
              my.pretty_name = my.namespace.join(".") + "." + my.name;
-             my.selector = '#' + id;
+             my.selector = "#" + id;
 
              my.$ = function(selector) {
                  var elems = jQuery(my.selector);
                  if (elems.length === 0) {
-                     my.raise('selector_error');
+                     my.raise("selector_error");
                  }
                  if (!selector) {
                      return elems;
@@ -168,7 +168,7 @@
              };
 
              that.add_class = function(s) {
-                 if (my.state() == 'initial') {
+                 if (my.state() == "initial") {
                      css_classes[s] = true;
                  }
                  else {
@@ -177,7 +177,7 @@
              };
 
              that.remove_class = function(s) {
-                 if (my.state() == 'initial') {
+                 if (my.state() == "initial") {
                      delete css_classes[s];
                  }
                  else {
@@ -185,19 +185,32 @@
                  }
              };
 
-             that.show = function() { my.expect_state('domified'); my.$().show(); };
-             that.hide = function() { my.expect_state('domified'); my.$().hide(); };
-             that.remove = function() { my.expect_state('domified'); my.$().remove(); that.dispose(); };
+             that.show = function() {
+                 my.expect_state("domified");
+                 my.$().show();
+             };
+
+             that.hide = function() {
+                 my.expect_state("domified");
+                 my.$().hide();
+             };
+
+             that.remove = function() {
+                 my.expect_state("domified");
+                 my.$().remove();
+                 that.dispose();
+             };
+
              that.dispose = function() {
-                 transition('domified', 'disposed');
-                 my.publish('dispose');
-                 destroy_event_system();
+                 transition("domified", "disposed");
+                 my.publish("dispose");
                  dispose_of_domified_and_linked_widgets();
-                 lib.num_live -= 1
+                 destroy_event_system();
+                 lib.num_live -= 1;
              };
 
              my.render = function() {
-                 return '';
+                 return "";
              };
 
              my.state = function() {
@@ -218,7 +231,7 @@
 
              my.set_container_element = function(t, attribs) {
                  attribs = attribs || {};
-                 if (attribs.hasOwnProperty('id') || attribs.hasOwnProperty('class')) {
+                 if (attribs.hasOwnProperty("id") || attribs.hasOwnProperty("class")) {
                      juice.error.raise("can't specify id or class as container attribute");
                  }
                  container_element = t;
@@ -247,22 +260,22 @@
                           unsafe,
                           function() {
                               var attribs = {
-                                  'class': namespace[0] + ' ' + namespace[2] + ' ' + name + ' widget',
-                                  'id': id
+                                  "class": namespace[0] + " " + namespace[2] + " " + name + " widget",
+                                  "id": id
                               };
                               if (!juice.is_function(my.render)) {
                                   juice.error.raise("widget "+my.pretty_name+": my.render is not a function");
                               }
                               juice.foreach(container_attribs, function(k, v) { attribs[k] = v; });
-                              juice.foreach(css_classes, function(k) { attribs['class'] += ' ' + k; });
-                              transition('initial', 'rendered');
-                              return '<' +
-                                  container_element + ' ' +
+                              juice.foreach(css_classes, function(k) { attribs["class"] += " " + k; });
+                              transition("initial", "rendered");
+                              return "<" +
+                                  container_element + " " +
                                   juice.map_dict(attribs,
                                                  function(k, v) {
                                                      return k + '="' + v + '"';
-                                                 }).join(' ') +
-                                  '>' + my.render() + '</' + container_element + '>';
+                                                 }).join(" ") +
+                                  ">" + my.render() + "</" + container_element + ">";
                           });
                   };
 
@@ -286,14 +299,14 @@
                                       s = s();          // s is a function--call it
                                   }
                                   if (!juice.is_string(s)) {
-                                      juice.error.raise('type_mismatch', {expected: 'String', actual: typeof s});
+                                      juice.error.raise("type_mismatch", {expected: "String", actual: typeof s});
                                   }
                                   f(s);
                               });
                           fire_domify_for_linked_widgets();
                       };
 
-                      my.expect_state('domified');
+                      my.expect_state("domified");
 
                       return {
 
@@ -331,11 +344,11 @@
                               my.$(selector).each(
                                   function() {
                                       var e = jQuery(this);
-                                      if (e.hasClass('widget')) {
+                                      if (e.hasClass("widget")) {
                                           ids[this.id] = true;
                                       }
                                       else {
-                                          e.find('.widget').each(
+                                          e.find(".widget").each(
                                               function() {
                                                   ids[this.id] = true;
                                               });
@@ -382,22 +395,22 @@
 
               })();
 
-             my.register_event('domify');
+             my.register_event("domify", "dispose");
 
              // Transitions this widget into the domified state, publishes its
              // domify event, and recursively domifies its children.
 
              that.fire_domify = function() {
-                 transition('rendered', 'domified');
+                 transition("rendered", "domified");
                  fire_domify_for_linked_widgets();
-                 my.publish('domify');
+                 my.publish("domify");
              };
 
              // Calls f and return true if and only if the widget
              // is in the domified state. Otherwise, returns false.
 
              my.if_domified = function(f) {
-                 if (my.state() === 'domified') {
+                 if (my.state() === "domified") {
                      f();
                      return true;
                  }
@@ -409,16 +422,19 @@
              // becomes domified.
 
              my.after_domify = function(f) {
-                 my.if_domified(f) || my.subscribe_self('domify', f);
+                 my.if_domified(f) || my.subscribe_self("domify", f);
              };
 
-             my.register_event('dispose');
+             // If the widget is in the disposed state, calls f
+             // immediately. Otherwise, calls f when the widget
+             // is disposed of.
+
              my.after_dispose = function(f) {
-                 if (my.state() === 'disposed') {
+                 if (my.state() === "disposed") {
                      f();
                      return;
                  }
-                 my.subscribe_self('dispose', f);
+                 my.subscribe_self("dispose", f);
              };
 
              fire_domify_for_linked_widgets = function() {
@@ -435,13 +451,13 @@
              that.enhance = function(name, spec) {
                  var css_class;
                  if (that.enhanced(name)) {
-                     juice.error.raise('already_enhanced', {name: name});
+                     juice.error.raise("already_enhanced", {name: name});
                  }
                  if (!enhancers[name]) {
-                     juice.error.raise('enhancer_not_defined', {name: name});
+                     juice.error.raise("enhancer_not_defined", {name: name});
                  }
                  enhancements[name] = true;
-                 css_class = 'enhancer_' + name.replace(/[.]/g, '_');
+                 css_class = "enhancer_" + name.replace(/[.]/g, "_");
                  my.after_domify(function() { my.$().addClass(css_class); });
                  enhancers[name](that, my, spec);
                  return that;
@@ -456,7 +472,7 @@
              }
              catch (e) {
                  juice.error.handle(e);
-                 juice.error.raise('widget constructor failed for ' + name);
+                 juice.error.raise("widget constructor failed for " + name);
              }
 
              lib.num_live += 1;
@@ -474,7 +490,7 @@
      lib.define_local = function(name, constructor) {
          var def, message;
          def = lib.define(name, constructor);
-         message = 'local widget instantiated without local constructor';
+         message = "local widget instantiated without local constructor";
 
          juice.mdef(site.lib,
                     function(spec) {
@@ -486,14 +502,14 @@
                     function(spec) {
                         juice.error.raise(message, {name: name});
                     },
-                    current_namespace, name, 'many');
+                    current_namespace, name, "many");
          return def;
      };
 
      lib.define_enhancer = function(name, constructor) {
-         var enhancer_name = current_namespace[0] + '.' + current_namespace[2] + '.' + name;
+         var enhancer_name = current_namespace[0] + "." + current_namespace[2] + "." + name;
          if (enhancers[enhancer_name]) {
-             juice.error.raise('enhancer_already_defined', {name: enhancer_name});
+             juice.error.raise("enhancer_already_defined", {name: enhancer_name});
          }
          enhancers[enhancer_name] = constructor;
      };
