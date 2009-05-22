@@ -147,19 +147,19 @@
      // that, include a file that will install working implementations of
      // the functions in the "impl" dictionary defined above.
 
-    if (sys && sys.v8) {
-        interpreter = 'v8';
-    }
-    else if (typeof File !== 'undefined') {
-        print("spidermonkey");
-	interpreter = 'spidermonkey';
-    }
-    else if (typeof java !== 'undefined') {
-	interpreter = 'rhino';
-    }
-    else {
-        juice.error.raise('unable to determine interpreter');
-    }
+     if (sys && sys.v8) {
+         interpreter = 'v8';
+     }
+     else if (typeof File !== 'undefined') {
+         print("spidermonkey");
+	 interpreter = 'spidermonkey';
+     }
+     else if (typeof java !== 'undefined') {
+	 interpreter = 'rhino';
+     }
+     else {
+         juice.error.raise('unable to determine interpreter');
+     }
 
      juice.load('build/interpreters/' + interpreter + '.js');
 
