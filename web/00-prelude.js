@@ -102,7 +102,7 @@
      };
 
      lib.looks_like_integer = function(s) {
-         return /^\d+$/.test(s);
+         return (/^\d+$/).test(s);
      };
 
      // Tests whether the given value is empty. For an array, this means
@@ -473,9 +473,10 @@
      // the target object is copied and returned, not modified in place.
 
      lib.extend = function() {
-         var answer = juice.copy_object(arguments[0]), i;
+         var answer = juice.copy_object(arguments[0]), copy, i;
+         copy = function(k,v) { answer[k] = v; };
          for (i = 1; i < arguments.length; i++) {
-             juice.foreach(arguments[i], function(k,v) { answer[k] = v; });
+             juice.foreach(arguments[i], copy);
          }
          return answer;
      };

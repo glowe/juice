@@ -422,7 +422,9 @@
              // becomes domified.
 
              my.after_domify = function(f) {
-                 my.if_domified(f) || my.subscribe_self("domify", f);
+                 if (!my.if_domified(f)) {
+                     my.subscribe_self("domify", f);
+                 }
              };
 
              // If the widget is in the disposed state, calls f

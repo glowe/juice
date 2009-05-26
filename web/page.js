@@ -113,7 +113,7 @@
          //
 
          that.path_is_dynamic = function() {
-             return /\[\[\w+\]\]/.test(spec.path);
+             return (/\[\[\w+\]\]/).test(spec.path);
          };
 
          //
