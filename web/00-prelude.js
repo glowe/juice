@@ -401,22 +401,22 @@
      lib.dump = function(o) {
          var parts = [];
 
-         if (lib.is_function(o) && o.hasOwnProperty('toSource')) {
+         if (lib.is_function(o) && o.hasOwnProperty("toSource")) {
              return o.toSource();
          }
          if (lib.is_array(o)) {
              lib.foreach(o, function(v) { parts.push(lib.dump(v)); });
-             return '[' + parts.join(', ') + ']';
+             return "[" + parts.join(", ") + "]";
          }
          if (lib.is_object(o)) {
-             lib.foreach(o, function(k, v) { parts.push(lib.dump(k) + ': ' + lib.dump(v)); });
-             return '{' + parts.join(', ') + '}';
+             lib.foreach(o, function(k, v) { parts.push(lib.dump(k) + ": " + lib.dump(v)); });
+             return "{" + parts.join(", ") + "}";
          }
          if (lib.is_string(o)) {
-             return "'" + o + "'";
+             return '"' + o.replace('"', '\\"') + '"';
          }
 
-         return '' + o; // coerce to string
+         return "" + o; // coerce to string
      };
 
      // Parses a JSON string and returns the resulting object; on failure,
