@@ -2,6 +2,7 @@
 
      var
      active_layout,
+     active_page,
      constructor,
      create_page,
      error_page;
@@ -313,11 +314,16 @@
 
          init: function(name, selector) {
              constructor(juice, site, jQuery);
-             site.pages[name].init(jQuery(selector));
+             active_page = site.pages[name];
+             active_page.init(jQuery(selector));
          },
 
          set_init: function(constr) {
              constructor = constr;
+         },
+
+         current: function() {
+             return active_page;
          }
      };
 
