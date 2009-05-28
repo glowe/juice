@@ -15,7 +15,14 @@
   Putting a widget into the pagebody div should result in a proper
   error message. Even better would be a static check.
 
-
+* NEXT Loading animation (Eloy)
+* NEXT Messaging facility (Eloy)
+* NEXT Compose note dialog (D & G)
+* IMPORTANT Analytics (D & G)
+* NEXT View note page needs styling (Eloy)
+* NEXT Fix page titles (D & G)
+* NEXT Fix page CSS URLs (D & G)
+* NEXT Instructions on how to get IE 6 to point to local machine (D & G)
 * IMPORTANT Code cleanup (e.g., consistent use of double-quotes, better exception messages)
 * IMPORTANT Add a config option to use googleapi jquery
 * IMPORTANT Add a config option to smush.it images
@@ -299,3 +306,4 @@ to use proj.widget.bar.link.
   We shouldn't bother scoping files anymore
 
 * DONE Compiled script names should have something unique in them to thwart browser caching (i.e. we need url versioning)
+* DONE Advertising (D & G)
