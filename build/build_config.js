@@ -34,7 +34,15 @@
              conf_db.rpc_mocking = !!b;
          },
          set_site_settings_path: function(p) {
-             conf_db.site_settings_path = p;
+             // Test that the site settings are correct
+             try {
+                 juice.build.eval_file(p);
+                 conf_db.site_settings_path = p;
+             }
+             catch (e) {
+                 print(e);
+                 juice.build.fatal("Error in settings file with path: " + p);
+             }
          },
          set_version_js_urls: function(b) {
              conf_db.version_js_urls = !!b;
