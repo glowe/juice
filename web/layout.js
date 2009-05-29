@@ -33,6 +33,9 @@
                          if (!panel_exists(panel_name, panels)) {
                              juice.error.raise('panel "'+panel_name+'" not found in layout "'+name+'"');
                          }
+                         if (juice.is_object(panels[panel_name])) {
+                             juice.error.raise("Can't add " + widget.name + " to " + panel_name + ", because panel has child panels.");
+                         }
                          jQuery('#panel_' + panel_name).append(widget.unsafe_render());
                          widget.fire_domify();
                      }
