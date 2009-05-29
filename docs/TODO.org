@@ -2,7 +2,27 @@
 #+STARTUP: overview
 
 * IMPORTANT Provide facility to specify a data-translation/cleansing function for an RPC.
-* IMPORATNT RPC back-end doesn't handle certain catastrophic failure scenarios, e.g. a failed require_once in PHP.
+* IMPORTANT RPC back-end doesn't handle certain catastrophic failure scenarios, e.g. a failed require_once in PHP.
+* IMPORTANT Server-side RPC module should test that the registered RPC function implementation exists, and provide a good error message
+* IMPORTANT How do we test RPC backends for local.blackplanet.com
+* IMPORTANT The internal error message and exception trapping tends to obscure the origin of messages.
+* IMPORTANT util should have the same scoping rules as rpc and widget packages
+* IMPORTANT Provide a better error message when putting widgets into a div with nested divs
+  For example,
+
+  {pagebody: {a: null, b: null}}
+
+  Putting a widget into the pagebody div should result in a proper
+  error message. Even better would be a static check.
+
+* NEXT Loading animation (Eloy)
+* NEXT Messaging facility (Eloy)
+* NEXT Compose note dialog (D & G)
+* IMPORTANT Analytics (D & G)
+* NEXT View note page needs styling (Eloy)
+* NEXT Fix page titles (D & G)
+* NEXT Fix page CSS URLs (D & G)
+* NEXT Instructions on how to get IE 6 to point to local machine (D & G)
 * IMPORTANT Code cleanup (e.g., consistent use of double-quotes, better exception messages)
 * IMPORTANT Add a config option to use googleapi jquery
 * IMPORTANT Add a config option to smush.it images
@@ -21,7 +41,6 @@
   Rename input.template param to input.render
 * MAYBE Error reporting in jQuery's AJAX utility may not be adequate for our needs.
 * MAYBE Should it be possible to specify a different proxies.js file via settings?
-* MAYBE Why do we have form.init?
 * MAYBE Firebug plugin
   - Better stack traces
   - Linked to generated source
@@ -287,3 +306,4 @@ to use proj.widget.bar.link.
   We shouldn't bother scoping files anymore
 
 * DONE Compiled script names should have something unique in them to thwart browser caching (i.e. we need url versioning)
+* DONE Advertising (D & G)
