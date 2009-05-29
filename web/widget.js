@@ -147,14 +147,13 @@
                  return id;
              };
 
-             my.raise = function(msg) {
-                 juice.error.raise(msg, {widget_namespace: my.namespace, widget_name: my.name, widget_id: id});
-             };
-
              my.namespace = namespace;
-             my.name = name;
-             my.pretty_name = my.namespace.join(".") + "." + my.name;
+             that.name = my.namespace.join(".") + "." + name;
              my.selector = "#" + id;
+
+             my.raise = function(msg) {
+                 juice.error.raise(msg, {widget_namespace: my.namespace, widget_name: that.name, widget_id: id});
+             };
 
              my.$ = function(selector) {
                  var elems = jQuery(my.selector);
@@ -220,7 +219,7 @@
              my.expect_state = function() {
                  var args = juice.args(arguments);
                  if (!juice.any(args, function(arg) { return state === arg; })) {
-                     my.raise("Bad state: expected " + args.join(", ") +"--actual was " + state + " in " + my.name);
+                     my.raise("Bad state: expected " + args.join(", ") +"--actual was " + state + " in " + that.name);
                  }
              };
 
@@ -247,7 +246,7 @@
                           render_stack[render_stack.length-1](that);
                       }
                       else if (!unsafe) {
-                          juice.error.raise("widget "+my.pretty_name+": tried to render while unlinked");
+                          juice.error.raise("widget "+that.name+": tried to render while unlinked");
                       }
                       render_stack.push(function(w) { linked.push(w); });
                       answer = f();
@@ -264,7 +263,7 @@
                                   "id": id
                               };
                               if (!juice.is_function(my.render)) {
-                                  juice.error.raise("widget "+my.pretty_name+": my.render is not a function");
+                                  juice.error.raise("widget "+that.name+": my.render is not a function");
                               }
                               juice.foreach(container_attribs, function(k, v) { attribs[k] = v; });
                               juice.foreach(css_classes, function(k) { attribs["class"] += " " + k; });
