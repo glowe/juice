@@ -60,7 +60,7 @@
                        function(lib_name, source_files) {
                            var util = juice.map(source_files,
                                                 function(source) {
-                                                    return juice.build.read_file_and_scope_js(source.path);
+                                                    return juice.sys.read_file(source.path);
                                                 });
                            base = base.concat(
                                ['juice.util.define_package("' + lib_name + '", function(juice, site, jQuery) {',

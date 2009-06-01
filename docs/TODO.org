@@ -5,7 +5,6 @@
 * IMPORTANT Provide facility to specify a data-translation/cleansing function for an RPC.
 * IMPORTANT How do we test RPC backends for local.blackplanet.com
 * IMPORTANT The internal error message and exception trapping tends to obscure the origin of messages.
-* IMPORTANT util should have the same scoping rules as rpc and widget packages
 * NEXT Loading animation (Eloy)
 * NEXT Messaging facility (Eloy)
 * NEXT Compose note dialog (D & G)
@@ -46,6 +45,7 @@
 
   - [ ] date formatting modifier
   - [ ] ellipsis formatter
+* DONE util should have the same scoping rules as rpc and widget packages
 * DONE Change the way we scope individual js files in packages.
 By insulating each package source file, it prevents the programmer from
 declaring common code (e.g. in a "00-prelude.js" file) to be shared throughout
