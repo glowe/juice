@@ -1,9 +1,8 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
+* IMPORTANT Make it possible to send additional rpc boxcars after the initial one.
 * IMPORTANT Provide facility to specify a data-translation/cleansing function for an RPC.
-* IMPORTANT RPC back-end doesn't handle certain catastrophic failure scenarios, e.g. a failed require_once in PHP.
-* IMPORTANT Server-side RPC module should test that the registered RPC function implementation exists, and provide a good error message
 * IMPORTANT How do we test RPC backends for local.blackplanet.com
 * IMPORTANT The internal error message and exception trapping tends to obscure the origin of messages.
 * IMPORTANT util should have the same scoping rules as rpc and widget packages
@@ -47,10 +46,12 @@
 
   - [ ] date formatting modifier
   - [ ] ellipsis formatter
-* MAYBE Change the way we scope individual js files in packages.
+* DONE Change the way we scope individual js files in packages.
 By insulating each package source file, it prevents the programmer from
 declaring common code (e.g. in a "00-prelude.js" file) to be shared throughout
 the package.
+* DONE RPC back-end doesn't handle certain catastrophic failure scenarios, e.g. a failed require_once in PHP.
+* DONE Server-side RPC module should test that the registered RPC function implementation exists, and provide a good error message
 * DONE RPC packages should probably be in single files?
 * DONE Unify type checking in juice/CTK RPC specification verification code.
 * DONE support optional page parameters and default values
