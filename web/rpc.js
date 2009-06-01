@@ -289,9 +289,7 @@
                   juice.error.raise("rpc mocking is disabled");
               }
               if (juice.is_undefined(conf)) {
-                  conf = juice.cookie.has("rpc.mock")
-                      ? juice.cookie.get("rpc.mock")
-                      : {"default": site.settings.config.mock_rpcs_by_default};
+                  conf = {"default": site.settings.config.mock_rpcs_by_default};
               }
           };
 
@@ -444,9 +442,6 @@
                   else {
                       juice.error.raise("invalid rpc specification: "+what);
                   }
-
-                  // We want the conf to persist between page loads.
-                  juice.cookie.set("rpc.mock", conf);
               },
 
               // Returns the mocking state for the given rpc: either true

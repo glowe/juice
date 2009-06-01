@@ -8,14 +8,17 @@
 * NEXT Loading animation (Eloy)
 * NEXT Messaging facility (Eloy)
 * NEXT Compose note dialog (D & G)
-* IMPORTANT Analytics (D & G)
-* NEXT View note page needs styling (Eloy)
 * NEXT Instructions on how to get IE 6 to point to local machine (D & G)
+* IMPORTANT The internal error message and exception trapping tends to obscure the origin of messages.
+* IMPORTANT Provide facility to specify a data-translation/cleansing function for an RPC.
+* IMPORTANT How do we test RPC backends for local.blackplanet.com?
+* IMPORTANT util should have the same scoping rules as rpc and widget packages
+* IMPORTANT Analytics (D & G)
+* IMPORTANT Add a class for input type="text", etc. for IE6
 * IMPORTANT Code cleanup (e.g., consistent use of double-quotes, better exception messages)
 * IMPORTANT Add a config option to use googleapi jquery
 * IMPORTANT Add a config option to smush.it images
 * IMPORTANT Add a config option to warn about pages exceeding a base # of includes
-* IMPORTANT Provide convenient way to globally manipulate page titles.
 * IMPORTANT Create pagination component for SEO
 * IMPORTANT Add facility to ignore success or failure functions when rpc finishes
   This will be important when adding rpc-based form validation. If
@@ -27,6 +30,7 @@
 * IMPORTANT Revisit c1_std form inputs etc.
   Ensure that they work well regardless of widget state
   Rename input.template param to input.render
+* MAYBE Make it possible to send additional rpc boxcars after the initial one.
 * MAYBE Error reporting in jQuery's AJAX utility may not be adequate for our needs.
 * MAYBE Should it be possible to specify a different proxies.js file via settings?
 * MAYBE Firebug plugin
@@ -288,7 +292,6 @@ to use proj.widget.bar.link.
   - test for memory leaks
 
 * DONE automatically determine whether pages have overlapping urls (when possible)
-======
 * DONE Change proj settings to just be a dictionary--that way more flexible after all
 * DONE Fix compile template errors
   Source files should not have to be reloaded
@@ -308,3 +311,5 @@ to use proj.widget.bar.link.
   Putting a widget into the pagebody div should result in a proper
   error message. Even better would be a static check.
 
+* DONE Provide convenient way to globally manipulate page titles.
+* DONE View note page needs styling (Eloy)
