@@ -4,8 +4,7 @@
      active_layout,
      active_page,
      constructor,
-     create_page,
-     error_page;
+     create_page;
 
      create_page = function(spec) {
          var categorize_arguments,
@@ -212,12 +211,7 @@
                  that.draw(container, args.valid);
              }
              catch (e) {
-                 if (error_page) {
-                     error_page.draw(container, {exception: e.toString(), args: args});
-                 }
-                 else {
-                     juice.error.handle(juice.error.chain("error_page not defined", e));
-                 }
+                 juice.error.handle(e);
              }
 
              juice.event.subscribe(undefined,
@@ -276,28 +270,6 @@
              }
              spec.external = true;
              site.pages[spec.name] = create_page(spec);
-         },
-
-         //
-         // Defines the page that is displayed when an unrecoverable error
-         // occurs during page initialization. E.g. mandatory page arguments
-         // were not provided, or an argument was improperly formatted.
-         //
-
-         define_error_page: function(spec) {
-             if (error_page) {
-                 juice.error.raise("error_page already defined");
-             }
-             spec = juice.spec(spec,
-                               {init_widgets: undefined,
-                                layout: undefined,
-                                script_urls: [],
-                                stylesheet_urls: [],
-                                title: undefined,
-                                widget_packages: []
-                               });
-             spec.name = "__" + spec.name + "_error__";
-             error_page = create_page(spec);
          },
 
          //
