@@ -1,6 +1,11 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
+* NEXT Write 1 version of juice package string parsing.
+For example, "c1.widgets.core" should become
+{lib_name: "c1",
+ pkg_type: "widgets",
+ pkg_name: "core"}
 * NEXT Add the one at a time functionality.
 * NEXT Write a new dispatcher page for RPCs
 * NEXT Loading animation (Eloy)
