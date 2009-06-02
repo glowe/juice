@@ -55,7 +55,6 @@
                                                   cookie_name: undefined,
                                                   global_script_urls: [],
                                                   global_stylesheet_urls: [],
-                                                  global_widget_packages: [],
                                                   js_base_url: undefined,
                                                   smother_alerts: false,
                                                   user: {}}));
