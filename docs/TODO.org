@@ -1,6 +1,8 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
+* NEXT Add the one at a time functionality.
+* NEXT Write a new dispatcher page for RPCs
 * NEXT Loading animation (Eloy)
 * NEXT Messaging facility (Eloy)
 * NEXT Compose note dialog (D & G)
