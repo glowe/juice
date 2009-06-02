@@ -101,6 +101,15 @@
 
          date: function(t) {
              return format_ts_offset(t, true, true);
+         },
+
+         integer: function(n) {
+             var chunks = [], s = String(n);
+             while (s) {
+                 chunks.push(s.slice(-3));
+                 s = s.slice(0,-3);
+             }
+             return chunks.reverse().join(",");
          }
      };
 
