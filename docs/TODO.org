@@ -4,7 +4,6 @@
 * NEXT Add the one at a time functionality.
 * NEXT Write a new dispatcher page for RPCs
 * NEXT Loading animation (Eloy)
-* NEXT Some dummy task
 * NEXT Messaging facility (Eloy)
 * NEXT Compose note dialog (D & G)
 * NEXT Instructions on how to get IE 6 to point to local machine (D & G)
@@ -312,3 +311,4 @@ to use proj.widget.bar.link.
 * DONE Provide convenient way to globally manipulate page titles.
 * DONE View note page needs styling (Eloy)
 * WAITING Analytics (D & G)
+* DONE Some dummy task
