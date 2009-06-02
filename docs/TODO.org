@@ -4,6 +4,7 @@
 * NEXT Add the one at a time functionality.
 * NEXT Write a new dispatcher page for RPCs
 * NEXT Loading animation (Eloy)
+* NEXT Some dummy task
 * NEXT Messaging facility (Eloy)
 * NEXT Compose note dialog (D & G)
 * NEXT Instructions on how to get IE 6 to point to local machine (D & G)
@@ -11,7 +12,6 @@
 * IMPORTANT Provide facility to specify a data-translation/cleansing function for an RPC.
 * IMPORTANT How do we test RPC backends for local.blackplanet.com?
 * IMPORTANT util should have the same scoping rules as rpc and widget packages
-* IMPORTANT Analytics (D & G)
 * IMPORTANT Add a class for input type="text", etc. for IE6
 * IMPORTANT Code cleanup (e.g., consistent use of double-quotes, better exception messages)
 * IMPORTANT Add a config option to use googleapi jquery
@@ -311,3 +311,4 @@ to use proj.widget.bar.link.
 
 * DONE Provide convenient way to globally manipulate page titles.
 * DONE View note page needs styling (Eloy)
+* WAITING Analytics (D & G)
