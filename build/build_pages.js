@@ -168,10 +168,7 @@
                                path += 'index.html';
                            }
 
-                           dependencies =
-                               collect_page_dependencies(
-                                   juice.unique(page.widget_packages(),
-                                                juice.build.site_settings().global_widget_packages));
+                           dependencies = collect_page_dependencies(page.widget_packages());
 
                            dependencies.script_urls =
                                juice.unique(
