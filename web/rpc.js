@@ -504,7 +504,9 @@
                   // juice.rpc.mock.success nor juice.rpc.mock.failure,
                   // convert it to a success object.
 
-                  if (!response.hasOwnProperty("data") && !response.hasOwnProperty("error")) {
+                  if (!juice.is_object(response) ||
+                      (!response.hasOwnProperty("data") && !response.hasOwnProperty("error")))
+                  {
                       response = juice.rpc.mock.success(response);
                   }
 
