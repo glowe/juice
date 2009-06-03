@@ -110,7 +110,9 @@
                  s = s.slice(0,-3);
              }
              return chunks.reverse().join(",");
-         }
+         },
+
+         json: JSON.stringify
      };
 
  })(juice);
