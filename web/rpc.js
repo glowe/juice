@@ -234,6 +234,7 @@
              do_validate = function(spec_type, my_args) {
                  var errors = validate_against_spec(spec[spec_type], my_args);
                  if (errors.length > 0) {
+                     call_when_finished();
                      juice.error.raise(spec_type + "_mismatch", {namespace: my_namespace,
                                                                  rpc_name: spec.name,
                                                                  spec: juice.dump(spec[spec_type]),
