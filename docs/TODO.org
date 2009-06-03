@@ -1,11 +1,22 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
-* NEXT Write 1 version of juice package string parsing.
-For example, "c1.widgets.core" should become
-{lib_name: "c1",
- pkg_type: "widgets",
- pkg_name: "core"}
+* NEXT Convert package.json to package.js
+This allows config files to be programmable.
+EX.
+It'd be nice to set stylesheet_urls using the site.settings.static_base_url value for widget package.
+
+* NEXT Implement some juice.namespace helpers
+  - add qualified_name to widgets and rpcs
+  - add ability to test whether an object is defined in a hierarchy
+  - set an object in a hierarchy
+  - get an object in a hierarchy
+  - search an object hierarchy using wildcards, etc.
+
+EX.
+
+juice.namespace.exists(site.lib, "c1.rpcs.core.login");
+
 * NEXT Add the one at a time functionality.
 * NEXT Write a new dispatcher page for RPCs
 * NEXT Loading animation (Eloy)
