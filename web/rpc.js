@@ -193,6 +193,20 @@
          return errors;
      };
 
+     lib.lookup = function(spec) {
+         var parts;
+         spec = juice.spec(spec, {lib_name: undefined,
+                                  pkg_name: undefined,
+                                  name: undefined});
+         parts = [spec.lib_name, "rpcs", spec.pkg_name, spec.name];
+         try {
+             return juice.mget(site.lib, parts);
+         }
+         catch (e) {
+             return juice.error.chain("can't find rpc (" + parts.join(".") + ")", e);
+         }
+     };
+
      // +----------------+
      // | rpc definition |
      // +----------------+
@@ -202,7 +216,7 @@
              lib_name: current_namespace[0],
              pkg_name: current_namespace[2],
              toString: function() {
-                 return this.lib_name + "." + this.pkg_name;
+                 return this.lib_name + ".rpcs." + this.pkg_name;
              },
              search: function(o) {
                  return o[this.toString()] || o[this.lib_name];
