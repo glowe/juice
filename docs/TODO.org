@@ -1,6 +1,11 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
+* NEXT Write 1 version of juice package string parsing.
+For example, "c1.widgets.core" should become
+{lib_name: "c1",
+ pkg_type: "widgets",
+ pkg_name: "core"}
 * NEXT Convert package.json to package.js
 This allows config files to be programmable.
 EX.
@@ -16,13 +21,12 @@ It'd be nice to set stylesheet_urls using the site.settings.static_base_url valu
 EX.
 
 juice.namespace.exists(site.lib, "c1.rpcs.core.login");
-
-* NEXT Add the one at a time functionality.
 * NEXT Write a new dispatcher page for RPCs
 * NEXT Loading animation (Eloy)
 * NEXT Messaging facility (Eloy)
 * NEXT Compose note dialog (D & G)
 * NEXT Instructions on how to get IE 6 to point to local machine (D & G)
+* IMPORTANT Determine dependency order among util "packages" so library code is compiled into base.js in correct order.
 * IMPORTANT Convert all form inputs to work regardless of state
 * IMPORTANT Form inputs template param should be called render
 * IMPORTANT The internal error message and exception trapping tends to obscure the origin of messages.
@@ -63,6 +67,7 @@ juice.namespace.exists(site.lib, "c1.rpcs.core.login");
 
   - [ ] date formatting modifier
   - [ ] ellipsis formatter
+* DONE Add the one at a time functionality.
 * DONE util should have the same scoping rules as rpc and widget packages
 * DONE Change the way we scope individual js files in packages.
 By insulating each package source file, it prevents the programmer from
@@ -329,4 +334,3 @@ to use proj.widget.bar.link.
 * DONE View note page needs styling (Eloy)
 * WAITING Analytics (D & G)
 * DONE Some dummy task
-* DONE util should have the same scoping rules as rpc and widget packages
