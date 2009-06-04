@@ -6,11 +6,28 @@ For example, "c1.widgets.core" should become
 {lib_name: "c1",
  pkg_type: "widgets",
  pkg_name: "core"}
+* NEXT Convert package.json to package.js
+This allows config files to be programmable.
+EX.
+It'd be nice to set stylesheet_urls using the site.settings.static_base_url value for widget package.
+
+* NEXT Implement some juice.namespace helpers
+  - add qualified_name to widgets and rpcs
+  - add ability to test whether an object is defined in a hierarchy
+  - set an object in a hierarchy
+  - get an object in a hierarchy
+  - search an object hierarchy using wildcards, etc.
+
+EX.
+
+juice.namespace.exists(site.lib, "c1.rpcs.core.login");
 * NEXT Write a new dispatcher page for RPCs
 * NEXT Loading animation (Eloy)
 * NEXT Messaging facility (Eloy)
 * NEXT Compose note dialog (D & G)
 * NEXT Instructions on how to get IE 6 to point to local machine (D & G)
+* IMPORTANT Convert all form inputs to work regardless of state
+* IMPORTANT Form inputs template param should be called render
 * IMPORTANT The internal error message and exception trapping tends to obscure the origin of messages.
 * IMPORTANT Provide facility to specify a data-translation/cleansing function for an RPC.
 * IMPORTANT How do we test RPC backends for local.blackplanet.com?
