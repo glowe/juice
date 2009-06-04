@@ -26,6 +26,7 @@ juice.namespace.exists(site.lib, "c1.rpcs.core.login");
 * NEXT Messaging facility (Eloy)
 * NEXT Compose note dialog (D & G)
 * NEXT Instructions on how to get IE 6 to point to local machine (D & G)
+* IMPORTANT Determine dependency order among util "packages" so library code is compiled into base.js in correct order.
 * IMPORTANT Convert all form inputs to work regardless of state
 * IMPORTANT Form inputs template param should be called render
 * IMPORTANT The internal error message and exception trapping tends to obscure the origin of messages.
