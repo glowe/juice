@@ -259,7 +259,7 @@
                           unsafe,
                           function() {
                               var attribs = {
-                                  "class": namespace[0] + " " + namespace[2] + " " + name + " widget",
+                                  "class": namespace.join(" ") + " " + name,
                                   "id": id
                               };
                               if (!juice.is_function(my.render)) {
