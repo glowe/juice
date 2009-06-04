@@ -112,7 +112,7 @@
              return chunks.reverse().join(",");
          },
 
-         json: JSON.stringify
+         json: juice.dump
      };
 
  })(juice);
