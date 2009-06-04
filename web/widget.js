@@ -324,8 +324,9 @@
                           // Replace the selected elements with new content.
 
                           html: function(p) {
-                              this.remove();
-                              this.__html(p);
+                              update(p, function(s) { my.$(selector).html(s); });
+                              // this.remove();
+                              // this.__html(p);
                           },
 
                           // Remove the selected elements.
