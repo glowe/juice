@@ -1,6 +1,7 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
+* NEXT Clean up mocking code for notes
 * NEXT Convert package.json to package.js
 This allows config files to be programmable.
 EX.
@@ -9,15 +10,11 @@ It'd be nice to set stylesheet_urls using the site.settings.static_base_url valu
 * NEXT Write a new dispatcher page for RPCs
 * NEXT Loading animation (Eloy)
 * NEXT Messaging facility (Eloy)
-* NEXT Compose note dialog (D & G)
 * NEXT Instructions on how to get IE 6 to point to local machine (D & G)
 * IMPORTANT Determine dependency order among util "packages" so library code is compiled into base.js in correct order.
 * IMPORTANT Convert all form inputs to work regardless of state
-* IMPORTANT Form inputs template param should be called render
 * IMPORTANT The internal error message and exception trapping tends to obscure the origin of messages.
 * IMPORTANT Provide facility to specify a data-translation/cleansing function for an RPC.
-* IMPORTANT How do we test RPC backends for local.blackplanet.com?
-* IMPORTANT Add a class for input type="text", etc. for IE6
 * IMPORTANT Code cleanup (e.g., consistent use of double-quotes, better exception messages)
 * IMPORTANT Add a config option to use googleapi jquery
 * IMPORTANT Add a config option to smush.it images
@@ -32,7 +29,6 @@ It'd be nice to set stylesheet_urls using the site.settings.static_base_url valu
 * IMPORTANT When widget dependencies are calculated, we should ensure that the packages really exist
 * IMPORTANT Revisit c1_std form inputs etc.
   Ensure that they work well regardless of widget state
-  Rename input.template param to input.render
 * MAYBE Make it possible to send additional rpc boxcars after the initial one.
 * MAYBE Error reporting in jQuery's AJAX utility may not be adequate for our needs.
 * MAYBE Should it be possible to specify a different proxies.js file via settings?
@@ -43,7 +39,7 @@ It'd be nice to set stylesheet_urls using the site.settings.static_base_url valu
 * MAYBE Scope the juice.lib namespace passed to widget packages based on their stated dependencies.
 * MAYBE be consistent about event names (use present-tense everywhere?)
 * MAYBE write test for templates and start on 2-pass fix
-* MAYBE RPC testing harness, documentation, stub-generation, etc.
+* MAYBE Documentation, stub-generation, etc.
 * MAYBE All services that provide counts should only count up a certain limit and then on front end, through a number modifier, we print something nice like "10,000+"
 * MAYBE To facilitate debugging, templates should try catch and spit out their name when there is an error
 * MAYBE Template compiler should throw a compile time error if you use a modifier that is undefined
@@ -337,3 +333,5 @@ For example, "c1.widgets.core" should become
 {lib_name: "c1",
  pkg_type: "widgets",
  pkg_name: "core"}
+
+* DONE Form inputs template param should be called render
