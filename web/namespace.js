@@ -24,8 +24,8 @@
                      return juice.mhas(site.lib, spec.lib_name, spec.pkg_type, spec.pkg_name, name);
                  },
 
-                 set: function(name, value) {
-                     juice.mset(site.lib, spec.lib_name, spec.pkg_type, spec.pkg_name, name, value);
+                 def: function(name, value) {
+                     juice.mdef(site.lib, value, spec.lib_name, spec.pkg_type, spec.pkg_name, name);
                  },
 
                  get: function(name) {

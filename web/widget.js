@@ -144,9 +144,8 @@
                  return id;
              };
 
-             my.namespace = namespace;
              my.selector = "#" + id;
-             that.qualfied_name = qualified_name;
+             that.qualified_name = qualified_name;
              that.name = name;
 
              my.raise = function(msg) {
@@ -257,7 +256,7 @@
                           unsafe,
                           function() {
                               var attribs = {
-                                  "class": namespace.join(" ") + " " + name,
+                                  "class": qualified_name.replace(/\./g, " "),
                                   "id": id
                               };
                               if (!juice.is_function(my.render)) {
@@ -470,7 +469,7 @@
              }
              catch (e) {
                  juice.error.handle(e);
-                 juice.error.raise(qualfied_name + ": widget constructor failed");
+                 juice.error.raise(qualified_name + ": widget constructor failed");
              }
 
              lib.num_live += 1;
@@ -481,7 +480,7 @@
              return juice.map(items, function(i) { return def(i); });
          };
 
-         current_namespace.set(name, def);
+         current_namespace.def(name, def);
 
          return def;
      };
