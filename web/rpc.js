@@ -328,7 +328,7 @@
                   return site.settings.config.rpc_mocking;
               },
 
-              // Specifies how the specified rpc should be mocked. `name`
+              // Specifies how the specified rpc should be mocked. `rpc_name`
               // should be an rpc name without its library or package.
               // `states` should contain key-value pairs that indicate the
               // various mocked states provides by this rpc. If a state's
