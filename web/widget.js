@@ -486,26 +486,27 @@
      };
 
      lib.define_local = function(name, constructor) {
-         var def, message;
+         var def, impl;
          def = lib.define(name, constructor);
-         message = "local widget instantiated without local constructor";
 
-         juice.mdef(site.lib,
-                    function(spec) {
-                        juice.error.raise(message, {name: name});
-                    },
-                    current_namespace, name);
+         impl = function(spec) {
+             juice.error.raise("local widget " + name
+                               + " instantiated without local constructor");
+         };
+         impl.many = function(items) {
+             juice.error.raise("many local widgets " + name
+                               + " instantiated without local constructor");
+         };
 
-         juice.mdef(site.lib,
-                    function(spec) {
-                        juice.error.raise(message, {name: name});
-                    },
-                    current_namespace, name, "many");
+         current_namespace.def(name, impl);
+
          return def;
      };
 
      lib.define_enhancer = function(name, constructor) {
-         var enhancer_name = [current_namespace.lib_name, current_namespace.pkg_name, name].join(".");
+         var enhancer_name = [current_namespace.lib_name,
+                              current_namespace.pkg_name,
+                              name].join(".");
          if (enhancers[enhancer_name]) {
              juice.error.raise(enhancer_name + " enhancer already defined");
          }
