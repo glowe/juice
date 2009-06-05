@@ -12,7 +12,7 @@ program_options = juice.program_options(
 po = program_options.parse_arguments(argv);
 options = po.options;
 
-site_base_url = "http://localhost:8000";
+site_base_url = "http://localhost:8888";
 
 write_template = function(filename, output_base_path) {
     var template_path, template;
@@ -23,7 +23,8 @@ write_template = function(filename, output_base_path) {
 
     juice.sys.write_file(juice.path_join(output_base_path, filename),
                          template({site_name: site_name,
-                                   site_base_url: site_base_url}),
+                                   site_base_url: site_base_url,
+                                   lib_path: lib_path}),
                          true);
 };
 
