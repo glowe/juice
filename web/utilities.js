@@ -66,10 +66,10 @@
          //
 
          message: (function() {
-                       var create_message, get_dock, dock;
+                       var create_message, dock, get_dock;
 
                        get_dock = function(reset) {
-                           if (!dock || reset) {
+                           if (!dock) {
                                dock = jQuery('<div id="juice_message_dock"></div>').appendTo('body');
                            }
                            return dock;
@@ -118,10 +118,16 @@
                                return create_message('error', text);
                            },
                            clear_all: function() {
-                               get_dock(true);
+                               get_dock().empty();
                            }
                        };
-                   })()
+                   })(),
+
+         // Typically called when there is an error by the juice system
+         clear_loading_notifications: function() {
+             jQuery('body').attr('style', 'cursor: auto;');
+             juice.util.message.clear_all();
+         }
      };
 
  })(juice, site, jQuery);

@@ -35,6 +35,7 @@
          // to override this function.
 
          handle: function(e) {
+             juice.util.clear_loading_notifications();
              juice.errors.push(e);
              juice.log(e);
              juice.util.message.error('Internal error');

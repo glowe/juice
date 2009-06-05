@@ -227,7 +227,6 @@
              do_validate = function(spec_type, my_args) {
                  var errors = validate_against_spec(spec[spec_type], my_args);
                  if (errors.length > 0) {
-                     call_when_finished();
                      juice.error.raise(qualified_name + ": " + spec_type + "_mismatch",
                                        {spec: juice.dump(spec[spec_type]),
                                         errors: juice.dump(errors),
@@ -565,7 +564,7 @@
          if (default_proxy) {
              return default_proxy;
          }
-         return juice.error.raise("proxy_not_found", {namespace: rpc.namespace});
+         return juice.error.raise(rpc.qualified_name + ": proxy_not_found");
      };
 
      lib.clear_proxies = function() {
@@ -603,10 +602,10 @@
                      // Like the one in that.start, this try catch
                      // handles catastrophic ajax failures.
                      fn([request]);
-                  }
-                  catch (e) {
+                 }
+                 catch (e) {
                      juice.error.handle(e);
-                  }
+                 }
              }
              else {
                  pending_requests.push(request);
