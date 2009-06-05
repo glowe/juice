@@ -11,6 +11,13 @@
 
              string = juice.values(spec).join(".");
 
+             if (!site.lib.hasOwnProperty(spec.lib_name)
+                 || !site.lib[spec.lib_name].hasOwnProperty(spec.pkg_type)
+                 || !site.lib[spec.lib_name][spec.pkg_type].hasOwnProperty(spec.pkg_name)) {
+                 // This should only happen if there's a typo somewhere.
+                 juice.error.raise(string + " namespace doesn't exist");
+             }
+
              return {
                  lib_name: spec.lib_name,
                  pkg_type: spec.pkg_type,

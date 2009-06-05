@@ -212,21 +212,14 @@
      // +----------------+
 
      lib.define = function(spec) {
-         var my_namespace = {
-             lib_name: current_namespace[0],
-             pkg_name: current_namespace[2],
-             toString: function() {
-                 return this.lib_name + ".rpcs." + this.pkg_name;
-             },
-             search: function(o) {
-                 return o[this.toString()] || o[this.lib_name];
-             }
-         };
+         var qualified_name, rpc;
+
+         qualified_name = current_namespace.qualify(spec.name);
 
          assert_spec_is_valid(spec.req_spec);
          assert_spec_is_valid(spec.rsp_spec);
 
-         var rpc = function(args, success_fn, failure_fn) {
+         rpc = function(args, success_fn, failure_fn) {
              var call_when_finished, do_validate;
 
              call_when_finished = juice.util.loading();
@@ -235,16 +228,15 @@
                  var errors = validate_against_spec(spec[spec_type], my_args);
                  if (errors.length > 0) {
                      call_when_finished();
-                     juice.error.raise(spec_type + "_mismatch", {namespace: my_namespace,
-                                                                 rpc_name: spec.name,
-                                                                 spec: juice.dump(spec[spec_type]),
-                                                                 errors: juice.dump(errors),
-                                                                 data: juice.dump(my_args)});
+                     juice.error.raise(qualified_name + ": " + spec_type + "_mismatch",
+                                       {spec: juice.dump(spec[spec_type]),
+                                        errors: juice.dump(errors),
+                                        data: juice.dump(my_args)});
                  }
              };
 
              do_validate("req_spec", args);
-             debug(my_namespace + "." + spec.name, args);
+             debug(qualified_name, args);
 
              return find_proxy(rpc).execute(
                  {rpc: rpc,
@@ -278,17 +270,37 @@
                  });
          };
 
-         rpc.namespace = my_namespace;
+         rpc.namespace = current_namespace;
          rpc.name = spec.name;
+         rpc.qualified_name = qualified_name;
          rpc.service_name = spec.service_name;
          rpc.req_spec = spec.req_spec;
          rpc.rsp_spec = spec.rsp_spec;
 
-         if (juice.mget(site.lib, current_namespace).hasOwnProperty(rpc.name)) {
-             juice.error.raise("rpc_already_defined", {namespace: rpc.namespace, name: rpc.name});
+         if (current_namespace.contains(spec.name)) {
+             juice.error.raise(qualified_name + " already defined");
          }
-         juice.mget(site.lib, current_namespace)[rpc.name] = rpc;
+         current_namespace.def(spec.name, rpc);
      };
+
+
+
+     // +---------------+
+     // | documentation |
+     // +---------------+
+
+     (function() {
+          juice.rpc.doc = {
+              define: function(rpc_name, doc_string) {
+                  if (!current_namespace.contains(rpc_name)) {
+                      juice.error.raise("attempt to document an undefined rpc: "
+                                        + current_namespace.qualify(rpc_name));
+                  }
+
+                  current_namespace.qualify(rpc_name).doc_string = doc_string;
+              }
+          };
+      })();
 
 
      // +---------+
@@ -325,21 +337,17 @@
               // arguments and its return value will be used.
 
               define: function(rpc_name, states) {
+                  var qualified_name = current_namespace.qualify(rpc_name);
                   init_conf();
-                  if (!juice.mhas(site.lib, current_namespace)) {
-                      juice.error.raise("current namespace not found",
-                                        {namespace: current_namespace});
-                  }
-                  if (!juice.mhas(site.lib, current_namespace, rpc_name)) {
-                      juice.error.raise("attempt to mock an undefined rpc",
-                                        {rpc_name: rpc_name, namespace: current_namespace});
+                  if (!current_namespace.contains(rpc_name)) {
+                      juice.error.raise("attempt to mock an undefined rpc: " + qualified_name);
                   }
 
                   // Store `states` in an attribute named "mock" inside the
                   // actual rpc object. This makes it easy to retrieve later,
                   // i.e. when the rpc gets called.
 
-                  juice.mset(site.lib, states, current_namespace, rpc_name, "mock");
+                  current_namespace.get(rpc_name).mock = states;
               },
 
               // Similar to juice.rpc.mock.define, except this function only
@@ -550,7 +558,8 @@
          if (juice.rpc.mock.state(rpc) !== false) {
              return mocking_proxy;
          }
-         if ((answer = rpc.namespace.search(proxy_map))) {
+         if ((answer = (proxy_map.hasOwnProperty(rpc.namespace.toString())
+                        || proxy_map.hasOwnProperty(rpc.namespace.lib_name)))) {
              return answer;
          }
          if (default_proxy) {
@@ -625,7 +634,7 @@
                                         catch (e) {
                                             juice.error.handle(
                                                 juice.error.chain(
-                                                    "rpc mock failure: " + rpc.namespace + "." + rpc.name, e));
+                                                    "rpc mock failure: " + rpc.qualified_name, e));
                                         }
                                     },
                                     Math.random() * 1000);
@@ -688,13 +697,13 @@
      // +---------------------------+
 
      lib.define_package = function(lib_name, pkg_name, constructor) {
-         var namespace;
+         var namespace = juice.namespace.make({lib_name: lib_name,
+                                               pkg_type: "rpcs",
+                                               pkg_name: pkg_name});
+
          if (current_namespace) {
-             juice.error.raise("nested rpc package", {current_namespace: current_namespace,
-                                                      lib_name: lib_name,
-                                                      pkg_name: pkg_name});
+             juice.error.raise(namespace + " nested inside " + current_namespace);
          }
-         namespace = [lib_name, "rpcs", pkg_name];
          current_namespace = namespace;
          constructor(juice, site, jQuery);
          current_namespace = null;
