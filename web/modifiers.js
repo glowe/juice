@@ -104,7 +104,7 @@
          },
 
          integer: function(n) {
-             var chunks = [], s = String(n);
+             var chunks = [], s = String(Math.floor(n));
              while (s) {
                  chunks.push(s.slice(-3));
                  s = s.slice(0,-3);
