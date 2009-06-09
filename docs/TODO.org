@@ -10,6 +10,7 @@ It'd be nice to set stylesheet_urls using the site.settings.static_base_url valu
 * NEXT Loading animation (Eloy)
 * NEXT Messaging facility (Eloy)
 * NEXT Instructions on how to get IE 6 to point to local machine (D & G)
+* MAYBE Add a way to auto generate rpc stubs?
 * IMPORTANT Move mocking code to be dynamically loaded after rpc system.
 * IMPORTANT Add juice.doc.define
   Should be dynamically loaded.
