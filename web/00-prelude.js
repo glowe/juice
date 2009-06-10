@@ -174,6 +174,13 @@
          return dict[i];
      };
 
+     // Like first_key, but returns the last key instead.
+
+     lib.last_key = function(dict) {
+         var keys = lib.keys(dict);
+         return keys[keys.length - 1];
+     };
+
      // If a is undefined or null, returns b. Otherwise, returns a.
 
      lib.nvl = function(a, b) {
