@@ -46,7 +46,7 @@
 
                   assert_registered = function(name, where) {
                       if (!juice.is_array(subscribers[name])) {
-                          juice.error.raise("event_not_registered", {name: name, where: where});
+                          juice.error.raise("event_not_registered: " + name, {where: where});
                       }
                   };
 
@@ -322,6 +322,20 @@
 
                           html: function(p) {
                               update(p, function(s) { my.$(selector).html(s); });
+                          },
+
+
+                          // Append content to the inside of the selected elements.
+
+                          append: function(p) {
+                              update(p, function(s) { my.$(selector).append(s); });
+                          },
+
+
+                          // Prepend content to the inside of the selected elements.
+
+                          prepend: function(p) {
+                              update(p, function(s) { my.$(selector).prepend(s); });
                           },
 
                           // Remove the selected elements.
