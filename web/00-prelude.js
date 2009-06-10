@@ -61,7 +61,7 @@
                     }
                     if (!site.settings.smother_alerts) {
                         return function(msg) {
-                            alert(juice.dump(dumped));
+                            alert(juice.dump(msg));
                         };
                     }
                     return function() {};
