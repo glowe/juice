@@ -2,7 +2,6 @@
 
      var assert_spec_is_valid       // throws an exception if a specification is improperly formatted
      ,   current_namespace
-     ,   debug                      // if debugging is enabled, logs rpc info to the console
      ,   default_failure_handler    // handles rpc errors when caller doesn't provide a failure_fn
      ,   default_proxy              // the non namespace-specific proxy function
      ,   find_proxy                 // looks up the proxy function for a specified rpc
@@ -14,34 +13,6 @@
      ;
 
      juice.rpc = lib = {};
-
-     debug = function() {
-         var executed = [], set;
-
-         set = function(on) {
-             if (on) {
-                 debug = function(rpc, args) {
-                     juice.log("[debug] rpc = "+rpc+"; args = "+juice.dump(args));
-                     executed.push({rpc: rpc, args: args});
-                 };
-             }
-             else {
-                 debug = function() {};
-             }
-         };
-
-         lib.set_debug = function(on) {
-             juice.cookie.set("rpc.debug", !!on);
-             set(on);
-         };
-
-         lib.executed = function() {
-             return executed;
-         };
-
-         set(juice.cookie.get("rpc.debug"));
-         debug.apply(this, juice.args(arguments));
-     };
 
      assert_spec_is_valid = function(spec) {
          if (juice.is_string(spec)) {
@@ -235,7 +206,6 @@
              };
 
              do_validate("req_spec", args);
-             debug(qualified_name, args);
 
              return find_proxy(rpc).execute(
                  {rpc: rpc,

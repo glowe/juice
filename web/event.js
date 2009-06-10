@@ -29,7 +29,12 @@
 
          publish: function(name, payload) {
              assert_registered(name);
-             juice.foreach(subscribers[name], function(pair) { pair.fn(payload); });
+             var subs = subscribers[name], i;
+             for (i = 0; i < subs.length; i++) {
+                 if (subs[i].fn(payload) === false) {
+                     return;
+                 }
+             }
          },
 
          subscribe: function(subscriber_id, name, fn) {

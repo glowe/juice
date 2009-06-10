@@ -1,38 +1,22 @@
-(function (juice, site) {
-     var read_cookie, set_cookie;
+//
+// A simple library for manipulating and accessing session cookies. Does not
+// currently support permanent cookies (i.e. cookies with expiration dates).
+//
 
-     read_cookie = function() {
-         var results = document.cookie.match('(^|;) ?' + site.settings.cookie_name + '=([^;]*)(;|$)');
-         if (!results) {
-             return {};
-         }
-         return JSON.parse(unescape(results[2]));
-     };
+juice.cookie = {
+    // Returns the value of cookie if it exists, null otherwise.
+    get: function(name) {
+        var results = document.cookie.match("(?:^|;) ?" + name + "=([^;]*)(?:;|$)");
+        return juice.is_null(results) ? null : unescape(results[1]);
+    },
 
-     set_cookie = function(value) {
-         document.cookie = site.settings.cookie_name + '=' + escape(JSON.stringify(value)) + '; path=/';
-     };
+    // Sets the specified ession cookie.
+    set: function(name, value) {
+        document.cookie = name + "=" + escape(value) + "; path=/";
+    },
 
-     // FIXME: we can cache cookie value if we want
-     juice.cookie = {
-         get: function(name) {
-             var contents = read_cookie();
-             return contents[name];
-         },
-         has: function(name) {
-             var contents = read_cookie();
-             return contents.hasOwnProperty(name);
-         },
-         set: function(name, value) {
-             var contents = read_cookie();
-             contents[name] = value;
-             set_cookie(contents);
-             return contents;
-         },
-         remove: function(name) {
-             var contents = read_cookie();
-             delete contents[name];
-             return contents;
-         }
-     };
- })(juice, site);
+    // Deletes the specified cookie.
+    remove: function(name) {
+        document.cookie = name + "=; path=/; expires=" + (new Date(0)).toGMTString();
+    }
+};
