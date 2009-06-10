@@ -734,10 +734,12 @@
                                                         }
                                                     });
              jQuery.ajax(
-                 {data: boxcar_helper.get_request_data(),
+                 {cache: false,
+                  data: boxcar_helper.get_request_data(),
                   dataType: "json",
                   error: function(xhr, what, exception) {
-                      juice.event.publish("service-failure", {xhr: xhr, what: what, exception: exception});
+                      juice.event.publish("service-failure",
+                                          {response: xhr.responseText, xhr: xhr, what: what, exception: exception});
                   },
                   success: juice.error.make_safe(boxcar_helper.handle_responses),
                   type: "POST",

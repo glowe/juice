@@ -1,7 +1,6 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
-* NEXT Clean up mocking code for notes
 * NEXT Convert package.json to package.js
 This allows config files to be programmable.
 EX.
@@ -11,8 +10,14 @@ It'd be nice to set stylesheet_urls using the site.settings.static_base_url valu
 * NEXT Loading animation (Eloy)
 * NEXT Messaging facility (Eloy)
 * NEXT Instructions on how to get IE 6 to point to local machine (D & G)
+* MAYBE Add a way to auto generate rpc stubs?
+* IMPORTANT Move mocking code to be dynamically loaded after rpc system.
+* IMPORTANT Add juice.doc.define
+  Should be dynamically loaded.
+* IMPORTANT Improve namespace handling so that code in rpc.js can be replaced.
+  Namespaces should be able to be partial (e.g., just a lib, just a lib and package type, etc).
 * IMPORTANT Determine dependency order among util "packages" so library code is compiled into base.js in correct order.
-* IMPORTANT Convert all form inputs to work regardless of state
+* STARTED Convert all form inputs to work regardless of state
 * IMPORTANT The internal error message and exception trapping tends to obscure the origin of messages.
 * IMPORTANT Provide facility to specify a data-translation/cleansing function for an RPC.
 * IMPORTANT Code cleanup (e.g., consistent use of double-quotes, better exception messages)
@@ -27,8 +32,6 @@ It'd be nice to set stylesheet_urls using the site.settings.static_base_url valu
   returns, we shouldn't honor the validation request.
 * IMPORTANT Add a widget browser
 * IMPORTANT When widget dependencies are calculated, we should ensure that the packages really exist
-* IMPORTANT Revisit c1_std form inputs etc.
-  Ensure that they work well regardless of widget state
 * MAYBE Make it possible to send additional rpc boxcars after the initial one.
 * MAYBE Error reporting in jQuery's AJAX utility may not be adequate for our needs.
 * MAYBE Should it be possible to specify a different proxies.js file via settings?
@@ -335,3 +338,4 @@ For example, "c1.widgets.core" should become
  pkg_name: "core"}
 
 * DONE Form inputs template param should be called render
+* DONE Clean up mocking code for notes
