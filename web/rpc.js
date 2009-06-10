@@ -16,7 +16,7 @@
 
      assert_spec_is_valid = function(spec) {
          if (juice.is_string(spec)) {
-             if (spec[spec.length-1] === "?") {
+             if (spec.charAt(spec.length-1) === "?") {
                  spec = spec.slice(0, -1);
              }
              if (spec !== "scalar" &&
