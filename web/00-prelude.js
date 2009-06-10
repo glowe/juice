@@ -1,7 +1,9 @@
 (function(self) {
      var lib, id_seq = 0;
 
-     if (self.hasOwnProperty('juice')) {
+     // ie 6 workaround: global doesn't have hasOwnProperty
+
+     if (typeof(self["juice"]) !== "undefined") {
          lib = self.juice;
      }
      else {
