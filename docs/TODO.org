@@ -1,6 +1,8 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
+* NEXT Add enums to rpc specs
+* NEXT Remove try/catch from widget and rpc package definition
 * NEXT Add a timeout to rpcs
 * NEXT Convert package.json to package.js
 This allows config files to be programmable.
