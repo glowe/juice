@@ -6,7 +6,7 @@
      reserved = {
          'abstract': null,
          'boolean': null, 'break': null, 'byte': null,
-         'case': null, 'catch': null, 'char': null, 'const': null, 'continue': null,
+         'case': null, 'catch': null, 'char': null, 'class': null, 'const': null, 'continue': null,
          'debugger': null, 'default': null, 'delete': null, 'do': null, 'double': null,
          'else': null, 'elsif': null, 'endfor': null, 'endif': null, 'enum': null, 'export': null, 'extends': null,
          'false': null, 'final': null, 'finally': null, 'float': null, 'for': null, 'function': null,
@@ -320,6 +320,7 @@
                      return n;
                  }
              }
+
              return base_context + '.' + n;
          };
 
