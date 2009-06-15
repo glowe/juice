@@ -1,7 +1,6 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
-* NEXT Remove try/catch from widget and rpc package definition
 * NEXT Add a timeout to rpcs
 * NEXT Convert package.json to package.js
 This allows config files to be programmable.
@@ -340,3 +339,4 @@ For example, "c1.widgets.core" should become
 * DONE Clean up mocking code for notes
 * DONE Write a new dispatcher page for RPCs
 * DONE Add enums to rpc specs
+* DONE Remove try/catch from widget and rpc package definition

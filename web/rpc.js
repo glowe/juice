@@ -38,8 +38,11 @@
                  juice.error.raise("bad_spec: array or enum without values",
                                    {actual: spec});
              }
-
-             // We have an enumeration
+             else {
+                 if (!juice.all(spec, juice.is_string)) {
+                     juice.error.raise("bad_spec: All enumeration values must be strings");
+                 }
+             }
          }
          else if (juice.is_object(spec)) {
              juice.foreach(spec,
