@@ -3,6 +3,7 @@
      var conf_db = {},
      config_filename = '.juice-config.json',
      spec = {
+         debug: false,
          lib_paths: undefined,
          lint_juice: false,
          minify: false,
@@ -18,6 +19,9 @@
 
          // Manipulators.
 
+         set_debug: function(b) {
+             conf_db.debug = !!b;
+         },
          set_lib_paths: function(p) {
              conf_db.lib_paths = p;
          },
@@ -50,6 +54,9 @@
 
          // Accessors.
 
+         debug: function() {
+             return conf_db.debug;
+         },
          lib_paths: function() {
              return conf_db.lib_paths;
          },
