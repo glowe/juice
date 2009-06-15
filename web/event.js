@@ -30,7 +30,7 @@
          publish: function(name, payload) {
              assert_registered(name);
              var subs = subscribers[name], i;
-             for (i = 0; i < subs.length; i++) {
+             for (i = subs.length-1; i >= 0; i--) {
                  if (subs[i].fn(payload) === false) {
                      return;
                  }
