@@ -256,7 +256,7 @@
                           unsafe,
                           function() {
                               var attribs = {
-                                  "class": qualified_name.replace(/\./g, " ") + " " + qualified_name.replace(/\./g, "-"),
+                                  "class": qualified_name.replace(/\./g, " "),
                                   "id": id
                               };
                               if (!juice.is_function(my.render)) {
