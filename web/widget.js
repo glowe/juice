@@ -108,6 +108,10 @@
                       my.unsubscribe(that, event_name, fn);
                   };
 
+                  my.subscribe_to_global_event = function(event_name, fn) {
+                      juice.event.subscribe(that.uuid(), event_name, fn);
+                  };
+
                   my.propagate_event = function(publisher, event_name, new_event_name) {
                       my.subscribe(publisher, event_name,
                                    function(e) {
