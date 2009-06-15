@@ -187,10 +187,8 @@
          juice.build.write_target_file(
              juice.path_join('js/libs', lib_name, 'widgets', pkg_name) + '.js',
              ['juice.widget.define_package("' + lib_name + '", "' + pkg_name + '", function(juice, site, jQuery) {',
-              'try {',
               'var templates = ' + templates + ';',
               widgets.join('\n'),
-              '} catch (e) { juice.error.handle(e); }',
               '});'].join("\n"));
      };
 
@@ -211,9 +209,7 @@
          juice.build.write_target_file(
              juice.path_join('js/libs', lib_name, 'rpcs', pkg_name) + '.js',
              ['juice.rpc.define_package("' + lib_name + '", "' + pkg_name + '", function(juice, site, jQuery) {',
-              'try {',
               rpcs.join('\n'),
-              '} catch (e) { juice.error.handle(e); }',
               '});'].join("\n"));
      };
 

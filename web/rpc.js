@@ -31,10 +31,18 @@
              }
          }
          else if (juice.is_array(spec)) {
-             if (spec.length !== 1) {
-                 juice.error.raise("bad_spec", {spec_type: "array", illegal_length: spec.length});
+             if (spec.length === 1) {
+                 assert_spec_is_valid(spec[0]);
              }
-             assert_spec_is_valid(spec[0]);
+             else if (spec.length === 0) {
+                 juice.error.raise("bad_spec: array or enum without values",
+                                   {actual: spec});
+             }
+             else {
+                 if (!juice.all(spec, juice.is_string)) {
+                     juice.error.raise("bad_spec: All enumeration values must be strings");
+                 }
+             }
          }
          else if (juice.is_object(spec)) {
              juice.foreach(spec,
@@ -51,9 +59,10 @@
      // a specification. The specification (spec) is a recursively
      // defined data structure:
      //
-     //     spec   := object | array | scalar | null
+     //     spec   := object | array | scalar | null | enum
      //     scalar := "boolean" | "integer" | "string" | "any" | "scalar"
      //     array  := [ spec ]
+     //     enum   := [ "enum_0", ..., "enum_N" ]
      //     object := { key_0: spec_0, ... key_N: spec_N }
      //     object := { _: spec }
      //
@@ -64,7 +73,7 @@
      // spec. (5) The object spec may contain zero or more key-spec pairs. (6)
      // The {_:spec} notation specifies a dictionary with zero or more
      // key-value pairs where we only want to specify the structure of the
-     // value.
+     // value. (7) The enum spec is an array consisting of 2 or more strings.
      //
      // Example specification:
      //
@@ -121,13 +130,25 @@
                  }
              }
              else if (juice.is_array(spec)) {
-                 if (juice.is_array(data)) {
-                     for (i = 0; i < data.length; i++) {
-                         helper(spec[0], data[i]);
+                 if (spec.length === 1) {
+                     if (juice.is_array(data)) {
+                         for (i = 0; i < data.length; i++) {
+                             helper(spec[0], data[i]);
+                         }
+                     }
+                     else {
+                         add_error("array", data);
                      }
                  }
                  else {
-                     add_error("array", data);
+                     if (juice.is_string(data)) {
+                         if (!juice.inlist(data, spec)) {
+                             add_error("enum (" + spec.join(", ") + ")", data);
+                         }
+                     }
+                     else {
+                         add_error("enum( " + spec.join(", ") + ")", data);
+                     }
                  }
              }
              else if (juice.is_object(spec)) {

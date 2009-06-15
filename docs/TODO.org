@@ -1,15 +1,11 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
-* NEXT Add enums to rpc specs
-* NEXT Remove try/catch from widget and rpc package definition
 * NEXT Add a timeout to rpcs
 * NEXT Convert package.json to package.js
 This allows config files to be programmable.
 EX.
 It'd be nice to set stylesheet_urls using the site.settings.static_base_url value for widget package.
-
-* NEXT Loading animation (Eloy)
 * NEXT Messaging facility (Eloy)
 * NEXT Instructions on how to get IE 6 to point to local machine (D & G)
 * MAYBE Add a way to auto generate rpc stubs?
@@ -342,3 +338,5 @@ For example, "c1.widgets.core" should become
 * DONE Form inputs template param should be called render
 * DONE Clean up mocking code for notes
 * DONE Write a new dispatcher page for RPCs
+* DONE Add enums to rpc specs
+* DONE Remove try/catch from widget and rpc package definition
