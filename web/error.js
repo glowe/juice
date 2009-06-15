@@ -2,6 +2,8 @@
 
      juice.errors = []; // the default handler stores all errors in here
 
+     var error_num = 0;
+
      juice.error = {
 
          // Throws an exception with the specified message and optional
@@ -9,11 +11,10 @@
          // throwing raw objects.
 
          raise: function(message, info) {
-             var error = new Error(message);
              if (info) {
-                 error.info = info;
+                 message += ": " + juice.dump(info);
              }
-             throw error;
+             throw new Error(message);
          },
 
          // Given an error (possibly an exception, possibly some arbitrary
@@ -35,10 +36,15 @@
          // to override this function.
 
          handle: function(e) {
-             juice.util.clear_loading_notifications();
              juice.errors.push(e);
-             juice.log(e);
-             juice.util.message.error('Internal error');
+             juice.log(String(e));
+
+             // This is a kludge. By default, juice.util.loading sets the
+             // cursor style to "wait", to indicate that juice is working in
+             // the background, but an exception may have prevented the cursor
+             // from returning to its normal style.
+
+             jQuery("body").attr("style", "cursor: auto");
          },
 
          // Given a function f, returns a function that is a proxy for f,
