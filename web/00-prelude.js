@@ -3,7 +3,7 @@
 
      // ie 6 workaround: global doesn't have hasOwnProperty
 
-     if (typeof(self["juice"]) !== "undefined") {
+     if (typeof(self.juice) !== "undefined") {
          lib = self.juice;
      }
      else {
