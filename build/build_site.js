@@ -86,7 +86,6 @@
                                                        'user']);
          runtime_settings.config = {
              debug: juice.build.config.debug(),
-             mock_rpcs_by_default: juice.build.config.mock_rpcs_by_default(),
              rpc_mocking: juice.build.config.rpc_mocking()
          };
 
