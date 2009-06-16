@@ -105,7 +105,7 @@
      juice.build.eval_file = function(filename) {
          // Why does this function exist? Because if you call load
          // in a function scope, locals will not escape!
-         load(filename);
+         load(juice.sys.canonical_path(filename));
      };
 
      juice.build.target_file_path = function(relpath) {

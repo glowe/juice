@@ -512,18 +512,21 @@
 
      // Accepts 1 or more arrays and returns an array consisting
      // of the unique items. Only works with items that can be
-     // used as associative array keys.
+     // used as associative array keys. NOTE: preserves order.
 
      juice.unique = function() {
-         var arrays = juice.args(arguments), s = {};
+         var arrays = juice.args(arguments), s = {}, uniqued = [];
          juice.foreach(arrays,
                        function(array) {
                            juice.foreach(array,
                                          function(k) {
-                                             s[k] = 1;
+                                             if (!s.hasOwnProperty(k)) {
+                                                 s[k] = 1;
+                                                 uniqued.push(k);
+                                             }
                                          });
                        });
-         return juice.keys(s);
+         return uniqued;
      };
 
      juice.date_to_unix = function(d) {
