@@ -83,10 +83,9 @@
          runtime_settings = juice.dict_intersect_keys(juice.build.site_settings(),
                                                       ['base_url',
                                                        'cookie_name',
-                                                       'user',
-                                                       'smother_alerts']);
+                                                       'user']);
          runtime_settings.config = {
-             mock_rpcs_by_default: juice.build.config.mock_rpcs_by_default(),
+             debug: juice.build.config.debug(),
              rpc_mocking: juice.build.config.rpc_mocking()
          };
 

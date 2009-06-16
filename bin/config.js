@@ -48,9 +48,9 @@ find_library = function(name) {
 program_options = juice.program_options(
     {"settings=PATH": ["Specify PATH to site setting file.", "settings/default.js"],
      "help": "Display this message.",
+     "debug": "By default, show debugging messages.",
      "lint-juice": "Lint the juice framework.",
      "minify": "Optimize JavaScript output for size.",
-     "mock-rpcs-by-default": "By default, mock all RPCs.",
      "disable-rpc-mocking": "Disable mocked remote procedure calls.",
      "version-js-urls": "Include sha1 content hashes in .js URLs.",
      "with-lib=[]": ["Specify path to an external library <libname:PATH>.", []]});
@@ -58,10 +58,6 @@ program_options = juice.program_options(
 options = program_options.parse_arguments(argv).options;
 
 juice.build.handle_help(options.help, "config [OPTIONS]", "Configures compile-time options for a site.");
-
-if (options["mock-rpcs-by-default"] && options["disable-rpc-mocking"]) {
-    juice.build.fatal("Cannot specify --mock-rpcs-by-default with --disable-rpc-mocking.");
-}
 
 site_settings_path = options.settings;
 if (juice.sys.file_exists(site_settings_path) !== 'file') {
@@ -111,13 +107,13 @@ do {
 } while (new_lib_deps.length != 0);
 
 print('Saving configuration.');
-juice.build.config.set_version_js_urls(options['version-js-urls']);
+juice.build.config.set_debug(options['debug']);
 juice.build.config.set_lib_paths(lib_paths);
 juice.build.config.set_lint_juice(options['lint-juice']);
 juice.build.config.set_minify(options['minify']);
-juice.build.config.set_mock_rpcs_by_default(options['mock-rpcs-by-default']);
 juice.build.config.set_rpc_mocking(!options['disable-rpc-mocking']);
 juice.build.config.set_site_settings_path(site_settings_path);
+juice.build.config.set_version_js_urls(options['version-js-urls']);
 juice.build.config.save();
 juice.build.file_log().clear();
 print('Run "juice compile" to build your site.');

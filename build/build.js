@@ -56,7 +56,6 @@
                                                   global_script_urls: [],
                                                   global_stylesheet_urls: [],
                                                   js_base_url: undefined,
-                                                  smother_alerts: false,
                                                   user: {}}));
      };
 

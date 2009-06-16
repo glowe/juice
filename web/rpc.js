@@ -306,7 +306,7 @@
                   juice.error.raise("rpc mocking is disabled");
               }
               if (juice.is_undefined(conf)) {
-                  conf = {"default": site.settings.config.mock_rpcs_by_default};
+                  conf = {"default": true};
               }
           };
 
