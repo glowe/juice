@@ -340,3 +340,4 @@ For example, "c1.widgets.core" should become
 * DONE Write a new dispatcher page for RPCs
 * DONE Add enums to rpc specs
 * DONE Remove try/catch from widget and rpc package definition
+* DONE Working in rhino.
