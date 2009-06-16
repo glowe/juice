@@ -515,8 +515,7 @@
      // used as associative array keys.
 
      juice.unique = function() {
-         var arrays = juice.args(arguments);
-         var s = {};
+         var arrays = juice.args(arguments), s = {};
          juice.foreach(arrays,
                        function(array) {
                            juice.foreach(array,

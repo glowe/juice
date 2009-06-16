@@ -6,9 +6,9 @@
          var time_of_day, day_of_year, full_date, d, now, strtime;
 
          time_of_day = function(d) {
-             var hh = d.getHours();
-             var mi = d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes();
-             var meridian = 'am';
+             var hh = d.getHours(),
+             mi = d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes(),
+             meridian = 'am';
 
              if (hh >= 12) {
                  meridian = 'pm';

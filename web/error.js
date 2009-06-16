@@ -2,8 +2,6 @@
 
      juice.errors = []; // the default handler stores all errors in here
 
-     var error_num = 0;
-
      juice.error = {
 
          // Throws an exception with the specified message and optional
@@ -54,7 +52,7 @@
 
          make_safe: function(f) {
              return function() {
-                 var args = juice.args(arguments), answer;
+                 var args = juice.args(arguments);
                  try {
                      return f.apply(null, args);
                  }
