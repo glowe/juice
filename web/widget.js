@@ -113,9 +113,11 @@
                   };
 
                   my.propagate_event = function(publisher, event_name, new_event_name) {
+                      var name = new_event_name || event_name;
+                      my.register_event(name);
                       my.subscribe(publisher, event_name,
                                    function(e) {
-                                       my.publish(new_event_name || event_name, e);
+                                       my.publish(name, e);
                                    });
                   };
 
