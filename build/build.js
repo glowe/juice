@@ -67,12 +67,14 @@
      };
 
      juice.build.source_file = function(spec) {
-         return juice.spec(spec,
+         spec = juice.spec(spec,
                            {category: null,
                             lib_name: null,
                             path: undefined,
                             pkg_name: null,
                             target_type: undefined});
+         spec.path = juice.sys.canonical_path(spec.path);
+         return spec;
      };
 
      //
@@ -105,7 +107,7 @@
      juice.build.eval_file = function(filename) {
          // Why does this function exist? Because if you call load
          // in a function scope, locals will not escape!
-         load(filename);
+         load(juice.sys.canonical_path(filename));
      };
 
      juice.build.target_file_path = function(relpath) {

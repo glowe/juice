@@ -8,8 +8,8 @@
                        function(lib_name) {
                            site.lib[lib_name] = juice.build.library_stubs(lib_name);
                        });
-         load("layouts.js");
-         load("pages.js");
+         load(juice.sys.canonical_path("layouts.js"));
+         load(juice.sys.canonical_path("pages.js"));
          initialized = true;
      };
 
