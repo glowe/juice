@@ -1,18 +1,26 @@
 (function() {
-     var cwd = new java.io.File(".");
+     var cwd = new java.io.File("."),
+     new_file = function(path) {
+         if (path.charAt(0) !== "/") {
+             path = cwd.getCanonicalPath() + "/" + path;
+         }
+         return new java.io.File(path);
+     };
+
      juice.sys.install_interpreter(
          {basename: function(path) {
               return path.replace(/^.+\//, "");
           },
 
           canonical_path: function(path) {
-              return String((new java.io.File(path)).getCanonicalPath());
+              return String((new_file(path)).getCanonicalPath());
           },
 
           chdir: function(dir) {
-              print("chdir " + dir);
-              cwd = new java.io.File(".");
-              print("new cwd = " + cwd.getCanonicalPath());
+              cwd = new_file(dir);
+              if (!cwd.exists()) {
+                  juice.error.raise("chdir to non-existent dir: " + dir);
+              }
           },
 
           dirname: function(path) {
@@ -26,7 +34,7 @@
           exit: java.lang.System.exit,
 
           file_exists: function(path) {
-              var file = new java.io.File(path);
+              var file = new_file(path);
 
               if (!file.exists()) {
                   return false;
@@ -44,7 +52,7 @@
           },
 
           list_dir: function(path) {
-              var files = (new java.io.File(path)).listFiles(), i, list = [];
+              var files = (new_file(path)).listFiles(), i, list = [];
               // Convert to JS Strings
               for (i = 0; i < files.length; i++) {
                   if (!files[i].isHidden()) {
@@ -56,10 +64,10 @@
 
           mkdir: function(path) {
               try {
-                  (new java.io.File(path)).mkdir();
+                  (new_file(path)).mkdir();
               }
               catch (e) {
-//                  juice.error.raise("Couldn't create directory");
+                  // Ok
               }
           },
 
@@ -70,7 +78,7 @@
                   juice.error.raise(path + " is not a file");
               }
 
-              reader = new java.io.BufferedReader(java.io.FileReader(new java.io.File(path)));
+              reader = new java.io.BufferedReader(java.io.FileReader(new_file(path)));
               while (!juice.is_null((line = reader.readLine()))) {
                   contents.push(String(line) + "\n");
               }
@@ -78,7 +86,7 @@
           },
 
           rmdir: function(path) {
-              (new java.io.File(path))["delete"]();
+              (new_file(path))["delete"]();
           },
 
           sha1: function(plain_text) {
@@ -107,13 +115,13 @@
           },
 
           unlink: function(path) {
-              (new java.io.File(path))["delete"]();
+              (new_file(path))["delete"]();
           },
 
           write_file: function(path, contents) {
               var buffer = new java.io.PrintWriter(
                   new java.io.FileWriter(
-                      new java.io.File(path)));
+                      new_file(path)));
               buffer.print(contents);
               buffer.close();
           }
