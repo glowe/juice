@@ -67,14 +67,12 @@
      };
 
      juice.build.source_file = function(spec) {
-         spec = juice.spec(spec,
+         return juice.spec(spec,
                            {category: null,
                             lib_name: null,
                             path: undefined,
                             pkg_name: null,
                             target_type: undefined});
-         spec.path = juice.sys.canonical_path(spec.path);
-         return spec;
      };
 
      //
