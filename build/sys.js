@@ -56,6 +56,7 @@
 
          juice.sys.write_file = function(path, contents, overwrite) {
 	     juice.sys.mkdir(juice.sys.dirname(path));
+
              if (!overwrite && impl.file_exists(path)) {
                  juice.error.raise('write_file failed: file already exists: '+path);
              }
@@ -107,11 +108,16 @@
              if (spec.fullpath) {
                  filenames = juice.map(filenames, function(f) { return path+'/'+f; });
              }
+
 	     return filenames.sort();
          };
 
          juice.sys.mkdir = function(path, mode) {
 	     var dir, file_exists_error;
+
+             if (path === "") {
+                 return;
+             }
 
              file_exists_error = function(p) {
 		 juice.error.raise('mkdir failed: file already exists: '+p);
@@ -147,7 +153,7 @@
      // that, include a file that will install working implementations of
      // the functions in the "impl" dictionary defined above.
 
-     if (sys && sys.v8) {
+     if (typeof(sys) !== "undefined" && sys.v8) {
          interpreter = 'v8';
      }
      else if (typeof File !== 'undefined') {
