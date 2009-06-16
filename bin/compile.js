@@ -151,7 +151,7 @@ else {
     all_source_files_plus_user = all_source_files;
 }
 
-file_log = juice.build.file_log(all_source_files_plus_user);
+file_log = juice.build.file_log(all_source_files_plus_user, "source");
 
 if (file_log.empty()) {
     print("Starting full build...");
@@ -300,14 +300,11 @@ if (targets.pages ||                       // (1)
 }
 
 if (juice.build.config.minify()) {
-    // FIXME: only minify what we have to
     juice.build.minify();
-    print("Minify: OK.");
 }
 
 print("Done.");
 
-juice.foreach(all_source_files_plus_user, function(f) { file_log.update_file(f.path); });
 file_log.save();
 juice.build.save_versioned_paths();
 
