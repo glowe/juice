@@ -516,16 +516,16 @@
 
      juice.unique = function() {
          var arrays = juice.args(arguments), s = {}, uniqued = [];
-         lib.foreach(arrays,
-                     function(array) {
-                         juice.foreach(array,
-                                       function(k) {
-                                           if (!s.hasOwnProperty(k)) {
-                                               s[k] = 1;
-                                               uniqued.push(k);
-                                           }
-                                       });
-                     });
+         juice.foreach(arrays,
+                       function(array) {
+                           juice.foreach(array,
+                                         function(k) {
+                                             if (!s.hasOwnProperty(k)) {
+                                                 s[k] = 1;
+                                                 uniqued.push(k);
+                                             }
+                                         });
+                       });
          return uniqued;
      };
 
