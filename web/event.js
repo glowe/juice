@@ -19,7 +19,7 @@
              juice.foreach(juice.args(arguments),
                            function(name) {
                                if (subscribers[name]) {
-                                   juice.error.raise('event_already_registered', {event_name: name});
+                                   juice.error.raise('event already registered', {event_name: name});
                                }
                                else {
                                    subscribers[name] = [];
@@ -29,12 +29,15 @@
 
          publish: function(name, payload) {
              assert_registered(name);
-             var subs = subscribers[name], i;
-             for (i = subs.length-1; i >= 0; i--) {
-                 if (subs[i].fn(payload) === false) {
-                     return;
-                 }
-             }
+             juice.foreach(subscribers[name],
+                           function(subscriber) {
+                               try {
+                                   subscriber.fn(payload);
+                               }
+                               catch (e) {
+                                   juice.error.handle(e);
+                               }
+                           });
          },
 
          subscribe: function(subscriber_id, name, fn) {

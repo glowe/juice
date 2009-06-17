@@ -60,13 +60,15 @@
                                     });
                   };
 
-                  is_event_registered = subscribers.hasOwnProperty;
+                  is_event_registered = function(name) {
+                      return subscribers.hasOwnProperty(name);
+                  };
 
                   my.register_event = function() {
                       juice.foreach(juice.args(arguments),
                                     function(name) {
                                         if (is_event_registered(name)) {
-                                            my.raise("event_already_registered", {event_name: name});
+                                            my.raise("event already registered", {event_name: name});
                                         }
                                         else {
                                             subscribers[name] = [];
@@ -75,23 +77,19 @@
                   };
 
                   // Publish the specified event, passing `payload` to each
-                  // subscriber. Subscribers are called in LIFO order. If a
-                  // subscriber function returns false, the remaining
-                  // subscriber functions are skipped.
+                  // subscriber. Subscribers are called in FIFO order.
 
                   my.publish = function(event_name, payload) {
-                      var i, subs = subscribers[event_name];
                       assert_registered(event_name, "publish");
-                      for (i = subs.length-1; i >= 0; --i) {
-                          try {
-                              if (subs[i].fn(payload) === false) {
-                                  return;
-                              }
-                          }
-                          catch (e) {
-                              juice.error.handle(e);
-                          }
-                      }
+                      juice.foreach(subscribers[event_name],
+                                    function(subscriber) {
+                                        try {
+                                            subscriber.fn(payload);
+                                        }
+                                        catch (e) {
+                                            juice.error.handle(e);
+                                        }
+                                    });
                   };
 
                   my.subscribe = function(publisher, event_name, fn) {
@@ -159,8 +157,8 @@
              that.qualified_name = qualified_name;
              that.name = name;
 
-             my.raise = function(msg) {
-                 juice.error.raise(that.qualified_name + " (" + my.selector + "): " + msg);
+             my.raise = function(msg, info) {
+                 juice.error.raise(that.qualified_name + " (" + my.selector + "): " + msg, info);
              };
 
              my.$ = function(selector) {
