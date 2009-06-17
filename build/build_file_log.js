@@ -1,9 +1,8 @@
 (function(juice) {
-     var log_filename = '.juice-file-log.json';
+     juice.build.file_log = function(source_files, name) {
+         var cache = {}, log, log_filename, sha1_file, sha1_file_cached;
 
-     juice.build.file_log = function(source_files) {
-         var cache = {}, log, sha1_file;
-
+         log_filename = ".juice-file-log-"+name+".json";
          if (juice.sys.file_exists(log_filename)) {
              log = juice.dict_intersect_keys(juice.build.read_file_json(log_filename),
                                              juice.map(source_files, function(f) { return f.path; }));
@@ -13,37 +12,38 @@
          }
 
          sha1_file = function(filename) {
-             if (!cache[filename]) {
-                 if (juice.sys.file_exists(filename) == "file") {
-                     cache[filename] = juice.sys.sha1(juice.sys.read_file(filename));
-                 }
+             if (juice.sys.file_exists(filename) == "file") {
+                 return juice.sys.sha1(juice.sys.read_file(filename));
+             }
+             return undefined;
+         };
+
+         sha1_file_cached = function(filename) {
+             if (!cache.hasOwnProperty(filename)) {
+                 cache[filename] = sha1_file(filename);
              }
              return cache[filename];
          };
 
          return {
              empty: function() {
-                 var k;
-                 for (k in log) {
-                     if (log.hasOwnProperty(k)) {
-                         return false;
-                     }
-                 }
-                 return true;
+                 return juice.keys(log).length === 0;
              },
              has_file_changed: function(filename) {
-                 return sha1_file(filename) !== log[filename];
+                 return sha1_file_cached(filename) !== log[filename];
              },
-             update_file: function(filename) {
-                 log[filename] = sha1_file(filename);
+             refresh_file: function(filename) {
+                 cache[filename] = sha1_file(filename);
              },
              save: function() {
+                 juice.foreach(source_files, function(f) { log[f.path] = sha1_file_cached(f.path); });
                  juice.sys.write_file(log_filename, JSON.stringify(log), true);
-             },
-             clear: function() {
-                 juice.sys.unlink(log_filename);
-                 log = {};
              }
          };
+     };
+
+     juice.build.unlink_file_logs = function() {
+         juice.foreach(juice.sys.list_dir(".", {filter_re: /[.]juice-file-log-.*[.]json$/, fullpath: true}),
+                       juice.sys.unlink);
      };
  })(juice);

@@ -71,7 +71,7 @@
          //
 
          extract_dynamic_path_arguments = function(request_path, args) {
-             var key, keys = [], match, vals_pat, vals_re;
+             var keys = [], match, vals_pat, vals_re;
 
              if (!that.path_is_dynamic()) {
                  return args;
@@ -199,7 +199,7 @@
          //
 
          that.init = function(container) {
-             var args, page, req = juice.url.request();
+             var args, req = juice.url.request();
 
              try {
                  args = juice.copy_object(req.args);

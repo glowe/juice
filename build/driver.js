@@ -30,7 +30,6 @@ program = argv[2];
 argv = argv.slice(3);
 
 juice.load('ext/tools/fulljslint.js');
-juice.load('ext/tools/jsmin.js');
 juice.load('ext/web/json2.js');
 juice.load('web/00-prelude.js');
 juice.load('web/error.js');
@@ -45,6 +44,7 @@ juice.load('build/build_hooks.js');
 juice.load('build/build_juice.js');
 juice.load('build/build_library.js');
 juice.load('build/build_lint.js');
+juice.load('build/build_minify.js');
 juice.load('build/build_pages.js');
 juice.load('build/build_packages.js');
 juice.load('build/build_site.js');

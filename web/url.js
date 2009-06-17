@@ -69,7 +69,7 @@
      };
 
      lib.make = function(spec) {
-         var that, parsed_url, parts;
+         var that, parsed_url;
          if (!spec) {
              juice.error.raise("empty url");
          }

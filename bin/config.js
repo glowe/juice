@@ -115,5 +115,5 @@ juice.build.config.set_rpc_mocking(!options['disable-rpc-mocking']);
 juice.build.config.set_site_settings_path(site_settings_path);
 juice.build.config.set_version_js_urls(options['version-js-urls']);
 juice.build.config.save();
-juice.build.file_log().clear();
+juice.build.unlink_file_logs();
 print('Run "juice compile" to build your site.');
