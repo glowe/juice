@@ -44,6 +44,8 @@
 
      juice.build.unlink_file_logs = function() {
          juice.foreach(juice.sys.list_dir(".", {filter_re: /[.]juice-file-log-.*[.]json$/, fullpath: true}),
-                       juice.sys.unlink);
+                       function(filename) {
+                           juice.sys.unlink(filename);
+                       });
      };
  })(juice);
