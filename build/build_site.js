@@ -64,9 +64,7 @@
                                                 });
                            base = base.concat(
                                ['juice.util.define_package("' + lib_name + '", function(juice, site, jQuery) {',
-                                'try {',
                                 util.join('\n'),
-                                '} catch (e) { juice.error.handle(e); }',
                                 '});']);
 
                        });
@@ -75,9 +73,7 @@
          pages = juice.build.read_file_and_scope_js(base_source_files.pages[0].path);
          base = base.concat(
              ["juice.page.set_init(function(juice, site, jQuery) {",
-              "try {",
               pages,
-              '} catch (e) { juice.error.handle(e); }',
               '});']);
 
          runtime_settings = juice.dict_intersect_keys(juice.build.site_settings(),

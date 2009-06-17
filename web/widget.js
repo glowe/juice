@@ -41,12 +41,13 @@
              (function() {
                   var
                   assert_registered,
+                  is_event_registered,
                   publishers = {},
                   subscribers = {};
 
                   assert_registered = function(name, where) {
                       if (!juice.is_array(subscribers[name])) {
-                          juice.error.raise("event_not_registered: " + name, {where: where});
+                          my.raise("event_not_registered: " + name, {where: where});
                       }
                   };
 
@@ -59,11 +60,13 @@
                                     });
                   };
 
+                  is_event_registered = subscribers.hasOwnProperty;
+
                   my.register_event = function() {
                       juice.foreach(juice.args(arguments),
                                     function(name) {
-                                        if (subscribers[name]) {
-                                            juice.error.raise("event_already_registered", {event_name: name});
+                                        if (is_event_registered(name)) {
+                                            my.raise("event_already_registered", {event_name: name});
                                         }
                                         else {
                                             subscribers[name] = [];
@@ -114,7 +117,9 @@
 
                   my.propagate_event = function(publisher, event_name, new_event_name) {
                       var name = new_event_name || event_name;
-                      my.register_event(name);
+                      if (!is_event_registered(name)) {
+                          my.register_event(name);
+                      }
                       my.subscribe(publisher, event_name,
                                    function(e) {
                                        my.publish(name, e);
@@ -234,7 +239,7 @@
              my.set_container_element = function(t, attribs) {
                  attribs = attribs || {};
                  if (attribs.hasOwnProperty("id") || attribs.hasOwnProperty("class")) {
-                     juice.error.raise("can't specify id or class as container attribute");
+                     my.raise("can't specify id or class as container attribute");
                  }
                  container_element = t;
                  container_attribs = attribs;
@@ -484,13 +489,7 @@
                  return !!enhancements[name];
              };
 
-             try {
-                 constructor(that, my, spec);
-             }
-             catch (e) {
-                 juice.error.handle(e);
-                 juice.error.raise(qualified_name + ": widget constructor failed");
-             }
+             constructor(that, my, spec);
 
              lib.num_live += 1;
              return that;
