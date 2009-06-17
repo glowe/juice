@@ -202,22 +202,41 @@
 
 
      juice.build.find_util_source_files = function(lib_name) {
-         var util_path = juice.path_join(juice.build.find_library(lib_name), "util");
+         var files, templates_path, util_path;
+
+         util_path = juice.path_join(juice.build.find_library(lib_name), "util");
          if (!juice.sys.file_exists(util_path)) {
              return [];
          }
 
-         // Tag each .js file with the "util" target type.
-         return juice.map(juice.sys.list_dir(util_path,
-                                             {filter_re: /[.]js$/,
-                                              fullpath: true}),
-                          function(path) {
-                              return juice.build.source_file({category: "util",
-                                                              lib_name: lib_name,
-                                                              path: path,
-                                                              pkg_name: undefined,
-                                                              target_type: "base"});
-                          });
+         // Tag *.js with the "util" category.
+         files = juice.map(juice.sys.list_dir(util_path, {filter_re: /[.]js$/, fullpath: true}),
+                           function(path) {
+                               return juice.build.source_file({category: "util",
+                                                               lib_name: lib_name,
+                                                               path: path,
+                                                               pkg_name: undefined,
+                                                               target_type: "base"});
+                           });
+
+         if (files.length === 0) {
+             return [];
+         }
+
+         // Tag templates/*.html with the "util_template" category.
+         templates_path = juice.path_join(util_path, "templates");
+         if (juice.sys.file_exists(templates_path)) {
+             juice.foreach(juice.sys.list_dir(templates_path, {filter_re: /[.]html$/, fullpath: true}),
+                           function(path) {
+                               files.push(juice.build.source_file({category: "util_template",
+                                                                   lib_name: lib_name,
+                                                                   path: path,
+                                                                   pkg_name: undefined,
+                                                                   target_type: "base"}));
+                           });
+         }
+
+         return files;
      };
 
      juice.build.handle_help = function(help, usage, description) {

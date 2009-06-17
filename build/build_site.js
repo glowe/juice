@@ -58,13 +58,31 @@
 
          juice.foreach(lib_util_map,
                        function(lib_name, source_files) {
-                           var util = juice.map(source_files,
-                                                function(source) {
-                                                    return juice.sys.read_file(source.path);
-                                                });
+                           var source_code, templates;
+
+                           source_code = juice.map(source_files,
+                                                   function(source) {
+                                                       return juice.sys.read_file(source.path);
+                                                   });
+
+
+                           // Get this library's utility template source files.
+                           templates = juice.filter(base_source_files.util_template,
+                                                    function(source_file) {
+                                                        return source_file.lib_name == lib_name;
+                                                    });
+
+                           // Compile the templates.
+                           templates = juice.build.compile_templates(
+                               juice.map(templates,
+                                         function(source_file) {
+                                             return source_file.path;
+                                         }));
+
                            base = base.concat(
                                ['juice.util.define_package("' + lib_name + '", function(juice, site, jQuery) {',
-                                util.join('\n'),
+                                'var templates = ' + templates + ';',
+                                source_code.join("\n"),
                                 '});']);
 
                        });
