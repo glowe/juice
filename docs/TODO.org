@@ -1,6 +1,7 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
+* IMPORTANT Make a pass through entire code base (juice, c1, and c1_std) and ensure that we are not relying on property order
 * NEXT Add a timeout to rpcs
 * NEXT Convert package.json to package.js
 This allows config files to be programmable.
