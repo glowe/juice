@@ -32,7 +32,7 @@
              has_file_changed: function(filename) {
                  return sha1_file_cached(filename) !== log[filename];
              },
-             refresh_file: function(filename) {
+             refresh_file_signature: function(filename) {
                  cache[filename] = sha1_file(filename);
              },
              save: function() {

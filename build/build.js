@@ -200,6 +200,26 @@
          return answer;
      };
 
+     // Returns the list of all normal files (i.e. non-directories) in the
+     // specified directory tree. Paths include top_dir. If filter_re is
+     // given, we only return paths that match.
+
+     juice.build.file_find = function(top_dir, filter_re) {
+         var acc = [],
+         find = function(dir) {
+             juice.foreach(juice.sys.list_dir(dir, {fullpath: true}),
+                           function (filename) {
+                               if (juice.sys.file_exists(filename) === "dir") {
+                                   find(filename);
+                               }
+                               else if (!filter_re || filter_re.test(filename)) {
+                                   acc.push(filename);
+                               }
+                           });
+         };
+         find(top_dir);
+         return acc;
+     };
 
      juice.build.find_util_source_files = function(lib_name) {
          var files, templates_path, util_path;
