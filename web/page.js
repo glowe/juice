@@ -15,6 +15,14 @@
          spec.base = spec.base || site.settings.base_url;
          spec.path = juice.canonicalize_path(spec.path);
 
+         // Make sure "v" is an object for each "k-v" pair in spec.parameters.
+         juice.foreach(spec.parameters,
+                       function(k, v) {
+                           if (!juice.is_object(v)) {
+                               spec.parameters[k] = {};
+                           }
+                       });
+
          raise_error = function(msg) {
              juice.error.raise('in page "'+spec.name+'": '+msg);
          };
@@ -38,9 +46,6 @@
 
              juice.foreach(spec.parameters,
                            function(k, details) {
-                               if (!juice.is_object(details)) {
-                                   details = {}; // to avoid doing repeated type checks
-                               }
                                var alias = details.alias || k;
                                if (args.hasOwnProperty(alias)) {
                                    if (details.regexp && !details.test(args[alias])) {
