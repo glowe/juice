@@ -284,7 +284,7 @@
 
                   my.render = function(fn) {
                       if (!juice.is_function(fn)) {
-                          juice.raise("argument passed to my.render is not a function");
+                          my.raise("argument passed to my.render is not a function: " + fn);
                       }
                       render = fn;
                   };
