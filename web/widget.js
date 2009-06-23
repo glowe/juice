@@ -218,6 +218,7 @@
                  return "";
              };
 
+
              my.state = function() {
                  return state;
              };
@@ -283,6 +284,14 @@
                                   ">" + my.render() + "</" + container_element + ">";
                           });
                   };
+
+                  my.render2 = function(fn) {
+                      if (!juice.is_function(fn)) {
+                          juice.raise("argument passed to my.render is not a function");
+                      }
+                      my.render = fn;
+                  };
+
 
                   that.render = function() { return render_impl(false); };
                   that.unsafe_render = function() { return render_impl(true); };
