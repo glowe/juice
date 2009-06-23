@@ -214,11 +214,6 @@
                  lib.num_live -= 1;
              };
 
-             my.render = function() {
-                 return "";
-             };
-
-
              my.state = function() {
                  return state;
              };
@@ -245,7 +240,12 @@
              };
 
              (function() {
-                  var call_linked_render, render_impl;
+                  var call_linked_render, render, render_impl;
+
+                  // Default rendering method
+                  render = function() {
+                      return "";
+                  };
 
                   call_linked_render = function(unsafe, f) {
                       var answer;
@@ -269,9 +269,6 @@
                                   "class": qualified_name.replace(/\./g, " "),
                                   "id": id
                               };
-                              if (!juice.is_function(my.render)) {
-                                  my.raise("my.render is not a function");
-                              }
                               juice.foreach(container_attribs, function(k, v) { attribs[k] = v; });
                               juice.foreach(css_classes, function(k) { attribs["class"] += " " + k; });
                               transition("initial", "rendered");
@@ -281,15 +278,15 @@
                                                  function(k, v) {
                                                      return k + '="' + v + '"';
                                                  }).join(" ") +
-                                  ">" + my.render() + "</" + container_element + ">";
+                                  ">" + render() + "</" + container_element + ">";
                           });
                   };
 
-                  my.render2 = function(fn) {
+                  my.render = function(fn) {
                       if (!juice.is_function(fn)) {
                           juice.raise("argument passed to my.render is not a function");
                       }
-                      my.render = fn;
+                      render = fn;
                   };
 
 
@@ -417,7 +414,7 @@
 
                   my.refresh = function(p) {
                       dispose_of_domified_and_linked_widgets();
-                      my.partial_update().__html(p || my.render);
+                      my.partial_update().__html(p || render);
                   };
 
               })();
