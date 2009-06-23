@@ -282,11 +282,15 @@
                           });
                   };
 
-                  my.render = function(fn) {
-                      if (!juice.is_function(fn)) {
-                          my.raise("argument passed to my.render is not a function: " + fn);
+                  my.render = function(content) {
+                      if (!juice.is_function(content)) {
+                          render = function() {
+                              return content;
+                          };
                       }
-                      render = fn;
+                      else {
+                          render = content;
+                      }
                   };
 
 
