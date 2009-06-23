@@ -1,6 +1,7 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
+* IMPORTANT When mocking is enabled and there is no mock implementation, we need an error message
 * NEXT juice newsite should ship with flickr widgets etc.
 * NEXT Implement all RPCs
   report spam
