@@ -1,7 +1,13 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
-* IMPORTANT Make a pass through entire code base (juice, c1, and c1_std) and ensure that we are not relying on property order
+* NEXT juice newsite should ship with flickr widgets etc.
+* NEXT Implement all RPCs
+  report spam
+  not spam
+  delete
+  save
+  forward, reply, etc
 * NEXT Add a timeout to rpcs
 * NEXT Convert package.json to package.js
 This allows config files to be programmable.
@@ -342,3 +348,4 @@ For example, "c1.widgets.core" should become
 * DONE Add enums to rpc specs
 * DONE Remove try/catch from widget and rpc package definition
 * DONE Working in rhino.
+* DONE Make a pass through entire code base (juice, c1, and c1_std) and ensure that we are not relying on property order
