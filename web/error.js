@@ -1,6 +1,38 @@
 (function(juice) {
+     var mozilla_stack_frames;
 
      juice.errors = []; // the default handler stores all errors in here
+
+     // Attempts to convert the stack property, of the Mozilla Error object,
+     // to a structured format (i.e., an Object).
+
+     mozilla_stack_frames = function(stack) {
+         if (!juice.is_string(stack)) {
+             return stack;
+         }
+         stack = stack.replace(/\n$/, "");
+         return juice.map(
+             stack.split("\n"),
+             function(frame_string) {
+                 var frame = {}, match;
+                 match = /(.*)?@(.+)?:([0-9]+)?/.exec(frame_string);
+                 if (match) {
+                     if (typeof(match[1]) !== "undefined") {
+                         frame.error = match[1];
+                     }
+                     if (frame.error) {
+                         // Remove extra parentheses.
+                         frame.error = frame.error.replace(/^\((.*)\)$/, "$1");
+                     }
+                     frame.uri = match[2];
+                     frame.line = match[3];
+                 }
+                 else {
+                     juice.log("Couldn't match line: " + frame_string);
+                 }
+                 return frame;
+             });
+     };
 
      juice.error = {
 
@@ -9,6 +41,7 @@
          // throwing raw objects.
 
          raise: function(message, info) {
+             var e;
              if (info) {
                  message += ": " + juice.dump(info);
              }
@@ -34,6 +67,9 @@
          // to override this function.
 
          handle: function(e) {
+             if (e.stack) {
+                 e.stack = mozilla_stack_frames(e.stack);
+             }
              juice.errors.push(e);
              juice.log(String(e));
 
