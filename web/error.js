@@ -1,5 +1,5 @@
 (function(juice) {
-     var mozilla_stack_frames;
+     var custom_error_handler, mozilla_stack_frames;
 
      juice.errors = []; // the default handler stores all errors in here
 
@@ -60,16 +60,21 @@
              return error;
          },
 
-         // The error handler. Juice has a bunch of internal try-catch blocks
-         // that prevent exceptions from unwinding the stack and generating
-         // cryptic messages in the browser javascript console; the catch
-         // clauses generally call this function. Note that projects are free
-         // to override this function.
+         // The built-in error handler. Juice has a bunch of internal
+         // try-catch blocks that prevent exceptions from unwinding the stack
+         // and generating cryptic messages in the browser javascript console;
+         // the catch clauses generally call this function.
 
-         handle: function(e) {
+         handle: function(e, ignore_custom_handler) {
+             if (juice.errors.length >= 10000) {
+                 juice.log("too many errors; canceling error handlers");
+                 juice.error.handle = function() {};
+             }
+
              if (e.stack) {
                  e.stack = mozilla_stack_frames(e.stack);
              }
+
              juice.errors.push(e);
              juice.log(String(e));
 
@@ -79,6 +84,28 @@
              // from returning to its normal style.
 
              jQuery("body").attr("style", "cursor: auto");
+
+             // If a custom handler has been specified, call it now. Wrap it
+             // in a try..catch block to avoid an infinite cascade of errors.
+
+             if (juice.is_function(custom_error_handler) && !ignore_custom_handler) {
+                 try {
+                     custom_error_handler(e);
+                 }
+                 catch (e2) {
+                     juice.error.handle(e2, true);
+                 }
+             }
+         },
+
+         // Specifies a site-specific error handler. The built-in handler
+         // (juice.error.handle) will still be invoked first. Returns the old
+         // custom error handler, or undefined if one hasn't been specified.
+
+         set_custom_handler: function(fn) {
+             var old_handler = custom_error_handler;
+             custom_error_handler = fn;
+             return old_handler;
          },
 
          // Given a function f, returns a function that is a proxy for f,
