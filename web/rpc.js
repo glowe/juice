@@ -687,9 +687,7 @@
      // +---------------------------+
 
      lib.define_package = function(lib_name, pkg_name, constructor) {
-         var namespace = juice.namespace.make({lib_name: lib_name,
-                                               pkg_type: "rpcs",
-                                               pkg_name: pkg_name});
+         var namespace = juice.namespace.make(lib_name + ".rpcs." + pkg_name);
 
          if (current_namespace) {
              juice.error.raise(namespace + " nested inside " + current_namespace);
