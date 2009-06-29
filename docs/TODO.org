@@ -1,6 +1,8 @@
 #+TYP_TODO: MAYBE IMPORTANT NEXT STARTED WAITING DONE
 #+STARTUP: overview
 
+* STARTED Move mocking code to be dynamically loaded after rpc system.
+
 * IMPORTANT When mocking is enabled and there is no mock implementation, we need an error message
 * NEXT juice newsite should ship with flickr widgets etc.
 * NEXT Implement all RPCs
@@ -16,8 +18,6 @@ EX.
 It'd be nice to set stylesheet_urls using the site.settings.static_base_url value for widget package.
 * NEXT Messaging facility (Eloy)
 * NEXT Instructions on how to get IE 6 to point to local machine (D & G)
-* MAYBE Add a way to auto generate rpc stubs?
-* IMPORTANT Move mocking code to be dynamically loaded after rpc system.
 * IMPORTANT Add juice.doc.define
   Should be dynamically loaded.
 * IMPORTANT Improve namespace handling so that code in rpc.js can be replaced.
@@ -41,9 +41,6 @@ It'd be nice to set stylesheet_urls using the site.settings.static_base_url valu
 * MAYBE Make it possible to send additional rpc boxcars after the initial one.
 * MAYBE Error reporting in jQuery's AJAX utility may not be adequate for our needs.
 * MAYBE Should it be possible to specify a different proxies.js file via settings?
-* MAYBE Firebug plugin
-  - Better stack traces
-  - Linked to generated source
 * MAYBE Add server-side validation procedure
 * MAYBE Scope the juice.lib namespace passed to widget packages based on their stated dependencies.
 * MAYBE be consistent about event names (use present-tense everywhere?)
@@ -350,3 +347,7 @@ For example, "c1.widgets.core" should become
 * DONE Remove try/catch from widget and rpc package definition
 * DONE Working in rhino.
 * DONE Make a pass through entire code base (juice, c1, and c1_std) and ensure that we are not relying on property order
+* DONE Add a way to auto generate rpc stubs?
+* DONE Firebug plugin
+  - Better stack traces
+  - Linked to generated source

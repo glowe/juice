@@ -1,0 +1,4 @@
+content firejuice                               chrome/content/
+skin    firejuice       firejuice               skin/
+style   chrome://browser/content/browser.xul    chrome://firejuice/skin/firejuice.css
+overlay chrome://browser/content/browser.xul    chrome://firejuice/content/firejuice.xul

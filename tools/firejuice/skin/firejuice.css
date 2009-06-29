@@ -1,0 +1,5 @@
+#firejuice-status-bar-icon {
+    list-style-image: url(chrome://firejuice/skin/firejuice.png);
+    margin: 0 0 -1px;
+    padding: 0 0 1px;
+}

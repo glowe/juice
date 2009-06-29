@@ -197,7 +197,7 @@
              return juice.mget(site.lib, parts);
          }
          catch (e) {
-             return juice.error.chain("can't find rpc (" + parts.join(".") + ")", e);
+             throw juice.error.chain("can't find rpc (" + parts.join(".") + ")", e);
          }
      };
 
