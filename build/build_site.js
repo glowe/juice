@@ -12,27 +12,19 @@
                                                 return file.category;
                                             });
 
-         // Sort by library name first (undefined last) and then by path name
-         base_source_files.normal.sort(function(a, b) {
-                                           if (a.library_name < b.library_name) {
-                                               return -1;
-                                           }
-                                           if (a.library_name > b.library_name) {
-                                               return 1;
-                                           }
-                                           if (a.path < b.path) {
-                                               return -1;
-                                           }
-                                           if (a.path > b.path) {
-                                               return 1;
-                                           }
-                                           return 0;
-                                       });
+         // Since runtime settings are a prerequisite for many
+         // things, make sure they're the first thing in base.
 
-         base = juice.map(base_source_files.normal,
-                          function(source) {
-                              return juice.build.read_file_and_scope_js(source.path);
-                          });
+         runtime_settings = juice.dict_intersect_keys(juice.build.site_settings(),
+                                                      ['base_url',
+                                                       'cookie_name',
+                                                       'user']);
+         runtime_settings.config = {
+             debug: juice.build.config.debug(),
+             rpc_mocking: juice.build.config.rpc_mocking()
+         };
+
+         base = ['site.settings=' + JSON.stringify(runtime_settings) + ';'];
 
          // Get the set of all library stubs and translate them into
          // javascript declarations. This will allow the client
@@ -65,7 +57,6 @@
                                                        return juice.sys.read_file(source.path);
                                                    });
 
-
                            // Get this library's utility template source files.
                            templates = juice.filter(base_source_files.util_template,
                                                     function(source_file) {
@@ -87,27 +78,22 @@
 
                        });
 
-         // base
+         // Add the normal-category source files. This includs stuff
+         // like layouts.js and proxies.js.
+
+         base = base.concat(juice.map(base_source_files.normal,
+                                      function(source) {
+                                          return juice.build.read_file_and_scope_js(source.path);
+                                      }));
+
+         // Set the pages-initialization function to the contents of
+         // the pages.js source file.
+
          pages = juice.build.read_file_and_scope_js(base_source_files.pages[0].path);
-         base = base.concat(
-             ["juice.page.set_init(function(juice, site, jQuery) {",
-              pages,
-              '});']);
+         base = base.concat(["juice.page.set_init(function(juice, site, jQuery) {", pages, '});']);
 
-         runtime_settings = juice.dict_intersect_keys(juice.build.site_settings(),
-                                                      ['base_url',
-                                                       'cookie_name',
-                                                       'user']);
-         runtime_settings.config = {
-             debug: juice.build.config.debug(),
-             rpc_mocking: juice.build.config.rpc_mocking()
-         };
+         // We're done. Write the file.
 
-         // Since settings are prerequisite for many things, make sure they're set first.
-         base.unshift('site.settings=' + JSON.stringify(runtime_settings) + ';');
-
-         juice.build.write_target_file(
-             'js/base.js',
-             base.join("\n"));
+         juice.build.write_target_file('js/base.js', base.join("\n"));
      };
  })(juice);

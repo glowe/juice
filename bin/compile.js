@@ -69,7 +69,7 @@ else {
 }
 
 // If the user specified the "clean" option, reset the build. Also, if that
-// was the only explit target, exit without compiling anything.
+// was the only explicit target, exit without compiling anything.
 
 if (options.clean) {
     juice.build.clean();
