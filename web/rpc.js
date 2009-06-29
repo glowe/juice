@@ -14,6 +14,8 @@
 
      juice.rpc = lib = {};
 
+     juice.event.register("juice.rpc_failure");
+
      assert_spec_is_valid = function(spec) {
          if (juice.is_string(spec)) {
              if (spec.charAt(spec.length-1) === "?") {
@@ -206,6 +208,10 @@
      lib.define = function(spec) {
          var qualified_name, rpc;
 
+         spec = juice.sloppy_spec(spec, {name: undefined,
+                                         req_spec: undefined,
+                                         rsp_spec: undefined});
+
          qualified_name = current_namespace.qualify(spec.name);
 
          assert_spec_is_valid(spec.req_spec);
@@ -263,9 +269,9 @@
          rpc.namespace = current_namespace;
          rpc.name = spec.name;
          rpc.qualified_name = qualified_name;
-         rpc.service_name = spec.service_name;
          rpc.req_spec = spec.req_spec;
          rpc.rsp_spec = spec.rsp_spec;
+         rpc.spec = spec;
 
          if (current_namespace.contains(spec.name)) {
              juice.error.raise(qualified_name + " already defined");
@@ -548,8 +554,7 @@
          if (juice.rpc.mock.state(rpc) !== false) {
              return mocking_proxy;
          }
-         if ((answer = (proxy_map.hasOwnProperty(rpc.namespace.toString())
-                        || proxy_map.hasOwnProperty(rpc.namespace.lib_name)))) {
+         if ((answer = (proxy_map[rpc.namespace.toString()] || proxy_map[rpc.namespace.lib_name]))) {
              return answer;
          }
          if (default_proxy) {
@@ -640,7 +645,7 @@
                                  req.failure_fn(rsp.error);
                              }
                              else {
-                                 juice.event.publish("service-failure", rsp);
+                                 juice.event.publish("juice.rpc_failure", rsp);
                              }
                          });
                  });
@@ -695,76 +700,6 @@
          current_namespace = namespace;
          constructor(juice, site, jQuery);
          current_namespace = null;
-     };
-
- })(juice, site, jQuery);
-
-(function(juice, site, jQuery) {
-     var make_boxcar_helper;
-
-     juice.event.register("service-failure");
-
-     // Returns an object that encapsulates some of the details associated
-     // with creating a boxcar of RPC requests.
-
-     make_boxcar_helper = function(requests, response_handler) {
-         var data = {}, request_map = {};
-
-         juice.foreach(requests,
-                       function(req) {
-                           var tuple = [req.rpc.service_name, req.args],
-                           key = hex_sha1(juice.dump(tuple));
-                           data[key] = tuple;
-                           request_map[key] = request_map[key] || [];
-                           request_map[key].push(req);
-                       });
-
-         return {
-             get_request_data: function() {
-                 return {requests: JSON.stringify(data)};
-             },
-             handle_responses: function(responses) {
-                 juice.foreach(responses,
-                               function(key, rsp) {
-                                   juice.foreach(request_map[key],
-                                                 function(req) {
-                                                     response_handler(req, rsp);
-                                                 });
-                               });
-             }
-         };
-     };
-
-     // This is the standard built-in boxcar proxy.
-
-     juice.rpc.create_basic_boxcar_proxy = function(rpc_url) {
-
-         return function(requests) {
-             var boxcar_helper = make_boxcar_helper(requests,
-                                                    function(req, rsp) {
-                                                        if (rsp.hasOwnProperty("data")) {
-                                                            req.success_fn(rsp.data);
-                                                        }
-                                                        else if (rsp.hasOwnProperty("error") && req.failure_fn) {
-                                                            req.failure_fn(rsp.error);
-                                                        }
-                                                        else {
-                                                            juice.event.publish("service-failure", rsp);
-                                                        }
-                                                    });
-             jQuery.ajax(
-                 {cache: false,
-                  data: boxcar_helper.get_request_data(),
-                  dataType: "json",
-                  error: function(xhr, what, exception) {
-                      juice.event.publish("service-failure",
-                                          {response: xhr.responseText, xhr: xhr, what: what, exception: exception});
-                  },
-                  success: juice.error.make_safe(boxcar_helper.handle_responses),
-                  type: "POST",
-                  url: rpc_url.to_string()
-                 });
-         };
      };
 
  })(juice, site, jQuery);

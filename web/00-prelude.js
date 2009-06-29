@@ -583,8 +583,7 @@
               return function(spec) {
                   var copy_of_spec, meta_specs, unrecog_keys = [];
 
-                  // Copy spec into a copy, defaulting values from meta_spec and
-                  // optionally extended_meta_spec.
+                  // Copy spec into a copy, defaulting values from meta_specs.
 
                   meta_specs = juice.args(arguments).slice(1);
                   spec = spec || {};
@@ -593,13 +592,13 @@
                                 function(meta_spec) {
                                     juice.foreach(meta_spec,
                                                   function(k, v) {
-                                                      if (juice.is_undefined(v)) { // Required args
+                                                      if (juice.is_undefined(v)) {  // argument k is required
                                                           if (!spec.hasOwnProperty(k)) {
                                                               throw 'missing required argument: ' + k;
                                                           }
                                                           copy_of_spec[k] = spec[k];
                                                       }
-                                                      else { // Optional args
+                                                      else {                        // argument k is optional
                                                           copy_of_spec[k] = spec.hasOwnProperty(k) ? spec[k] : meta_spec[k];
                                                       }
                                                   });
@@ -617,14 +616,28 @@
                           throw "spec contained unrecognized keys: " + unrecog_keys.join(", ");
                       }
                   }
+                  else {
+                      juice.foreach(spec,
+                                    function(k, v) {
+                                        if (!copy_of_spec.hasOwnProperty(k)) {
+                                            copy_of_spec[k] = v;
+                                        }
+                                    });
+                  }
 
                   return copy_of_spec;
               };
           };
 
+          // juice.spec makes a copy of a dictionary, but verifies that it
+          // only contains keys from an expected set. It also makes it
+          // possible to set default values for certain keys in the set.
+
           juice.spec = make_spec_fn(true);
 
-          // Like juice.spec, but forbids unrecognized parameters.
+          // juice.sloppy_spec is like juice.spec, but allows unrecognized
+          // parameters to be passed through.
+
           juice.sloppy_spec = make_spec_fn(false);
 
       })();

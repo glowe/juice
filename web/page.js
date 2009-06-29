@@ -220,7 +220,7 @@
              }
 
              juice.event.subscribe(undefined,
-                                   "service-failure",
+                                   "juice.rpc_failure",
                                    function(event) {
                                        juice.error.raise("backend failure: "+juice.dump(event));
                                    });
