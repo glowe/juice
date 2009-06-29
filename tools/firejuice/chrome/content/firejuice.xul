@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://firejuice/skin/firejuice.css" type="text/css"?>
+<overlay id="firejuice"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <script src="json2.js"/>
+  <script src="firejuice.js"/>
+  <statusbar id="status-bar">
+    <statusbarpanel id="firejuice-status-bar-icon" class="statusbarpanel-iconic" onclick="firejuice.send_errors_to_emacs();"/>
+  </statusbar>
+</overlay>
