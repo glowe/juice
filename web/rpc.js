@@ -392,74 +392,48 @@
               // afterward.
 
               config: function(what, how) {
-                  var assert_bool,
-                  assert_in_site,
-                  lib_name,
-                  parts,
-                  pkg_name,
-                  rpc_name;
+                  var assert_bool, parts;
 
                   assert_bool = function() {
                       if (!juice.is_boolean(how)) {
                           juice.error.raise("mocked state must be true|false unless mocking a specific rpc");
                       }
                   };
-                  assert_in_site = function(keys) {
-                      if (!juice.mhas(site.lib, keys)) {
-
-                          // Note: Disabled for now because it prevents the
-                          // programmer from configuring rpcs during
-                          // compilation via the util directory. Also not
-                          // sure whether this check is particularly useful.
-
-                          // juice.error.raise("site.lib."+keys.join(".")+" not found");
-                      }
-                  };
 
                   init_conf();
-                  parts = what.split(".");
 
-                  // The second part, if it exists, must always be the string "rpcs".
+                  what = juice.namespace.parse(what);
 
-                  if (parts.length > 1) {
-                      if (parts[1] != "rpcs") {
-                          juice.error.raise("invalid rpc specification: "+what);
-                      }
+                  if (what.pkg_type && what.pkg_type != "rpcs") {
+                      juice.error.raise("invalid rpc specification: "+what);
                   }
 
-                  // Only specific rpcs may be assigned non-rpcs mock states, and fewer than
-                  // four parts indicates we're configuring a library or a package.
+                  // Only specific rpcs may be assigned non-rpcs
+                  // mock states; otherwise we're configuring a
+                  // library or a package.
 
-                  if (parts.length < 4) {
+                  if (!what.fn_name) {
                       assert_bool();
                   }
 
                   // Depending on the number of parts in "what", we're configuring a single
                   // rpc, a package of rpcs, or an entire library.
 
-                  if (what === "" || what === "*") {
+                  if (what.lib_name !== "*") {
+                      what.assert_exists();
+                  }
+
+                  if (what.lib_name == "" || what.lib_name == "*") {
                       conf = {"default": how};
                   }
-                  else if (parts.length == 4) {
-                      lib_name = parts[0];
-                      pkg_name = parts[2];
-                      rpc_name = parts[3];
-                      assert_in_site([lib_name, "rpcs", pkg_name, rpc_name]);
-                      juice.mset(conf, how, ["libs", lib_name, "pkgs", pkg_name, "rpcs", rpc_name]);
-                  }
-                  else if (parts.length == 3) {
-                      lib_name = parts[0];
-                      pkg_name = parts[2];
-                      assert_in_site([lib_name, "rpcs", pkg_name]);
-                      juice.mset(conf, {"default": how}, ["libs", lib_name, "pkgs", pkg_name]);
-                  }
-                  else if (parts.length == 2 || parts.length == 1) {
-                      lib_name = parts[0];
-                      assert_in_site([lib_name, "rpcs"]);
-                      juice.mset(conf, {"default": how}, ["libs", lib_name]);
-                  }
                   else {
-                      juice.error.raise("invalid rpc specification: "+what);
+                      parts = ["libs"].concat(what.split());
+                      if (what.fn_name) {
+                          juice.mset(conf, how, parts);
+                      }
+                      else {
+                          juice.mset(conf, {"default": how}, parts);
+                      }
                   }
               },
 
@@ -472,16 +446,20 @@
                   if (!juice.rpc.mock.is_enabled()) {
                       return false;
                   }
-                  keys = ["libs", rpc.namespace.lib_name, "pkgs", rpc.namespace.pkg_name, "rpcs", rpc.name];
+                  keys = ["libs"].concat(rpc.namespace.split());
                   init_conf();
                   if (juice.mhas(conf, keys)) {
                       return juice.mget(conf, keys);
                   }
-                  keys = keys.slice(0, -2);  // retry at the package level
+
+                  // Package name level
+                  keys = ["libs"].concat(rpc.namespace.unqualify().split());
                   if (juice.mhas(conf, keys, "default")) {
                       return juice.mget(conf, keys, "default");
                   }
-                  keys = keys.slice(0, -2);  // retry at the library level
+
+                  // Library level
+                  keys = ["libs"].concat([rpc.namespace.lib_name]);
                   if (juice.mhas(conf, keys, "default")) {
                       return juice.mget(conf, keys, "default");
                   }
@@ -692,7 +670,7 @@
      // +---------------------------+
 
      lib.define_package = function(lib_name, pkg_name, constructor) {
-         var namespace = juice.namespace.make(lib_name + ".rpcs." + pkg_name);
+         var namespace = juice.namespace.make(lib_name, "rpcs", pkg_name);
 
          if (current_namespace) {
              juice.error.raise(namespace + " nested inside " + current_namespace);

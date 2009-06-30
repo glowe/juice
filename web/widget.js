@@ -266,7 +266,7 @@
                           unsafe,
                           function() {
                               var attribs = {
-                                  "class": qualified_name.replace(/\./g, " "),
+                                  "class": qualified_name.toString().replace(/\./g, " "),
                                   "id": id
                               };
                               juice.foreach(container_attribs, function(k, v) { attribs[k] = v; });
@@ -545,9 +545,7 @@
      // +---------------------------+
 
      lib.define_package = function(lib_name, pkg_name, constructor) {
-         var namespace = juice.namespace.make({lib_name: lib_name,
-                                               pkg_type: "widgets",
-                                               pkg_name: pkg_name});
+         var namespace = juice.namespace.make(lib_name, "widgets", pkg_name);
          if (current_namespace) {
              juice.error.raise(namespace + " nested inside " + current_namespace);
          }

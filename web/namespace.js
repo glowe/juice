@@ -1,43 +1,41 @@
 (function(juice) {
-     // Tells juice to enable or disable mocking for certain rpcs.
-     // `what` may refer to a specific rpc (e.g.
-     // "my_library.rpcs.foo_package.the_rpc"), an rpc package (e.g.
-     // "my_library.rpcs.foo_package"), or even an entire library
-     // (e.g. "my_library" or, equivalently, "my_library.rpcs"). You
-     // may also refer to all libraries by setting `what` to "*" or
-     // an empty string.
+
+     // A namespace is a period-separated list of names. The list
+     // may be 0-4 elements long.
+     //
+     // The first element in the namespace refers to the library;
+     // the second element refers to the package type; the third element
+     // refers to the package name; and the fourth element refers to the function.
+     //
 
      juice.namespace = {
-         make: function(string) {
-             var lib_name, pkg_type, pkg_name, fn_name, parts = string.split(".");
+         parse: function(string) {
+             return this.make.apply(this, string.split("."));
+         },
+
+         make: function() {
+             var lib_name, parts, pkg_type, pkg_name, fn_name;
+
+             parts = juice.args(arguments);
+
+             if (parts.length > 4) {
+                 juice.error.raise("Namespace too deep: " + string);
+             }
 
              if (parts.length > 0) {
                  lib_name = parts[0];
-                 if (site.libs.hasOwnProperty(lib_name)) {
-                     juice.error.raise("Unrecognized library: " + lib_name);
-                 }
              }
 
              if (parts.length > 1) {
                  pkg_type = parts[1];
-                 if (site.libs[lib_name].hasOwnProperty(pkg_type)) {
-                     juice.error.raise("Unrecognized package type: " + pkg_type);
-                 }
              }
 
              if (parts.length > 2) {
                  pkg_name = parts[2];
-                 if (site.libs[lib_name][pkg_type].hasOwnProperty(pkg_name)) {
-                     juice.error.raise("Unrecognized package name: " + pkg_name);
-                 }
              }
 
              if (parts.length > 3) {
                  fn_name = parts[3];
-             }
-
-             if (parts.length > 4) {
-                 juice.error.raise("Namespace too deep: " + string);
              }
 
              return {
@@ -46,8 +44,28 @@
                  pkg_name: pkg_name,
                  fn_name: fn_name,
 
+                 assert_exists: function() {
+                     if (!site.lib.hasOwnProperty(lib_name)) {
+                         juice.error.raise("Unrecognized library: " + lib_name);
+                     }
+
+                     if (pkg_type && !site.lib[lib_name].hasOwnProperty(pkg_type)) {
+                         juice.error.raise("Unrecognized package type: " + pkg_type);
+                     }
+                     if (pkg_name && !site.lib[lib_name][pkg_type].hasOwnProperty(pkg_name)) {
+                         juice.error.raise("Unrecognized package: " + pkg_name);
+                     }
+                     if (fn_name && !site.lib[lib_name][pkg_type][pkg_name].hasOwnProperty(fn_name)) {
+                         juice.error.raise("Unrecognized function: " + fn_name);
+                     }
+                 },
+
+                 split: function() {
+                     return parts;
+                 },
+
                  toString: function() {
-                     return string;
+                     return parts.join(".");;
                  },
 
                  contains: function(name) {
@@ -63,14 +81,13 @@
                  },
 
                  qualify: function(name) {
-                     return make(string + "." + name);
+                     return juice.namespace.make.apply(this, parts.concat(name));
                  },
 
                  unqualify: function() {
-                     return make(parts.slice(0, parts.length-1));
+                     return juice.namespace.make.apply(this, parts.slice(0, parts.length-1));
                  }
              };
          }
      };
  })(juice);
-
