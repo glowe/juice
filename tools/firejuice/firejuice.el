@@ -34,9 +34,7 @@
        '(lambda (lst)
           (let ((name (car lst)))
             (if (eq name 'stack)
-                (progn
-                  (setcdr lst (firejuice:transform-stack download-dir (cdr lst)))
-                  lst)
+                (cons 'stack (firejuice:transform-stack download-dir (cdr lst)))
               lst)))
        error))
 
