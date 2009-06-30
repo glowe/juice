@@ -5,7 +5,7 @@
 
 * IMPORTANT When mocking is enabled and there is no mock implementation, we need an error message
 * NEXT juice newsite should ship with flickr widgets etc.
-* NEXT Implement all RPCs
+* STARTED Implement all RPCs
   report spam
   not spam
   delete
@@ -16,12 +16,9 @@
 This allows config files to be programmable.
 EX.
 It'd be nice to set stylesheet_urls using the site.settings.static_base_url value for widget package.
-* NEXT Messaging facility (Eloy)
 * NEXT Instructions on how to get IE 6 to point to local machine (D & G)
 * IMPORTANT Add juice.doc.define
   Should be dynamically loaded.
-* IMPORTANT Improve namespace handling so that code in rpc.js can be replaced.
-  Namespaces should be able to be partial (e.g., just a lib, just a lib and package type, etc).
 * IMPORTANT Determine dependency order among util "packages" so library code is compiled into base.js in correct order.
 * STARTED Convert all form inputs to work regardless of state
 * IMPORTANT The internal error message and exception trapping tends to obscure the origin of messages.
@@ -38,6 +35,7 @@ It'd be nice to set stylesheet_urls using the site.settings.static_base_url valu
   returns, we shouldn't honor the validation request.
 * IMPORTANT Add a widget browser
 * IMPORTANT When widget dependencies are calculated, we should ensure that the packages really exist
+* MAYBE Investigate whether build code could use juice.namespace
 * MAYBE Make it possible to send additional rpc boxcars after the initial one.
 * MAYBE Error reporting in jQuery's AJAX utility may not be adequate for our needs.
 * MAYBE Should it be possible to specify a different proxies.js file via settings?
@@ -351,3 +349,5 @@ For example, "c1.widgets.core" should become
 * DONE Firebug plugin
   - Better stack traces
   - Linked to generated source
+* DONE Improve namespace handling so that code in rpc.js can be replaced.
+  Namespaces should be able to be partial (e.g., just a lib, just a lib and package type, etc).
