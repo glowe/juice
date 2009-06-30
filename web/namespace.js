@@ -9,12 +9,22 @@
      //
 
      juice.namespace = {
+
+         // Parses a period-separated namespace and returns a
+         // namespace object.
          parse: function(string) {
              return this.make.apply(this, string.split("."));
          },
 
+         // Accepts a list of namespace components and returns a namespace object.
+         // For example:
+         //     var ns = juice.namespace(["foo", "rpcs", "bar", "baz"]);
+         //     ns.lib_name == "foo";
+         //     ns.pkg_type == "rpcs";
+         //     ns.pkg_name == "bar";
+         //     ns.fn_name  == "baz";
          make: function() {
-             var lib_name, parts, pkg_type, pkg_name, fn_name;
+             var fn_name, lib_name, parts, pkg_type, pkg_name;
 
              parts = juice.args(arguments);
 
@@ -39,11 +49,26 @@
              }
 
              return {
+
+                 // The library name; undefined if the namespace
+                 // doesn't represent a library (i.e., an empty
+                 // namespace).
                  lib_name: lib_name,
+
+
+                 // The package type; undefined if the namespace
+                 // is a single-level namespace.
                  pkg_type: pkg_type,
+
+                 // The package name; undefined if the namespace is a
+                 // 2-level namespace.
                  pkg_name: pkg_name,
+
+                 // The function name; undefined if the namespace is a
+                 // 3-level namespace.
                  fn_name: fn_name,
 
+                 // Asserts that the specified namespace exists.
                  assert_exists: function() {
                      if (!site.lib.hasOwnProperty(lib_name)) {
                          juice.error.raise("Unrecognized library: " + lib_name);
@@ -60,30 +85,43 @@
                      }
                  },
 
+                 // Returns an array of namespace parts.
                  split: function() {
                      return parts;
                  },
 
+                 // Returns the string representation of the namespace.
                  toString: function() {
                      return parts.join(".");;
                  },
 
+                 // Tests whether the namespace contains the name.
                  contains: function(name) {
                      return juice.mhas(site.lib, parts, name);
                  },
 
+                 // Defines the name within the namespace with a value.
+                 // The following code sets foo.bar.baz.bash = true:
+                 //   juice.namespace.parse("foo.bar.baz").def("bash", true)
                  def: function(name, value) {
                      juice.mdef(site.lib, value, parts, name);
                  },
 
+                 // Returns the value of name within the namespace.
                  get: function(name) {
                      return juice.mget(site.lib, parts, name);
                  },
 
+                 // Returns a further qualfied namespace. For example,
+                 // juice.namespace.parse("foo.bar").qualify("baz") returns
+                 // the namespace foo.bar.baz.
                  qualify: function(name) {
                      return juice.namespace.make.apply(this, parts.concat(name));
                  },
 
+                 // Unqualifies a namespace. For example,
+                 // juice.namespace.parse("foo.bar").unqualify() returns
+                 // the namespace foo.
                  unqualify: function() {
                      return juice.namespace.make.apply(this, parts.slice(0, parts.length-1));
                  }
