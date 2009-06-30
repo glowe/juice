@@ -58,11 +58,25 @@
 (defun firejuice:transform-stack (download-dir stack)
   (map 'vector
        '(lambda (frame)
-          (if (not (assoc 'uri frame))
-              frame
-            (let ((file (firejuice:download-uri download-dir (cdr (assoc 'uri frame)))))
-              (append frame (list (cons 'file file))))))
+          (let ((truncated-frame (firejuice:truncate-error-in-frame frame)))
+            (if (not (assoc 'uri truncated-frame))
+                truncated-frame
+            (let ((file (firejuice:download-uri download-dir (cdr (assoc 'uri truncated-frame)))))
+              (append truncated-frame (list (cons 'file file)))))))
        stack))
+
+(defun firejuice:truncate (str)
+  (if (>= (length str) 80)
+      (concat (substring str 0 80) "...")
+    str))
+
+(defun firejuice:truncate-error-in-frame (frame)
+  (map 'list
+       '(lambda (association)
+          (if (eq (car association) 'error)
+              (cons 'error (firejuice:truncate (cdr association)))
+            association))
+       frame))
 
 (defun firejuice:handle-json-errors (json-file-path)
   (interactive "fPath to json errors: ")
@@ -74,9 +88,12 @@
     (message "Created download directory: %s." download-dir)
     ;; Kill old buffer
     (when (get-buffer *firejuice:errors-buffer-name*)
+      (message "Killing old buffer")
       (kill-buffer *firejuice:errors-buffer-name*))
     (let ((buffer (get-buffer-create *firejuice:errors-buffer-name*)))
+      (message "Printing to buffer")
       (pp (firejuice:transform-errors download-dir errors) buffer)
+      (message "Switching to buffer")
       (switch-to-buffer buffer)
       (goto-char 0)
       (compilation-mode))))
