@@ -99,10 +99,7 @@
       (compilation-mode))))
 
 
-(add-to-list 'compilation-error-regexp-alist-alist '(firejuice "((line \. \"\\([0-9]+\\)\")
-.+
-.+
-[ ]+(file \. \"\\(.+\\)\"))" 2 1))
+(add-to-list 'compilation-error-regexp-alist-alist '(firejuice "((line \. \"\\([0-9]+\\)\")\\(?:\n.+?\\)*[ ]+(file \. \"\\(.+\\)\"))" 2 1))
 (add-to-list 'compilation-error-regexp-alist 'firejuice)
 
 (provide 'firejuice)
