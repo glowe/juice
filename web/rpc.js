@@ -466,7 +466,7 @@
 
                   // Library level
                   namespace = namespace.unqualify().unqualify();
-                  keys = ["libs"].concat([namespace]);
+                  keys = ["libs"].concat([namespace.split()]);
                   if (juice.mhas(conf, keys, "default")) {
                       return juice.mget(conf, keys, "default");
                   }
