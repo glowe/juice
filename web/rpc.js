@@ -442,24 +442,31 @@
               // string (indicates which named state to use).
 
               state: function(rpc) {
-                  var keys;
+                  var keys, namespace;
                   if (!juice.rpc.mock.is_enabled()) {
+                      juice.log("mocking is disabled");
                       return false;
                   }
-                  keys = ["libs"].concat(rpc.namespace.split());
+                  // This code is wrong
+
+                  namespace = rpc.qualified_name;
+                  keys = ["libs"].concat(namespace.split());
+
                   init_conf();
                   if (juice.mhas(conf, keys)) {
                       return juice.mget(conf, keys);
                   }
 
                   // Package name level
-                  keys = ["libs"].concat(rpc.namespace.unqualify().split());
+                  namespace = namespace.unqualify();
+                  keys = ["libs"].concat(namespace.split());
                   if (juice.mhas(conf, keys, "default")) {
                       return juice.mget(conf, keys, "default");
                   }
 
                   // Library level
-                  keys = ["libs"].concat([rpc.namespace.lib_name]);
+                  namespace = namespace.unqualify().unqualify();
+                  keys = ["libs"].concat([namespace]);
                   if (juice.mhas(conf, keys, "default")) {
                       return juice.mget(conf, keys, "default");
                   }
