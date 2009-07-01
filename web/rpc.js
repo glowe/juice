@@ -423,7 +423,7 @@
                       what.assert_exists();
                   }
 
-                  if (what.lib_name == "" || what.lib_name == "*") {
+                  if (what.lib_name === "" || what.lib_name === "*") {
                       conf = {"default": how};
                   }
                   else {

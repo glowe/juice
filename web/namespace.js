@@ -92,7 +92,7 @@
 
                  // Returns the string representation of the namespace.
                  toString: function() {
-                     return parts.join(".");;
+                     return parts.join(".");
                  },
 
                  // Tests whether the namespace contains the name.
