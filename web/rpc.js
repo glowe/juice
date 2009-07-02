@@ -258,6 +258,7 @@
                           else if (default_failure_handler) {
                               default_failure_handler(error);
                           }
+                          throw juice.error.raise("service error", {error: error});
                       }
                       catch (e) {
                           juice.error.handle(e);
