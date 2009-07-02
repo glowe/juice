@@ -242,11 +242,16 @@
                   success_fn: function(data) {
                       call_when_finished();
                       try {
-                          do_validate("rsp_spec", data);
-                          success_fn(data);
+                          try {
+                              do_validate("rsp_spec", data);
+                              success_fn(data);
+                          }
+                          catch (e) {
+                              throw juice.error.chain(juice.dump(e), null, context);
+                          }
                       }
-                      catch (e) {
-                          juice.error.handle(e);
+                      catch (e2) {
+                          juice.error.handle(e2);
                       }
                   },
                   failure_fn: function(error) {
