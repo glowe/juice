@@ -197,7 +197,7 @@
              return juice.mget(site.lib, parts);
          }
          catch (e) {
-             throw juice.error.chain("can't find rpc (" + parts.join(".") + ")", e);
+             throw juice.error.chain("can't find rpc (" + parts.join(".") + ")", null, e);
          }
      };
 
@@ -218,7 +218,9 @@
          assert_spec_is_valid(spec.rsp_spec);
 
          rpc = function(args, success_fn, failure_fn) {
-             var call_when_finished, do_validate;
+             var call_when_finished, context, do_validate;
+
+             context = new Error(arguments.callee.caller);
 
              call_when_finished = juice.util.loading();
 
@@ -240,11 +242,16 @@
                   success_fn: function(data) {
                       call_when_finished();
                       try {
-                          do_validate("rsp_spec", data);
-                          success_fn(data);
+                          try {
+                              do_validate("rsp_spec", data);
+                              success_fn(data);
+                          }
+                          catch (e) {
+                              throw juice.error.chain(juice.dump(e), null, context);
+                          }
                       }
-                      catch (e) {
-                          juice.error.handle(e);
+                      catch (e2) {
+                          juice.error.handle(e2);
                       }
                   },
                   failure_fn: function(error) {
@@ -258,7 +265,7 @@
                           else if (default_failure_handler) {
                               default_failure_handler(error);
                           }
-                          throw juice.error.raise("service error", {error: error});
+                          throw juice.error.chain(juice.dump(error), null, context);
                       }
                       catch (e) {
                           juice.error.handle(e);
