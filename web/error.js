@@ -41,7 +41,6 @@
          // throwing raw objects.
 
          raise: function(message, info) {
-             var e;
              if (info) {
                  message += ": " + juice.dump(info);
              }
@@ -54,8 +53,12 @@
          // and translating it into a higher-level error before calling
          // juice.error.handle.
 
-         chain: function(message, cause) {
-             var error = new Error(message);
+         chain: function(message, info, cause) {
+             var error;
+             if (info) {
+                 message += ": " + juice.dump(info);
+             }
+             error = new Error(message);
              error.cause = cause;
              return error;
          },
@@ -73,6 +76,10 @@
 
              if (e.stack) {
                  e.stack = mozilla_stack_frames(e.stack);
+             }
+
+             if (e.cause && e.cause.stack) {
+                 e.cause.stack = mozilla_stack_frames(e.cause.stack);
              }
 
              juice.errors.push(e);
