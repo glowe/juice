@@ -61,9 +61,10 @@
   (map 'vector
        '(lambda (frame)
           (let* ((truncated-frame (firejuice:truncate-error-in-frame frame))
-                 (file (if (not (assoc 'uri truncated-frame))
+                 (uri-association (assoc 'uri truncated-frame))
+                 (file (if (not uri-association)
                            "nil"
-                         (firejuice:download-uri download-dir (cdr (assoc 'uri truncated-frame))))))
+                         (firejuice:download-uri download-dir (cdr uri-association)))))
             (append truncated-frame (list (cons 'file file)))))
        stack))
 
