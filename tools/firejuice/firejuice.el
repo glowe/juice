@@ -33,9 +33,11 @@
   (map 'list
        '(lambda (lst)
           (let ((name (car lst)))
-            (if (eq name 'stack)
-                (cons 'stack (firejuice:transform-stack download-dir (cdr lst)))
-              lst)))
+            (cond ((eq name 'stack)
+                   (cons 'stack (firejuice:transform-stack download-dir (cdr lst))))
+                  ((eq name 'cause)
+                   (cons 'cause (firejuice:transform-error download-dir (cdr lst))))
+                  ('t lst))))
        error))
 
 
@@ -58,11 +60,11 @@
 (defun firejuice:transform-stack (download-dir stack)
   (map 'vector
        '(lambda (frame)
-          (let ((truncated-frame (firejuice:truncate-error-in-frame frame)))
-            (if (not (assoc 'uri truncated-frame))
-                truncated-frame
-            (let ((file (firejuice:download-uri download-dir (cdr (assoc 'uri truncated-frame)))))
-              (append truncated-frame (list (cons 'file file)))))))
+          (let* ((truncated-frame (firejuice:truncate-error-in-frame frame))
+                 (file (if (not (assoc 'uri truncated-frame))
+                           "nil"
+                         (firejuice:download-uri download-dir (cdr (assoc 'uri truncated-frame))))))
+            (append truncated-frame (list (cons 'file file)))))
        stack))
 
 (defun firejuice:truncate (str)
@@ -99,7 +101,7 @@
       (compilation-mode))))
 
 
-(add-to-list 'compilation-error-regexp-alist-alist '(firejuice "((line \. \"\\([0-9]+\\)\")\\(?:\n.+?\\)*[ ]+(file \. \"\\(.+\\)\"))" 2 1))
+(add-to-list 'compilation-error-regexp-alist-alist '(firejuice "((line \. \"\\([0-9]+\\)\")\\(?:\n.+?\\)*[ ]+(file \. \"\\([^\"]+\\)\"))" 2 1))
 (add-to-list 'compilation-error-regexp-alist 'firejuice)
 
 (provide 'firejuice)
