@@ -184,17 +184,12 @@
                            return source_file.path;
                        }));
 
-         juice.build.write_target_file(
+         juice.build.write_target_script_file(
              juice.path_join('js/libs', lib_name, 'widgets', pkg_name) + '.js',
-             ['try {',
-              'juice.widget.define_package("' + lib_name + '", "' + pkg_name + '", function(juice, site, jQuery) {',
+             ['juice.widget.define_package("' + lib_name + '", "' + pkg_name + '", function(juice, site, jQuery) {',
               'var templates = ' + templates + ';',
               widgets.join('\n'),
-              '});',
-              '} catch (e) {',
-              'juice.error.handle(e);',
-              'throw e;',
-              '}'].join("\n"));
+              '});'].join("\n"));
      };
 
      juice.build.compile_rpc_package = function(lib_name, pkg_name, all_source_files) {
@@ -211,7 +206,7 @@
                               return juice.build.read_file_and_scope_js(source_file.path);
                           });
 
-         juice.build.write_target_file(
+         juice.build.write_target_script_file(
              juice.path_join('js/libs', lib_name, 'rpcs', pkg_name) + '.js',
              ['juice.rpc.define_package("' + lib_name + '", "' + pkg_name + '", function(juice, site, jQuery) {',
               rpcs.join('\n'),

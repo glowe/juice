@@ -550,7 +550,14 @@
              juice.error.raise(namespace + " nested inside " + current_namespace);
          }
          current_namespace = namespace;
-         constructor(juice, site, jQuery);
+         try {
+             constructor(juice, site, jQuery);
+         }
+         catch (e) {
+             current_namespace = null;
+             throw e;
+         }
+
          current_namespace = null;
      };
 

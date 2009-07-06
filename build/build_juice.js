@@ -17,9 +17,7 @@
                                             return juice.sys.read_file(source.path);
                                         }));
          lines.push('})(jQuery);');
-         juice.build.write_target_file(
-             'js/juice-web.js',
-                 lines.join("\n"));
+         juice.build.write_target_file('js/juice-web.js', lines.join("\n"));
      };
 
      juice.build.compile_juice_ext_web = function(all_files) {

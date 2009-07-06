@@ -134,6 +134,11 @@
                        });
      };
 
+     juice.build.write_target_script_file = function(relpath, contents) {
+         contents = "try {" + contents + "} catch (e) { juice.error.handle(e); throw e; }";
+         juice.build.write_target_file(relpath, contents);
+     };
+
      (function() {
           var filename = ".juice-versioned-paths.json";
           juice.build.save_versioned_paths = function() {

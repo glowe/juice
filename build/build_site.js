@@ -94,6 +94,6 @@
 
          // We're done. Write the file.
 
-         juice.build.write_target_file('js/base.js', base.join("\n"));
+         juice.build.write_target_script_file('js/base.js', base.join("\n"));
      };
  })(juice);

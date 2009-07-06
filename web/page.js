@@ -214,6 +214,7 @@
                      throw "page initialization failed; bad arguments";
                  }
                  that.draw(container, args.valid);
+                 juice.event.publish("juice.ready");
              }
              catch (e) {
                  juice.error.handle(e);

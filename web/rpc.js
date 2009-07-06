@@ -14,8 +14,6 @@
 
      juice.rpc = lib = {};
 
-     juice.event.register("juice.rpc_failure");
-
      assert_spec_is_valid = function(spec) {
          if (juice.is_string(spec)) {
              if (spec.charAt(spec.length-1) === "?") {

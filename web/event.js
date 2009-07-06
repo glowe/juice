@@ -56,4 +56,8 @@
          }
      };
 
+     // juice system events here:
+
+     juice.event.register("juice.ready", "juice.rpc_failure");
+
  })(juice);
