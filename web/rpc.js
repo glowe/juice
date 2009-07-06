@@ -425,10 +425,6 @@
                   // Depending on the number of parts in "what", we're configuring a single
                   // rpc, a package of rpcs, or an entire library.
 
-                  if (what.lib_name !== "*") {
-                      what.assert_exists();
-                  }
-
                   if (what.lib_name === "" || what.lib_name === "*") {
                       conf = {"default": how};
                   }
