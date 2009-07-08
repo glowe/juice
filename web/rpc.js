@@ -263,10 +263,9 @@
                           else if (default_failure_handler) {
                               default_failure_handler(error);
                           }
-                          throw juice.error.chain(juice.dump(error), null, context);
                       }
                       catch (e) {
-                          juice.error.handle(e);
+                          juice.error.handle(juice.error.chain(e, null, context));
                       }
                   }
                  });
