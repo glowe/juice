@@ -1,4 +1,5 @@
 (function(juice) {
+     var depth = 0;
      juice.template = {};
 
      var all_tokens, base_context, escape_single_quote_re, raise_syntax_error, reserved, string_re, tag_delims, tokens, whitespace_tokens;
@@ -43,6 +44,7 @@
 
      tag_delims = [
          '{{', '}}', // expr_tags
+         '{!', '!}', // unsafe expr_tags
          '{%', '%}', // stmt_tags
          '{[', ']}'  // macro_tags
      ];
@@ -267,7 +269,7 @@
 
          // LL(2) grammar
          template,             // : template_chunk 'eof'
-         template_chunk,       // : stmt_tag template_chunk_p | expr_tag template_chunk_p | macro_tag template_chunk_p | 'template_literal' template_chunk_p
+         template_chunk,       // : stmt_tag template_chunk_p | expr_tag template_chunk_p | macro_tag template_chunk_p | 'template_literal' template_chunk_p | unsafe_expr_tag template_chunk_p
          template_chunk_p,     // : template_chunk | epsilon
          stmt_tag,             // : '{%' stmt_tag_p '%}'
          stmt_tag_p,           // : call_template_tag | for_tag | if_tag
@@ -278,6 +280,7 @@
          for_tag,              // : 'for' name optional_for_value 'in' expr '%}' template_chunk '{%' 'endfor'
          optional_for_value,   // : ',' name | epsilon
          expr_tag,             // : '{{' expr optional_modifier '}}'
+         unsafe_expr_tag,      // : '{!' expr optional_modifier '!}'
          optional_modifier,    // : '|' modifier_invocation optional_modifier | epsilon
          modifier_invocation,  // : name modifier_params
          modifier_params,      // : expr modifier_params | epsilon
@@ -346,30 +349,22 @@
              return lookahead.shift();
          };
 
-         modified_expr = function(e, mods) {
-             var already_safe, out, my_mods = [];
+         modified_expr = function(e, mods, already_safe) {
+             var out;
+
              modifier_invoked = true;
-             juice.foreach(mods,
-                          function(m) {
-                              if (m.name === 'safe') {
-                                  already_safe = true;
-                              }
-                              else {
-                                  my_mods.push(m);
-                              }
-                          });
 
              // The make safe modifier has to be named '_'. We keep it
              // short because it's used a lot.
              if (!already_safe) {
-                 my_mods.push(modifier('_',  []));
+                 mods.push(modifier('_',  []));
              }
 
              out = e;
-             juice.foreach(my_mods,
-                          function(m) {
-                              out = modifiers_alias + '.' + m.name + '(' + [out].concat(m.params).join(',') + ')';
-                          });
+             juice.foreach(mods,
+                           function(m) {
+                               out = modifiers_alias + '.' + m.name + '(' + [out].concat(m.params).join(',') + ')';
+                           });
 
              return out;
          };
@@ -440,6 +435,10 @@
                  expr_tag();
                  template_chunk_p();
              }
+             else if (peek('{!')) {
+                 unsafe_expr_tag();
+                 template_chunk_p();
+             }
              else if (peek('{[')) {
                  macro_tag();
                  template_chunk_p();
@@ -460,6 +459,10 @@
              }
              else if (peek('{{')) {
                  expr_tag();
+                 template_chunk_p();
+             }
+             else if (peek('{!')) {
+                 unsafe_expr_tag();
                  template_chunk_p();
              }
              else if (peek('{[')) {
@@ -612,17 +615,34 @@
              code = c;
              modifiers = optional_modifier();
              match('}}');
-             code_for_push.push(modified_expr(e, modifiers));
+             code_for_push.push(modified_expr(e, modifiers, false));
              scanner.in_tag(false);
          };
 
+
+         unsafe_expr_tag = function() {
+             var c, e, modifiers;
+             match('{!');
+             scanner.in_tag(true);
+             c = code;
+             code = [];
+             expr();
+             e = code.join('');
+             code = c;
+             modifiers = optional_modifier();
+             match('!}');
+             code_for_push.push(modified_expr(e, modifiers, true));
+             scanner.in_tag(false);
+         };
+
+
          optional_modifier = function() {
              var m, modifiers = [];
-             if (!peek('}}')) {
+             if (!peek('}}', '!}')) {
                  match('|');
                  modifiers.push(modifier_invocation());
                  if ((m = optional_modifier())) {
-                     modifiers.concat(m);
+                     modifiers = modifiers.concat(m);
                  }
              }
              return modifiers;
@@ -635,7 +655,7 @@
          modifier_params = function() {
              var c, params;
              params = [];
-             if (!peek('|', '}}')) {
+             if (!peek('|', '}}', '!}')) {
                  c = code;
                  code = [];
                  expr();
@@ -673,7 +693,7 @@
          };
 
          expr_p = function() {
-             if (!peek('%}', '}}', '|', ',', ')')) {
+             if (!peek('%}', '}}', '!}', '|', ',', ')')) {
                  if (peek('*', '/', '%', '+', '-', '>=', '<=', '>', '<', '===', '!==', '||', '&&')) {
                      infix_operator();
                      expr();
