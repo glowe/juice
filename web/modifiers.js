@@ -77,7 +77,7 @@
 
      juice.modifiers = {
 
-         _: function(o) {
+         escape: function(o) {
              var s;
              if (juice.is_object(o)) {
                  if (o.hasOwnProperty('render') &&
@@ -112,7 +112,13 @@
              return chunks.reverse().join(",");
          },
 
+         nl2br: function(s) {
+             return s.replace(/\n/g, "<br/>");
+         },
+
          json: juice.dump
      };
+
+     juice.modifiers._ = juice.modifiers.escape;
 
  })(juice);
