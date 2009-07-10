@@ -10,11 +10,31 @@
          };
 
          if (!JSLINT(juice.sys.read_file(filename),
-                     {evil: true,
+                     {adsafe: false,
+                      bitwise: true,
+                      browser: true,
+                      cap: false,
+                      css: true,
+                      debug: true,
+                      eqeqeq: false,
+                      evil: true,
                       forin: true,
-                      laxbreak: true,
+                      fragment: true,
+                      laxbreak: false,
+                      nomen: false,
+                      on: true,
+                      onevar: true,
+                      passfail: false,
+                      plusplus: false,
+                      regexp: false,
                       rhino: false,
-                      white: false}))
+                      undef: false,
+                      safe: false,
+                      sidebar: false,
+                      strict: false,
+                      sub: false,
+                      white: false,
+                      widget: false}))
          {
              // For some reason JSLINT.errors contains null values
              return juice.map(juice.filter(JSLINT.errors),
