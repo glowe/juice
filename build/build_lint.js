@@ -42,12 +42,14 @@
              // For some reason JSLINT.errors contains null values
              return juice.map(juice.filter(JSLINT.errors),
                               function(e) {
-                                  var origin = juice.build.transform_target_to_source_location(contents, e.line);
-                                  if (origin) {
-                                      e.filename = origin.filename;
-                                      e.line = origin.line;
-                                  }
-                                  return '"' + e.reason + '" in file ' + e.filename + ' at line ' + (e.line + 1) +
+                                  // TODO: improve error message to include both original and target file locations.
+                                  //
+                                  // var origin = juice.build.transform_target_to_source_location(contents, e.line);
+                                  // if (origin) {
+                                  //     filename = origin.filename;
+                                  //     e.line = origin.line;
+                                  // }
+                                  return '"' + e.reason + '" in file ' + filename + ' at line ' + (e.line + 1) +
                                       ' character ' + e.character + "\n" + e.evidence + "\n" + arrow(e.character) + "\n\n";
                               });
          }
@@ -60,11 +62,14 @@
                        function(f) {
                            var errors;
                            if (file_log.has_file_changed(f.path)) {
+                               print("  " + f.path);
                                errors = lint(f.path);
                                if (errors.length) {
                                    juice.foreach(errors, function(e) { print(e); });
+                                   file_log.save();
                                    juice.build.fatal("JSLINT failed. Aborting.");
                                }
+                               file_log.update(f);
                            }
                        });
      };

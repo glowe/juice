@@ -185,7 +185,7 @@
              juice.path_join('js/libs', lib_name, 'widgets', pkg_name) + '.js',
              ['juice.widget.define_package("' + lib_name + '", "' + pkg_name + '", function(juice, site, jQuery) {',
               'var templates = ' + templates + ';',
-              widgets.join('\n'),
+              '(function() { ' + widgets.join('\n') + '})();',
               '});'].join("\n"));
      };
 

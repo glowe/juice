@@ -7,7 +7,7 @@
              var util = juice.mget(site.lib, current_lib_name, 'util');
 
              if (util[name]) {
-                 juice.error.raise('util already defined', {lib_name: lib_name, name: name});
+                 juice.error.raise('util already defined', {lib_name: current_lib_name, name: name});
              }
 
              util[name] = fn;

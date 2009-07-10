@@ -391,7 +391,7 @@
              if (modifier_invoked) {
                  compiled += ', ' + modifiers_alias + ' = juice.modifiers';
              }
-             return compiled + ';\n' + code.join('\n') + "\nreturn _a.join('');";
+             return compiled + ';\n' + code.join(' ') + "\nreturn _a.join('');";
          };
 
          peek = function() {

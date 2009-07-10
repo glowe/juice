@@ -37,9 +37,15 @@ juice.build.file_log = function(source_files, name) {
         refresh_file_signature: function(filename) {
             cache[filename] = sha1_file(filename);
         },
+        update: function(file) {
+            log[file.path] = sha1_file_cached(file.path);
+        },
         save: function() {
-            juice.foreach(source_files, function(f) { log[f.path] = sha1_file_cached(f.path); });
             juice.sys.write_file(log_filename, JSON.stringify(log), true);
+        },
+        save_and_update_all: function() {
+            juice.foreach(source_files, this.update);
+            this.save();
         }
     };
 };

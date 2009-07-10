@@ -277,10 +277,10 @@ juice.build.lint_target_js(target_js_file_log);
 if (juice.build.config.minify()) {
     juice.build.minify(target_js_file_log);
 }
-target_js_file_log.save();
+target_js_file_log.save_and_update_all();
 
 print("Done.");
 
-file_log.save();
+file_log.save_and_update_all();
 juice.build.save_versioned_paths();
 

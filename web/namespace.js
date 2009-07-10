@@ -29,7 +29,7 @@
              parts = juice.args(arguments);
 
              if (parts.length > 4) {
-                 juice.error.raise("Namespace too deep: " + string);
+                 juice.error.raise("Namespace too deep: " + parts.join("."));
              }
 
              if (parts.length > 0) {
