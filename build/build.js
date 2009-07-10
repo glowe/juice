@@ -75,9 +75,29 @@
                             target_type: undefined});
      };
 
+     // Returns the contents of a source file. Injects a comment at the
+     // beginning of the file to indicate the source file's original name. See
+     // transform_target_to_source_location for more information.
+
      juice.build.read_source_file = function(source_file) {
-         return ["// SOURCE FILE PATH (" + juice.sys.canonical_path(source_file.path) + ")",
+         return ["/// SOURCE FILE PATH (" + juice.sys.canonical_path(source_file.path) + ")",
                  juice.sys.read_file(source_file.path)].join("\n");
+     };
+
+     // Given the contents of one or more concatenated source files and a line
+     // number to begin our search, returns the name of the original source
+     // file and the corresponding line number in that file.
+
+     juice.build.transform_target_to_source_location = function(contents, line) {
+         var i, lines, match;
+         lines = contents.split("\n");
+         for (i = line; i >= 0; i--) {
+             match = /\/\/\/ SOURCE FILE PATH \((.+)\)$/.exec(lines[i]);
+             if (match) {
+                 return {filename: match[1], line: line - i - 1};
+             }
+         }
+         return null;
      };
 
      juice.build.read_and_scope_js_source_file = function(source_file) {

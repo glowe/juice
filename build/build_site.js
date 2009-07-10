@@ -70,7 +70,7 @@
                            base = base.concat(
                                ['juice.util.define_package("' + lib_name + '", function(juice, site, jQuery) {',
                                 'var templates = ' + templates + ';',
-                                source_code.join("\n"),
+                                '(function() {', source_code.join("\n"), '})();',
                                 '});']);
 
                        });

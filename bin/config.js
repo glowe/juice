@@ -49,7 +49,6 @@ program_options = juice.program_options(
     {"settings=PATH": ["Specify PATH to site setting file.", "settings/default.js"],
      "help": "Display this message.",
      "debug": "By default, show debugging messages.",
-     "lint-juice": "Lint the juice framework.",
      "minify": "Optimize JavaScript output for size.",
      "disable-rpc-mocking": "Disable mocked remote procedure calls.",
      "version-js-urls": "Include sha1 content hashes in .js URLs.",
@@ -109,7 +108,6 @@ do {
 print('Saving configuration.');
 juice.build.config.set_debug(options['debug']);
 juice.build.config.set_lib_paths(lib_paths);
-juice.build.config.set_lint_juice(options['lint-juice']);
 juice.build.config.set_minify(options['minify']);
 juice.build.config.set_rpc_mocking(!options['disable-rpc-mocking']);
 juice.build.config.set_site_settings_path(site_settings_path);

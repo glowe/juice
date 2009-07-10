@@ -244,6 +244,13 @@ var JSLINT = (function () {
 // web browser environment.
 
         browser = {
+            juice: false,
+            site: false,
+            jQuery: false,
+            hex_sha1: false,
+            window: false,
+            unescape: false,
+            escape: false,
             addEventListener: false,
             alert           : false,
             blur            : false,

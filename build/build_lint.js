@@ -1,6 +1,7 @@
 (function(juice) {
-     juice.build.lint_js = function(filename) {
-         var arrow = function(column) {
+     var lint = function(filename) {
+         var arrow, contents;
+         arrow = function(column) {
              var a = [], j;
              for (j = 0; j < column; j++) {
                  a.push('.');
@@ -9,7 +10,9 @@
              return a.join('');
          };
 
-         if (!JSLINT(juice.sys.read_file(filename),
+         contents = juice.sys.read_file(filename);
+
+         if (!JSLINT(contents,
                      {adsafe: false,
                       bitwise: true,
                       browser: true,
@@ -28,7 +31,7 @@
                       plusplus: false,
                       regexp: false,
                       rhino: false,
-                      undef: false,
+                      undef: true,
                       safe: false,
                       sidebar: false,
                       strict: false,
@@ -39,11 +42,30 @@
              // For some reason JSLINT.errors contains null values
              return juice.map(juice.filter(JSLINT.errors),
                               function(e) {
-                                  return '"' + e.reason + '" in file ' + filename + ' at line '
-                                      + (e.line + 1) + ' character ' + e.character + "\n"
-                                      + e.evidence + "\n" + arrow(e.character) + "\n\n";
+                                  var origin = juice.build.transform_target_to_source_location(contents, e.line);
+                                  if (origin) {
+                                      e.filename = origin.filename;
+                                      e.line = origin.line;
+                                  }
+                                  return '"' + e.reason + '" in file ' + e.filename + ' at line ' + (e.line + 1) +
+                                      ' character ' + e.character + "\n" + e.evidence + "\n" + arrow(e.character) + "\n\n";
                               });
          }
          return [];
+     };
+
+     juice.build.lint_target_js = function(file_log) {
+         print("Linting javascript...");
+         juice.foreach(file_log.files(),
+                       function(f) {
+                           var errors;
+                           if (file_log.has_file_changed(f.path)) {
+                               errors = lint(f.path);
+                               if (errors.length) {
+                                   juice.foreach(errors, function(e) { print(e); });
+                                   juice.build.fatal("JSLINT failed. Aborting.");
+                               }
+                           }
+                       });
      };
  })(juice);

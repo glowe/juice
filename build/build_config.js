@@ -5,7 +5,6 @@
      spec = {
          debug: false,
          lib_paths: undefined,
-         lint_juice: false,
          minify: false,
          rpc_mocking: false,
          site_settings_path: undefined,
@@ -23,9 +22,6 @@
          },
          set_lib_paths: function(p) {
              conf_db.lib_paths = p;
-         },
-         set_lint_juice: function(b) {
-             conf_db.lint_juice = !!b;
          },
          set_minify: function(b) {
              conf_db.minify = !!b;
@@ -55,9 +51,6 @@
          },
          lib_paths: function() {
              return conf_db.lib_paths;
-         },
-         lint_juice: function() {
-             return conf_db.lint_juice;
          },
          minify: function() {
              return conf_db.minify;

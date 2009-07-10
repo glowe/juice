@@ -126,7 +126,7 @@
 (defun firejuice:open-original-source-file ()
   (interactive)
   (let* ((starting-line (line-number-at-pos))
-         (start-point (+ 21 (search-backward-regexp "// SOURCE FILE PATH ([^)]+)"))))
+         (start-point (+ 21 (search-backward-regexp "/// SOURCE FILE PATH ([^)]+)"))))
     (goto-char start-point)
     (let* ((ending-line (line-number-at-pos))
            (end-point (- (search-forward ")") 1))

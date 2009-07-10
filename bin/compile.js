@@ -5,12 +5,12 @@ explicit_targets = {},      // Build targets explicitly specified on command lin
 file_log,                   // Tracks which files have changed since last compile.
 grouped_source_files,       // Grouped all_source_files
 internal_lib_name,          // The name of the site's internal library.
-lint,                       // Do any files require linting?
 options,                    // Command-line options specified with "--"
 po,                         // Parsed program options.
 program_options,            // Specifies the options accepted by this program.
 required_source_files,      // Filenames of mandatory source files.
 settings_changed = false,   // Did our settings file change?
+target_js_file_log,         // Tracks changes in target (i.e. build output) javascript files.
 targets = {                 // Specifies which targets might require recompilation.
     base: false,
     juice_ext_web: false,
@@ -178,12 +178,10 @@ juice.foreach(all_source_files_plus_user,
 
                       if (f.changed || explicit_targets[f.target_type]) {
                           juice.mset(targets, true, [f.target_type, f.lib_name, f.pkg_name]);
-                          if (f.changed) { lint = true; }
                       }
                   }
                   else if (f.changed) {
                       targets[f.target_type] = true;
-                      lint = true;
                       if (f.category == "pages" || f.category == "meta") {
                           targets.pages = true;
                       }
@@ -199,34 +197,6 @@ juice.foreach(targets,
                       targets[k] = true;
                   }
               });
-
-// Lint all source files.
-
-if (lint) {
-    print("Linting...");
-    juice.foreach(all_source_files_plus_user,
-                  function(f) {
-                      var errors, ext;
-                      if (!f.changed) {
-                          return;
-                      }
-                      ext = juice.sys.parse_path(f.path).ext;
-                      if ((ext != "js" && ext != "json")     ||     // only lint javascript files
-                          (f.target_type == "juice_ext_web") ||     // skip external source code
-                          (f.category == "build")            ||     // skip internal build files
-                          (f.target_type == "juice_web" &&          // skip juice files...
-                           !juice.build.config.lint_juice()))       // ...unless configured to do so
-                      {
-                          return;
-                      }
-                      errors = juice.build.lint_js(f.path);
-                      if (errors.length) {
-                          juice.foreach(errors, function(e) { print(e); });
-                          juice.build.fatal("JSLINT failed. Aborting.");
-                      }
-                  });
-    print("Lint: OK.");
-}
 
 grouped_source_files = juice.group_by(all_source_files, function(file) { return file.target_type; });
 
@@ -299,9 +269,15 @@ if (targets.pages ||                       // (1)
     print("Compile pages: OK.");
 }
 
+// Post-processing steps: (1) lint any javascript build output that has
+// changed since the last compile, and then (2) minify those changed files.
+
+target_js_file_log = juice.build.target_js_file_log();
+juice.build.lint_target_js(target_js_file_log);
 if (juice.build.config.minify()) {
-    juice.build.minify();
+    juice.build.minify(target_js_file_log);
 }
+target_js_file_log.save();
 
 print("Done.");
 
