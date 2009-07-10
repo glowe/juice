@@ -12,10 +12,8 @@
                        }));
 
          lines.push('(function(jQuery) {', 'var templates = ' + templates + ";");
-         lines = lines.concat(juice.map(files.js,
-                                        function(source) {
-                                            return juice.sys.read_file(source.path);
-                                        }));
+         lines = lines.concat(juice.map(files.js, juice.build.read_source_file));
+
          lines.push('})(jQuery);');
          juice.build.write_target_file('js/juice-web.js', lines.join("\n"));
      };

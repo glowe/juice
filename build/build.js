@@ -75,6 +75,15 @@
                             target_type: undefined});
      };
 
+     juice.build.read_source_file = function(source_file) {
+         return ["// SOURCE FILE PATH (" + juice.sys.canonical_path(source_file.path) + ")",
+                 juice.sys.read_file(source_file.path)].join("\n");
+     };
+
+     juice.build.read_and_scope_js_source_file = function(source_file) {
+         return juice.build.scope_js(juice.build.read_source_file(source_file));
+     };
+
      //
      // Reads the specified JSON-formatted file, parses its contents, and
      // returns them as a javascript object. Throws an exception if the file
@@ -159,9 +168,6 @@
          return '(function(juice, site, jQuery) {' + contents + '})(juice, site, jQuery);';
      };
 
-     juice.build.read_file_and_scope_js = function(filename) {
-         return juice.build.scope_js(juice.sys.read_file(filename));
-     };
 
      juice.build.read_widget_package_metadata = function(libpath, pkg) {
          var answer, json, pkg_filename;
