@@ -134,6 +134,4 @@
       (find-file source-file)
       (goto-line (- starting-line ending-line)))))
 
-(global-set-key [?\C-c ?\C-b] 'firejuice:open-original-source-file)
-
 (provide 'firejuice)
