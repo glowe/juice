@@ -52,10 +52,7 @@
                        function(lib_name, source_files) {
                            var source_code, templates;
 
-                           source_code = juice.map(source_files,
-                                                   function(source) {
-                                                       return juice.sys.read_file(source.path);
-                                                   });
+                           source_code = juice.map(source_files, juice.build.read_source_file);
 
                            // Get this library's utility template source files.
                            templates = juice.filter(base_source_files.util_template,
@@ -81,15 +78,12 @@
          // Add the normal-category source files. This includs stuff
          // like layouts.js and proxies.js.
 
-         base = base.concat(juice.map(base_source_files.normal,
-                                      function(source) {
-                                          return juice.build.read_file_and_scope_js(source.path);
-                                      }));
+         base = base.concat(juice.map(base_source_files.normal, juice.build.read_and_scope_js_source_file));
 
          // Set the pages-initialization function to the contents of
          // the pages.js source file.
 
-         pages = juice.build.read_file_and_scope_js(base_source_files.pages[0].path);
+         pages = juice.build.read_and_scope_js_source_file(base_source_files.pages[0]);
          base = base.concat(["juice.page.set_init(function(juice, site, jQuery) {", pages, '});']);
 
          // We're done. Write the file.

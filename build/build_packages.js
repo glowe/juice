@@ -173,10 +173,7 @@
                                            return file.category;
                                        });
 
-         widgets = juice.map(source_files.widget,
-                             function(source_file) {
-                                 return juice.sys.read_file(source_file.path);
-                             });
+         widgets = juice.map(source_files.widget, juice.build.read_source_file);
 
          templates = juice.build.compile_templates(
              juice.map(source_files.template,
@@ -201,10 +198,7 @@
                                              && source_file.pkg_name === pkg_name;
                                      });
 
-         rpcs = juice.map(source_files,
-                          function(source_file) {
-                              return juice.build.read_file_and_scope_js(source_file.path);
-                          });
+         rpcs = juice.map(source_files, juice.build.read_and_scope_js_source_file);
 
          juice.build.write_target_script_file(
              juice.path_join('js/libs', lib_name, 'rpcs', pkg_name) + '.js',

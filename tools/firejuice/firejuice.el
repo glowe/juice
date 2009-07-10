@@ -52,7 +52,6 @@
                   ('t lst))))
        error))
 
-
 (defun firejuice:file-path (download-dir uri)
   (let* ((path-without-host-and-scheme (replace-regexp-in-string "^http://.+/js/" "js/" uri))
          (path-without-slashes (replace-regexp-in-string "/" "!" path-without-host-and-scheme)))
@@ -123,5 +122,18 @@
 
 (add-to-list 'compilation-error-regexp-alist-alist '(firejuice "((line \. \"\\([0-9]+\\)\")\\(?:\n.+?\\)*[ ]+(file \. \"\\([^\"]+\\)\"))" 2 1))
 (add-to-list 'compilation-error-regexp-alist 'firejuice)
+
+(defun firejuice:open-original-source-file ()
+  (interactive)
+  (let* ((starting-line (line-number-at-pos))
+         (start-point (+ 21 (search-backward-regexp "// SOURCE FILE PATH ([^)]+)"))))
+    (goto-char start-point)
+    (let* ((ending-line (line-number-at-pos))
+           (end-point (- (search-forward ")") 1))
+           (source-file (buffer-substring start-point end-point)))
+      (find-file source-file)
+      (goto-line (- starting-line ending-line)))))
+
+(global-set-key [?\C-c ?\C-b] 'firejuice:open-original-source-file)
 
 (provide 'firejuice)
