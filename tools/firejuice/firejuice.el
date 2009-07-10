@@ -17,6 +17,18 @@
 (defconst *firejuice:errors-buffer-name* "*firejuice:errors*"
   "The name of the errors buffer")
 
+(defvar *firejuice:downloaded* '()
+  "Stores names of downloaded files")
+
+(defun firejuice:reset-downloaded ()
+  (setq *firejuice:downloaded* '()))
+
+(defun firejuice:add-to-downloaded (file-path)
+  (add-to-list '*firejuice:downloaded* file-path))
+
+(defun firejuice:already-downloaded-p (file-path)
+  (member file-path *firejuice:downloaded*))
+
 (defun firejuice:intersperse (delim seq)
   (reduce (lambda (a b) (format (concat "%s" delim "%s") a b)) seq))
 
@@ -46,16 +58,19 @@
          (path-without-slashes (replace-regexp-in-string "/" "!" path-without-host-and-scheme)))
     (concat download-dir "/" path-without-slashes)))
 
-(defun firejuice:download-uri (download-dir uri)
-  (let ((file-path (firejuice:file-path download-dir uri)))
-    (unless (file-exists-p file-path)
-      (let ((url-request-method "GET")
-            (url-request-extra-headers nil)
-            (url-mime-accept-string "*/*")))
-      (with-current-buffer (url-retrieve-synchronously uri)
-        (delete-region (point-min) (1+ url-http-end-of-headers))
-        (write-file file-path)))
-    file-path))
+(defun firejuice:download-uri (uri file-path)
+  (unless (firejuice:already-downloaded-p file-path)
+    (firejuice:add-to-downloaded file-path)
+    (let ((url-request-method "GET")
+          (url-request-extra-headers nil)
+          (url-mime-accept-string "*/*"))
+      (url-retrieve uri
+                    '(lambda (status file-path)
+                       (delete-region (point-min) (1+ url-http-end-of-headers))
+                       (write-file file-path))
+                    (list file-path)))
+    nil)
+
 
 (defun firejuice:transform-stack (download-dir stack)
   (map 'vector
@@ -64,9 +79,12 @@
                  (uri-association (assoc 'uri truncated-frame))
                  (file (if (not uri-association)
                            "nil"
-                         (firejuice:download-uri download-dir (cdr uri-association)))))
+                         (let* ((uri (cdr uri-association))
+                                (file-path (firejuice:file-path download-dir uri)))
+                           (firejuice:download-uri uri file-path))
+                         file-path)))
             (append truncated-frame (list (cons 'file file)))))
-       stack))
+         stack)))
 
 (defun firejuice:truncate (str)
   (if (>= (length str) 80)
@@ -83,6 +101,7 @@
 
 (defun firejuice:handle-json-errors (json-file-path)
   (interactive "fPath to json errors: ")
+  (firejuice:reset-downloaded)
   (let ((errors (json-read-file json-file-path))
         (download-dir (firejuice:unique-download-directory)))
     (when (file-exists-p download-dir)
