@@ -176,7 +176,7 @@
              };
 
              that.add_class = function(s) {
-                 if (my.state() == "initial") {
+                 if (my.state() === "initial") {
                      css_classes[s] = true;
                  }
                  else {
@@ -185,7 +185,7 @@
              };
 
              that.remove_class = function(s) {
-                 if (my.state() == "initial") {
+                 if (my.state() === "initial") {
                      delete css_classes[s];
                  }
                  else {
@@ -534,12 +534,10 @@
          def = lib.define(name, constructor);
 
          impl = function(spec) {
-             juice.error.raise("local widget " + name
-                               + " instantiated without local constructor");
+             juice.error.raise("local widget " + name + " instantiated without local constructor");
          };
          impl.many = function(items) {
-             juice.error.raise("many local widgets " + name
-                               + " instantiated without local constructor");
+             juice.error.raise("many local widgets " + name + " instantiated without local constructor");
          };
 
          current_namespace.def(name, impl);

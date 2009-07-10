@@ -9,8 +9,12 @@
          var cookie;
          if (arguments.length === 0) {
              if (juice.is_undefined(enabled)) {
-                 enabled = juice.is_null(cookie = juice.cookie.get("juice_debug"))
-                     ? site.settings.config.debug : !!cookie;
+                 if (juice.is_null(cookie = juice.cookie.get("juice_debug"))) {
+                     enabled = site.settings.config.debug;
+                 }
+                 else {
+                     enabled = !!cookie;
+                 }
              }
              return enabled;
          }

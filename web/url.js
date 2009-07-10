@@ -51,9 +51,7 @@
                                function(k, v) {
                                    // We must take care not to output nulls as
                                    // String(null); likewise with undefined.
-                                   return juice.is_null(v) || juice.is_undefined(v)
-                                       ? (k + '=')
-                                       : (k + '=' + escape(v));
+                                   return juice.is_null(v) || juice.is_undefined(v) ? (k + '=') : (k + '=' + escape(v));
                                }).join('&');
      };
 

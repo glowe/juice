@@ -1,16 +1,15 @@
 (function(juice, site, jQuery) {
 
-     var assert_spec_is_valid       // throws an exception if a specification is improperly formatted
-     ,   current_namespace
-     ,   default_failure_handler    // handles rpc errors when caller doesn't provide a failure_fn
-     ,   default_proxy              // the non namespace-specific proxy function
-     ,   find_proxy                 // looks up the proxy function for a specified rpc
-     ,   lib                        // alias for juice.rpc
-     ,   make_proxy_startable       // attaches plumbing to user-supplied proxy functions
-     ,   mocking_proxy              // the proxy used for all mocked rpcs
-     ,   proxy_map                  // maps namespaces to proxy functions
-     ,   validate_against_spec      // tests whether a data structure matches its specification
-     ;
+     var assert_spec_is_valid,  // throws an exception if a specification is improperly formatted
+     current_namespace,
+     default_failure_handler,   // handles rpc errors when caller doesn't provide a failure_fn
+     default_proxy,             // the non namespace-specific proxy function
+     find_proxy,                // looks up the proxy function for a specified rpc
+     lib,                       // alias for juice.rpc
+     make_proxy_startable,      // attaches plumbing to user-supplied proxy functions
+     mocking_proxy,             // the proxy used for all mocked rpcs
+     proxy_map,                 // maps namespaces to proxy functions
+     validate_against_spec;     // tests whether a data structure matches its specification
 
      juice.rpc = lib = {};
 
@@ -242,7 +241,9 @@
                       try {
                           try {
                               do_validate("rsp_spec", data);
-                              success_fn(data);
+                              if (success_fn) {
+                                  success_fn(data);
+                              }
                           }
                           catch (e) {
                               throw juice.error.chain(juice.dump(e), null, context);
@@ -294,8 +295,7 @@
           juice.rpc.doc = {
               define: function(rpc_name, doc_string) {
                   if (!current_namespace.contains(rpc_name)) {
-                      juice.error.raise("attempt to document an undefined rpc: "
-                                        + current_namespace.qualify(rpc_name));
+                      juice.error.raise("attempt to document an undefined rpc: " + current_namespace.qualify(rpc_name));
                   }
 
                   current_namespace.qualify(rpc_name).doc_string = doc_string;
