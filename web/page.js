@@ -170,7 +170,10 @@
              juice.foreach(categorized_args.valid,
                            function(k, v) {
                                if (!path_args[k]) {
-                                   query_args[(spec.parameters[k].alias || k)] = v;
+                                   // Don't bother putting default values in the query string.
+                                   if (v !== spec.parameters[k].default_value) {
+                                       query_args[(spec.parameters[k].alias || k)] = v;
+                                   }
                                }
                            });
 

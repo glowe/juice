@@ -6,8 +6,7 @@
      render_stack = [];
 
      juice.widget = lib = {};
-
-     lib.num_live = 0;  // a "live" widget hasn't been disposed of
+     juice.live_widgets = {};
 
      lib.define = function(name, constructor) {
 
@@ -28,6 +27,7 @@
              enhancements = {},
              fire_domify_for_linked_widgets,
              id = juice.newid(),
+             initially_hidden = false,
              linked = [],
              my = {},
              state = "initial",
@@ -149,13 +149,16 @@
 
               })();
 
-             that.uuid = function() {
-                 return id;
-             };
-
              my.selector = "#" + id;
              that.qualified_name = qualified_name;
              that.name = name;
+
+             that.uuid = function() {
+                 return id;
+             };
+             that.selector = function() {
+                 return my.selector;
+             };
 
              my.raise = function(msg, info) {
                  juice.error.raise(that.qualified_name + " (" + my.selector + "): " + msg, info);
@@ -191,13 +194,21 @@
              };
 
              that.show = function() {
-                 my.expect_state("domified");
-                 my.$().show();
+                 if (my.state() === "domified") {
+                     my.$().show();
+                 }
+                 else {
+                     initially_hidden = false;
+                 }
              };
 
              that.hide = function() {
-                 my.expect_state("domified");
-                 my.$().hide();
+                 if (my.state() === "domified") {
+                     my.$().hide();
+                 }
+                 else {
+                     initially_hidden = true;
+                 }
              };
 
              that.remove = function() {
@@ -211,7 +222,7 @@
                  my.publish("dispose");
                  dispose_of_domified_and_linked_widgets();
                  destroy_event_system();
-                 lib.num_live -= 1;
+                 delete juice.live_widgets[id];
              };
 
              my.state = function() {
@@ -232,9 +243,12 @@
 
              my.set_container_element = function(t, attribs) {
                  attribs = attribs || {};
-                 if (attribs.hasOwnProperty("id") || attribs.hasOwnProperty("class")) {
-                     my.raise("can't specify id or class as container attribute");
-                 }
+                 juice.foreach(["class", "id", "style"],
+                               function(k) {
+                                   if (attribs.hasOwnProperty(k)) {
+                                       my.raise("can't specify "+k+" as a container attribute");
+                                   }
+                               });
                  container_element = t;
                  container_attribs = attribs;
              };
@@ -269,6 +283,9 @@
                                   "class": qualified_name.toString().replace(/\./g, " "),
                                   "id": id
                               };
+                              if (initially_hidden) {
+                                  attribs.style = "display: none";
+                              }
                               juice.foreach(container_attribs, function(k, v) { attribs[k] = v; });
                               juice.foreach(css_classes, function(k) { attribs["class"] += " " + k; });
                               transition("initial", "rendered");
@@ -499,7 +516,7 @@
 
              constructor(that, my, spec);
 
-             lib.num_live += 1;
+             juice.live_widgets[id] = that;
              return that;
          };
 
