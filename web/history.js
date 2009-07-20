@@ -8,9 +8,11 @@
              dhtmlHistory.initialize();
              dhtmlHistory.addListener(
                  function() {
-                     juice.event.publish("juice.history");
+                     juice.event.publish("juice.history", juice.history.get_token());
                  });
          },
+
+         is_first_load: dhtmlHistory.isFirstLoad,
 
          get_token: function() {
              var old_token = dhtmlHistory.getCurrentLocation();
