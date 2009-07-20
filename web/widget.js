@@ -165,6 +165,7 @@
 
              my.$ = function(selector) {
                  var elems = jQuery(my.selector);
+                 my.expect_state("domified");
                  if (elems.length === 0) {
                      my.raise("selector error");
                  }
@@ -221,6 +222,9 @@
              };
 
              that.dispose = function() {
+                 if (my.state() === "disposed") {
+                     return;
+                 }
                  transition("domified", "disposed");
                  my.publish("dispose");
                  dispose_of_domified_and_linked_widgets();
@@ -360,7 +364,7 @@
                           // Replace the selected elements with new content.
 
                           html: function(p) {
-                              my.partial_update(selector).remove();
+                              my.partial_update(selector + ">*").remove();
                               update(p, function(s) { my.$(selector).html(s); });
                           },
 
