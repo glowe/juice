@@ -58,6 +58,6 @@
 
      // juice system events here:
 
-     juice.event.register("juice.ready", "juice.rpc_failure");
+     juice.event.register("juice.ready", "juice.rpc_failure", "juice.history");
 
  })(juice);

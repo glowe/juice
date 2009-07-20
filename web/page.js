@@ -297,6 +297,7 @@
              constructor(juice, site, jQuery);
              active_page = site.pages[name];
              active_page.init(jQuery(selector));
+             juice.history.init();
          },
 
          set_init: function(constr) {

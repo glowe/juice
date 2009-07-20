@@ -244,6 +244,7 @@ var JSLINT = (function () {
 // web browser environment.
 
         browser = {
+            dhtmlHistory: false,
             juice: false,
             site: false,
             jQuery: false,
