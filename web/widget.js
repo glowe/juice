@@ -6,7 +6,6 @@
      render_stack = [];
 
      juice.widget = lib = {};
-     juice.live_widgets = {};
 
      lib.define = function(name, constructor) {
 
@@ -211,6 +210,10 @@
                  }
              };
 
+             that.visible = function() {
+                 return my.state() === "domified" && my.$().is(":visible");
+             };
+
              that.remove = function() {
                  my.expect_state("domified");
                  my.$().remove();
@@ -222,7 +225,7 @@
                  my.publish("dispose");
                  dispose_of_domified_and_linked_widgets();
                  destroy_event_system();
-                 delete juice.live_widgets[id];
+                 delete juice.widget.live[id];
              };
 
              my.state = function() {
@@ -357,16 +360,15 @@
                           // Replace the selected elements with new content.
 
                           html: function(p) {
+                              my.partial_update(selector).remove();
                               update(p, function(s) { my.$(selector).html(s); });
                           },
-
 
                           // Append content to the inside of the selected elements.
 
                           append: function(p) {
                               update(p, function(s) { my.$(selector).append(s); });
                           },
-
 
                           // Prepend content to the inside of the selected elements.
 
@@ -389,11 +391,11 @@
                               my.$(selector).each(
                                   function() {
                                       var e = jQuery(this);
-                                      if (e.hasClass("widget")) {
+                                      if (e.hasClass("widgets")) {
                                           ids[this.id] = true;
                                       }
                                       else {
-                                          e.find(".widget").each(
+                                          e.find(".widgets").each(
                                               function() {
                                                   ids[this.id] = true;
                                               });
@@ -516,7 +518,7 @@
 
              constructor(that, my, spec);
 
-             juice.live_widgets[id] = that;
+             juice.widget.live[id] = that;
              return that;
          };
 
@@ -575,5 +577,68 @@
 
          current_namespace = null;
      };
+
+     // +-------------------------+
+     // | debugging and reporting |
+     // +-------------------------+
+
+     (function() {
+          var diff, prev_report = {}, report;
+
+          // juice.widget.live keeps track of all currently active widgets,
+          // i.e. widgets that have been constructed but not yet disposed of.
+          // It maps widget uuids to the actual widget objects.
+
+          lib.live = {};
+
+          report = function() {
+              var seen = {};
+              juice.foreach(lib.live,
+                            function(id, w) {
+                                var k = w.qualified_name.toString();
+                                if (seen.hasOwnProperty(k)) {
+                                    seen[k]++;
+                                }
+                                else {
+                                    seen[k] = 1;
+                                }
+                            });
+              return seen;
+          };
+
+          diff = function(a, b) {
+              var answer = {};
+              juice.foreach(a,
+                            function(k, a_n) {
+                                var b_n = b.hasOwnProperty(k) ? b[k] : 0;
+                                if (a_n !== b_n) {
+                                    answer[k] = b_n - a_n;
+                                }
+                            });
+              juice.foreach(b,
+                            function(k, b_n) {
+                                var a_n = a.hasOwnProperty(k) ? a[k] : 0;
+                                if (a_n !== b_n) {
+                                    answer[k] = b_n - a_n;
+                                }
+                            });
+              return answer;
+          };
+
+
+          // Summarizes the deltas in juice.widget.live between now and the
+          // previous call to this function, returning an object that maps
+          // qualified widget names (i.e.
+          // "{library}.widgets.{package}.{widget}") to the change in the
+          // number of widgets of that type that are currently live. This
+          // function is handy when tracking down widget leaks.
+
+          lib.report = function() {
+              var answer, next_report = report();
+              answer = diff(prev_report, next_report);
+              prev_report = next_report;
+              return answer;
+          };
+      })();
 
  })(juice, site, jQuery);
