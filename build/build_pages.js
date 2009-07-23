@@ -175,8 +175,9 @@
                                    juice.map(["juice-ext.js", "juice-web.js", "base.js"],
                                              function(filename) {
                                                  return js_base_url.path_join(
-                                                     juice.build.versioned_path(
-                                                         juice.path_join("js", filename)));
+                                                     juice.build.minified_path(
+                                                         juice.build.versioned_path(
+                                                             juice.path_join("js", filename))));
                                              }),
                                    dependencies.script_urls,
                                    page.script_urls(),
@@ -184,20 +185,22 @@
                                    juice.map(dependencies.rpc_pkgs,
                                              function(pkg) {
                                                  return js_base_url.path_join(
-                                                     juice.build.versioned_path(
-                                                         juice.path_join("js/libs",
-                                                                         pkg.lib_name,
-                                                                         "rpcs",
-                                                                         pkg.pkg_name + ".js")));
+                                                     juice.build.minified_path(
+                                                         juice.build.versioned_path(
+                                                             juice.path_join("js/libs",
+                                                                             pkg.lib_name,
+                                                                             "rpcs",
+                                                                             pkg.pkg_name + ".js"))));
                                              }),
                                    juice.map(dependencies.widget_pkgs,
                                              function(pkg) {
                                                  return js_base_url.path_join(
-                                                     juice.build.versioned_path(
-                                                         juice.path_join("js/libs",
-                                                                         pkg.lib_name,
-                                                                         "widgets",
-                                                                         pkg.pkg_name + ".js")));
+                                                     juice.build.minified_path(
+                                                         juice.build.versioned_path(
+                                                             juice.path_join("js/libs",
+                                                                             pkg.lib_name,
+                                                                             "widgets",
+                                                                             pkg.pkg_name + ".js"))));
                                              }));
 
                            dependencies.stylesheet_urls =

@@ -445,7 +445,6 @@
               state: function(rpc) {
                   var keys, namespace;
                   if (!juice.rpc.mock.is_enabled()) {
-                      juice.log("mocking is disabled");
                       return false;
                   }
                   // This code is wrong

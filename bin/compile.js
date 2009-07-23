@@ -10,7 +10,6 @@ po,                         // Parsed program options.
 program_options,            // Specifies the options accepted by this program.
 required_source_files,      // Filenames of mandatory source files.
 settings_changed = false,   // Did our settings file change?
-target_js_file_log,         // Tracks changes in target (i.e. build output) javascript files.
 targets = {                 // Specifies which targets might require recompilation.
     base: false,
     juice_ext_web: false,
@@ -249,6 +248,14 @@ if (targets.user) {
     print("User defined hooks: OK.");
 }
 
+// Post-processing steps: (1) lint any javascript build output that has
+// changed since the last compile, and then (2) minify those changed files.
+
+juice.build.lint();
+if (juice.build.config.minify()) {
+    juice.build.minify();
+}
+
 // When should we recompile pages?
 //
 // (1) Obvious.
@@ -269,15 +276,6 @@ if (targets.pages ||                       // (1)
     print("Compile pages: OK.");
 }
 
-// Post-processing steps: (1) lint any javascript build output that has
-// changed since the last compile, and then (2) minify those changed files.
-
-target_js_file_log = juice.build.target_js_file_log();
-juice.build.lint_target_js(target_js_file_log);
-if (juice.build.config.minify()) {
-    juice.build.minify(target_js_file_log);
-}
-target_js_file_log.save_and_update_all();
 
 print("Done.");
 

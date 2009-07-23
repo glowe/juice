@@ -61,21 +61,20 @@ juice.build.unlink_file_logs = function() {
 
 // Returns a file_log object that refers only to compiled javascript files.
 
-juice.build.target_js_file_log = function() {
+juice.build.target_js_file_log = function(name, filter_pred_fn) {
     var files, file_log;
+
+    filter_pred_fn = filter_pred_fn || function() { return true; };
 
     // Find all .js files under the "build/js" directory and turn them into
     // source_file objects. Special case: ignore the "juice-ext.js" file,
     // which consists of stuff we didn't write and would never pass lint.
 
-    files = juice.map(juice.filter(juice.build.file_find(juice.build.target_file_path("js"), /[.]js$/),
-                                   function(f) {
-                                       return !/\/juice-ext[.]js$/.test(f);
-                                   }),
+    files = juice.map(juice.filter(juice.build.file_find(juice.build.target_file_path("js"), /[.]js$/), filter_pred_fn),
                       function(path) {
                           return juice.build.source_file({path: path, target_type: "whatever"});
                       });
 
-    return juice.build.file_log(files, "target_js");
+    return juice.build.file_log(files, name + "-target_js");
 };
 

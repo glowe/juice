@@ -56,7 +56,11 @@
          return [];
      };
 
-     juice.build.lint_target_js = function(file_log) {
+     juice.build.lint = function() {
+         var file_log = juice.build.target_js_file_log("lint",
+                                                       function(f) {
+                                                           return !/juice-ext[.]js$/.test(f);
+                                                       });
          print("Linting javascript...");
          juice.foreach(file_log.files(),
                        function(f) {
@@ -72,5 +76,6 @@
                                file_log.update(f);
                            }
                        });
+         file_log.save();
      };
  })(juice);
