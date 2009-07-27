@@ -293,8 +293,8 @@
          return answer;
      };
 
-     // Similar to juice.filter, but only returns values (or keys, if a is an
-     // object) that are strictly NOT equal to x.
+     // Similar to juice.filter, but only returns values (or pairs whose keys,
+     // if a is an object) that are strictly NOT equal to x.
 
      juice.filter_value = function(a, x) {
          return juice.filter(a, function(y) { return x !== y; });
