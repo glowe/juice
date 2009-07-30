@@ -31,19 +31,11 @@ private:
     const std::string msg_;
 };
 
-v8::Handle<v8::Value> add_debug_event_listener(const v8::Arguments& args)
+v8::Handle<v8::Value> set_debug_event_listener(const v8::Arguments& args)
 {
     v8::HandleScope handle_scope;
     v8::Handle<v8::Function> callback(v8::Function::Cast(*args[0]));
-    return v8::Boolean::New(v8::Debug::AddDebugEventListener(callback));
-}
-
-v8::Handle<v8::Value> remove_debug_event_listener(const v8::Arguments& args)
-{
-    v8::HandleScope handle_scope;
-    v8::Handle<v8::Function> callback(v8::Function::Cast(*args[0]));
-    v8::Debug::RemoveDebugEventListener(callback);
-    return v8::Undefined();
+    return v8::Boolean::New(v8::Debug::SetDebugEventListener(callback));
 }
 
 std::string read_file(const char* filename) throw (FileIOError)
@@ -195,8 +187,7 @@ int main(int argc, char* argv[])
     sys->Set(v8::String::New("crypt"), v8_juice::crypt_module());
     sys->Set(v8::String::New("os"),    v8_juice::os_module());
     sys->Set(v8::String::New("v8"),    v8::Boolean::New(true));
-    sys->Set(v8::String::New("add_debug_event_listener"), v8::FunctionTemplate::New(add_debug_event_listener));
-    sys->Set(v8::String::New("remove_debug_event_listener"), v8::FunctionTemplate::New(remove_debug_event_listener));
+    sys->Set(v8::String::New("set_debug_event_listener"), v8::FunctionTemplate::New(set_debug_event_listener));
     global->Set(v8::String::New("sys"), sys);
 
 

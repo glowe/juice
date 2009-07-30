@@ -27,7 +27,7 @@
 
          return result;
      };
-     sys.add_debug_event_listener(
+     sys.set_debug_event_listener(
          function(event, exec_state, event_data, data) {
              var i, prop;
              print(event_data.exception());
