@@ -293,8 +293,8 @@
          return answer;
      };
 
-     // Similar to juice.filter, but only returns values (or keys, if a is an
-     // object) that are strictly NOT equal to x.
+     // Similar to juice.filter, but only returns values (or pairs whose keys,
+     // if a is an object) that are strictly NOT equal to x.
 
      juice.filter_value = function(a, x) {
          return juice.filter(a, function(y) { return x !== y; });
@@ -594,7 +594,7 @@
                                                   function(k, v) {
                                                       if (juice.is_undefined(v)) {  // argument k is required
                                                           if (!spec.hasOwnProperty(k)) {
-                                                              throw 'missing required argument: ' + k;
+                                                              throw new Error("missing required spec argument: " + k);
                                                           }
                                                           copy_of_spec[k] = spec[k];
                                                       }
@@ -613,7 +613,7 @@
                                     });
 
                       if (unrecog_keys.length > 0) {
-                          throw "spec contained unrecognized keys: " + unrecog_keys.join(", ");
+                          throw new Error("spec contained unrecognized keys: " + unrecog_keys.join(", "));
                       }
                   }
                   else {
@@ -659,7 +659,7 @@
                       b[d] = {};
                   }
                   else if (!juice.is_object(b[d])) {
-                      throw ('mset path error (dims='+juice.dump(dims)+')');
+                      throw new Error('mset path error (dims='+juice.dump(dims)+')');
                   }
                   b = b[d];
               }
@@ -677,7 +677,7 @@
               var i, b = a, dims = juice.flatten(juice.args(arguments, 1));
               for (i = 0; i < dims.length; i++) {
                   if (!b.hasOwnProperty(dims[i])) {
-                      throw ('mget access error (dims='+juice.dump(dims)+')');
+                      throw new Error('mget access error (dims='+juice.dump(dims)+')');
                   }
                   b = b[dims[i]];
               }
@@ -732,7 +732,7 @@
          o = site.lib;
          for (i = 0; i < parts.length; i++) {
              if (juice.is_undefined(o[parts[i]])) {
-                 throw "site.juice." + lib_obj + " is not defined!";
+                 throw new Error("site.juice." + lib_obj + " is not defined!");
              }
              o = o[parts[i]];
          }

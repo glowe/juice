@@ -1,19 +1,27 @@
 (function(juice, site, jQuery) {
 
-     var assert_spec_is_valid,  // throws an exception if a specification is improperly formatted
-     current_namespace,
+     var current_namespace,
      default_failure_handler,   // handles rpc errors when caller doesn't provide a failure_fn
      default_proxy,             // the non namespace-specific proxy function
      find_proxy,                // looks up the proxy function for a specified rpc
      lib,                       // alias for juice.rpc
      make_proxy_startable,      // attaches plumbing to user-supplied proxy functions
      mocking_proxy,             // the proxy used for all mocked rpcs
-     proxy_map,                 // maps namespaces to proxy functions
-     validate_against_spec;     // tests whether a data structure matches its specification
+     nullable_hidden_key,       // name of the "secret" key used to tag nullable specs
+     proxy_map;                 // maps namespaces to proxy functions
 
      juice.rpc = lib = {};
 
-     assert_spec_is_valid = function(spec) {
+     // +--------------------------------+
+     // | request/response specification |
+     // +--------------------------------+
+
+     nullable_hidden_key = "__juice_nullable__";
+
+     // Tests whether a specification is syntactically valid, and if it is
+     // not, throws an exception describing the error.
+
+     lib.assert_spec_is_valid = function(spec) {
          if (juice.is_string(spec)) {
              if (spec.charAt(spec.length-1) === "?") {
                  spec = spec.slice(0, -1);
@@ -31,7 +39,7 @@
          }
          else if (juice.is_array(spec)) {
              if (spec.length === 1) {
-                 assert_spec_is_valid(spec[0]);
+                 lib.assert_spec_is_valid(spec[0]);
              }
              else if (spec.length === 0) {
                  juice.error.raise("bad_spec: array or enum without values",
@@ -46,7 +54,9 @@
          else if (juice.is_object(spec)) {
              juice.foreach(spec,
                            function(n, s) {
-                               assert_spec_is_valid(s);
+                               if (n !== nullable_hidden_key) {
+                                   lib.assert_spec_is_valid(s);
+                               }
                            });
          }
          else if (!juice.is_null(spec)) {
@@ -54,9 +64,10 @@
          }
      };
 
-     // validate_against_spec checks that a data structure matches
-     // a specification. The specification (spec) is a recursively
-     // defined data structure:
+     // juice.rpc.validate_against_spec tests whether a data structure matches
+     // a specification, returning true if and only if the data match the
+     // specification. The specification (spec) is a recursively defined data
+     // structure:
      //
      //     spec   := object | array | scalar | null | enum
      //     scalar := "boolean" | "integer" | "string" | "any" | "scalar"
@@ -67,10 +78,10 @@
      //
      // Notes: (1) Any of the scalar strings may end in "?", indicating that
      // null is an acceptable substitute. (2) "scalar" indicates that a
-     // boolean, integer, or string is acceptable. (3) "any" indicates that any
-     // value is acceptable. (4) The array spec must be contain precisely one
-     // spec. (5) The object spec may contain zero or more key-spec pairs. (6)
-     // The {_:spec} notation specifies a dictionary with zero or more
+     // boolean, integer, or string is acceptable. (3) "any" indicates that
+     // any value is acceptable. (4) The array spec must be contain precisely
+     // one spec. (5) The object spec may contain zero or more key-spec pairs.
+     // (6) The {_:spec} notation specifies a dictionary with zero or more
      // key-value pairs where we only want to specify the structure of the
      // value. (7) The enum spec is an array consisting of 2 or more strings.
      //
@@ -83,9 +94,21 @@
      //       xyz: {_: ["integer"]}
      //     }
      //
-     // Returns true if the data matches the specification, false otherwise.
+     // About nullability: Arrays and objects may also be tagged as being
+     // nullable (see juice.rpc.nullable). In an object specification, any
+     // value that is nullable implies that its corresponding key may be
+     // omitted. For example, the object {b:1} is valid data for this spec:
+     //
+     //     {
+     //       a: "string?",
+     //       b: "integer",
+     //       c: juice.rpc.nullable(["integer"])
+     //     }
+     //
+     // The keys "a" and "c" point to nullable sub-specs, which makes them
+     // optional keys in the object being validated.
 
-     validate_against_spec = function(spec, data) {
+     lib.validate_against_spec = function(spec, data) {
          var add_error, errors = [], helper;
 
          add_error = function(expected, data) {
@@ -152,7 +175,7 @@
              }
              else if (juice.is_object(spec)) {
                  if (juice.is_object(data)) {
-                     keys = juice.keys(spec);
+                     keys = juice.filter_value(juice.keys(spec), nullable_hidden_key);
                      if (keys.length === 1 && keys[0] === "_") {
                          juice.foreach(data,
                                        function(k,v) {
@@ -162,10 +185,12 @@
                      else {
                          for (i = 0; i < keys.length; i++) {
                              k = keys[i];
-                             if (!data.hasOwnProperty(k)) {
+                             if (data.hasOwnProperty(k)) {
+                                 helper(spec[k], data[k]);
+                             }
+                             else if (!lib.is_nullable(spec[k])) {
                                  errors.push({missing_property: k});
                              }
-                             helper(spec[k], data[k]);
                          }
                      }
                  }
@@ -173,10 +198,8 @@
                      add_error("object", data);
                  }
              }
-             else {
-                 if (!juice.is_null(data)) {
-                     add_error("null", data);
-                 }
+             else if (!juice.is_null(data)) {
+                 add_error("null", data);
              }
          };
 
@@ -184,18 +207,37 @@
          return errors;
      };
 
-     lib.lookup = function(spec) {
-         var parts;
-         spec = juice.spec(spec, {lib_name: undefined,
-                                  pkg_name: undefined,
-                                  name: undefined});
-         parts = [spec.lib_name, "rpcs", spec.pkg_name, spec.name];
-         try {
-             return juice.mget(site.lib, parts);
+     // Marks a part of a spec as nullable. Only necessary when tagging an
+     // array or object; scalars can simply include a "?" character at the
+     // end. Example: {optional_obj: juice.rpc.nullable({k: "string"})}
+
+     lib.nullable = function(spec) {
+         if (juice.is_string(spec)) {
+             if (spec[spec.length-1] !== "?") {
+                 spec += "?";
+             }
          }
-         catch (e) {
-             throw juice.error.chain("can't find rpc (" + parts.join(".") + ")", null, e);
+         else if (juice.is_object(spec)) {
+             spec[nullable_hidden_key] = true;
          }
+         else {
+             juice.error.raise("invalid type: " + typeof spec);
+         }
+         return spec;
+     };
+
+     // Tests whether part of a spec is nullable. Returns true for anything
+     // given to juice.rpc.nullable; also returns true for any string that
+     // ends with a "?" character.
+
+     lib.is_nullable = function(spec) {
+         if (juice.is_string(spec)) {
+             return spec[spec.length-1] === "?";
+         }
+         if (juice.is_object(spec)) {
+             return !!spec[nullable_hidden_key];
+         }
+         return false;
      };
 
      // +----------------+
@@ -211,8 +253,8 @@
 
          qualified_name = current_namespace.qualify(spec.name);
 
-         assert_spec_is_valid(spec.req_spec);
-         assert_spec_is_valid(spec.rsp_spec);
+         lib.assert_spec_is_valid(spec.req_spec);
+         lib.assert_spec_is_valid(spec.rsp_spec);
 
          rpc = function(args, success_fn, failure_fn) {
              var call_when_finished, context, do_validate;
@@ -222,7 +264,7 @@
              call_when_finished = juice.util.loading();
 
              do_validate = function(spec_type, my_args) {
-                 var errors = validate_against_spec(spec[spec_type], my_args);
+                 var errors = lib.validate_against_spec(spec[spec_type], my_args);
                  if (errors.length > 0) {
                      juice.error.raise(qualified_name + ": " + spec_type + "_mismatch",
                                        {spec: juice.dump(spec[spec_type]),
