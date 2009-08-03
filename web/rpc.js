@@ -18,6 +18,39 @@
 
      nullable_hidden_key = "__juice_nullable__";
 
+     // Marks a part of a spec as nullable. Only necessary when tagging an
+     // array or object; scalars can simply include a "?" character at the
+     // end. Example: {optional_obj: juice.rpc.nullable({k: "string"})}
+
+     lib.nullable = function(spec) {
+         if (juice.is_string(spec)) {
+             if (spec[spec.length-1] !== "?") {
+                 spec += "?";
+             }
+         }
+         else if (juice.is_object(spec)) {
+             spec[nullable_hidden_key] = true;
+         }
+         else {
+             juice.error.raise("invalid type: " + typeof spec);
+         }
+         return spec;
+     };
+
+     // Tests whether part of a spec is nullable. Returns true for anything
+     // given to juice.rpc.nullable; also returns true for any string that
+     // ends with a "?" character.
+
+     lib.is_nullable = function(spec) {
+         if (juice.is_string(spec)) {
+             return spec[spec.length-1] === "?";
+         }
+         if (juice.is_object(spec)) {
+             return !!spec[nullable_hidden_key];
+         }
+         return false;
+     };
+
      // Tests whether a specification is syntactically valid, and if it is
      // not, throws an exception describing the error.
 
@@ -69,7 +102,7 @@
      // specification. The specification (spec) is a recursively defined data
      // structure:
      //
-     //     spec   := object | array | scalar | null | enum
+     //     spec   := object | array | scalar | enum
      //     scalar := "boolean" | "integer" | "string" | "any" | "scalar"
      //     array  := [ spec ]
      //     enum   := [ "enum_0", ..., "enum_N" ]
@@ -120,13 +153,16 @@
          helper = function(spec, data) {
              var i, k, keys;
 
-             if (juice.is_string(spec)) {
-                 if (spec[spec.length-1] === "?") {
-                     if (juice.is_null(data)) {
-                         return;
-                     }
+             if (lib.is_nullable(spec)) {
+                 if (juice.is_null(data)) {
+                     return;
+                 }
+                 if (juice.is_string(spec) && spec[spec.length-1] === "?") {
                      spec = spec.slice(0, -1);
                  }
+             }
+
+             if (juice.is_string(spec)) {
                  if (spec === "scalar") {
                      if (!juice.is_boolean(data) && !juice.looks_like_integer(data) && !juice.is_string(data)) {
                          add_error("boolean, integer, or string", data);
@@ -198,46 +234,10 @@
                      add_error("object", data);
                  }
              }
-             else if (!juice.is_null(data)) {
-                 add_error("null", data);
-             }
          };
 
          helper(spec, data);
          return errors;
-     };
-
-     // Marks a part of a spec as nullable. Only necessary when tagging an
-     // array or object; scalars can simply include a "?" character at the
-     // end. Example: {optional_obj: juice.rpc.nullable({k: "string"})}
-
-     lib.nullable = function(spec) {
-         if (juice.is_string(spec)) {
-             if (spec[spec.length-1] !== "?") {
-                 spec += "?";
-             }
-         }
-         else if (juice.is_object(spec)) {
-             spec[nullable_hidden_key] = true;
-         }
-         else {
-             juice.error.raise("invalid type: " + typeof spec);
-         }
-         return spec;
-     };
-
-     // Tests whether part of a spec is nullable. Returns true for anything
-     // given to juice.rpc.nullable; also returns true for any string that
-     // ends with a "?" character.
-
-     lib.is_nullable = function(spec) {
-         if (juice.is_string(spec)) {
-             return spec[spec.length-1] === "?";
-         }
-         if (juice.is_object(spec)) {
-             return !!spec[nullable_hidden_key];
-         }
-         return false;
      };
 
      // +----------------+
