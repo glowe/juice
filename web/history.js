@@ -14,15 +14,16 @@
 
          is_first_load: dhtmlHistory.isFirstLoad,
 
-         get_token: function() {
-             var old_token = dhtmlHistory.getCurrentLocation();
-             if (old_token === "") {
+         get: function() {
+             var old_history = dhtmlHistory.getCurrentLocation();
+             if (old_history === "") {
                  return {};
              }
-             return JSON.parse(decodeURI(old_token));
+             return JSON.parse(decodeURI(old_history));
          },
 
-         new_item: function(json) {
+         set: function(json) {
+             dhtmlHistory.ignoreLocationChange = true;
              dhtmlHistory.add(JSON.stringify(json));
          }
      };
