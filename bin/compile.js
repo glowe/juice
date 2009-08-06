@@ -154,10 +154,11 @@ file_log = juice.build.file_log(all_source_files_plus_user, "source");
 
 if (file_log.empty()) {
     print("Starting full build...");
+    juice.build.clean();
 }
 else if (file_log.has_file_changed(juice.build.config.site_settings_path())) {
-    juice.build.clean();
     print("Settings file changed (" + juice.build.config.site_settings_path() + "); starting from scratch.");
+    juice.build.clean();
     settings_changed = true;
 }
 
