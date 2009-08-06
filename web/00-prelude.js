@@ -104,7 +104,7 @@
      };
 
      juice.looks_like_integer = function(s) {
-         return (/^\d+$/).test(s);
+         return (/^-?\d+$/).test(s);
      };
 
      // Tests whether the given value is empty. For an array, this means
