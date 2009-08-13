@@ -5,12 +5,6 @@
 
 * IMPORTANT When mocking is enabled and there is no mock implementation, we need an error message
 * NEXT juice newsite should ship with flickr widgets etc.
-* STARTED Implement all RPCs
-  report spam
-  not spam
-  delete
-  save
-  forward, reply, etc
 * NEXT Add a timeout to rpcs
 * NEXT Convert package.json to package.js
 This allows config files to be programmable.
@@ -21,7 +15,6 @@ It'd be nice to set stylesheet_urls using the site.settings.static_base_url valu
   Should be dynamically loaded.
 * IMPORTANT Determine dependency order among util "packages" so library code is compiled into base.js in correct order.
 * STARTED Convert all form inputs to work regardless of state
-* IMPORTANT The internal error message and exception trapping tends to obscure the origin of messages.
 * IMPORTANT Provide facility to specify a data-translation/cleansing function for an RPC.
 * IMPORTANT Code cleanup (e.g., consistent use of double-quotes, better exception messages)
 * IMPORTANT Add a config option to use googleapi jquery
@@ -52,6 +45,14 @@ It'd be nice to set stylesheet_urls using the site.settings.static_base_url valu
 
   - [ ] date formatting modifier
   - [ ] ellipsis formatter
+* DONE The internal error message and exception trapping tends to obscure the origin of messages.
+* DONE Implement all RPCs
+  report spam
+  not spam
+  delete
+  save
+  forward, reply, etc
+* DONE nullable object keys and nullable objects in rpc specs?
 * DONE Add the one at a time functionality.
 * DONE util should have the same scoping rules as rpc and widget packages
 * DONE Change the way we scope individual js files in packages.
