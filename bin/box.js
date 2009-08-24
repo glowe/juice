@@ -37,9 +37,10 @@ add_widget_package = function(namespace) {
 // Parse and process command-line arguments.
 
 program_options = juice.program_options(
-    {"cd=DIR" : ["Change to DIR before doing anything.", "."],
-     "help"   : "Display this message.",
-     "no-rts" : "Exclude the juice runtime system from the archive."});
+    {"cd=DIR": ["Change to DIR before doing anything.", "."],
+     "help": "Display this message.",
+     "packages-only": "Exclude the juice runtime from the archive.",
+     "unminified": "Use non-minified code even when minification is enabled."});
 
 po = program_options.parse_arguments(argv);
 options = po.options;
@@ -55,26 +56,33 @@ juice.build.config.load();
 juice.build.load_versioned_paths();
 
 if (po.unconsumed.length === 0) {
-    juice.build.fatal("must specify a destination path");
+    juice.build.fatal("You must specify a destination path.");
 }
-else if (po.unconsumed.length === 1) {
-    juice.build.fatal("must specify at least one widget package");
+if (po.unconsumed.length === 1 && options["packages-only"]) {
+    juice.build.fatal("You must specify at least one widget package when using the --packages-only option.");
 }
 
 destination_path = po.unconsumed[0];
 source_namespaces = juice.map(po.unconsumed.slice(1), juice.namespace.parse);
 
-// Start out with the fundamental source files (depending on the --no-rts option).
-source_files = options["no-rts"] ? [] : ["js/juice-ext.js", "js/juice-web.js", "js/base.js"];
+// Make sure the build is up to date.
+if (juice.sys.system("juice compile --check >/dev/null") !== 0) {
+    juice.build.fatal('The build is out of date. Run "juice compile" first.');
+}
+
+// Start out with the fundamental source files.
+source_files = options["packages-only"]
+    ? []
+    : ["js/juice-ext.js", "js/juice-web.js", "js/base.js"];
 
 // Add all caller-specified widget packages.
 juice.foreach(source_namespaces,
               function(ns) {
                   if (ns.pkg_type !== "widgets") {
-                      juice.build.fatal('"'+ns+'" is not a widget package');
+                      juice.build.fatal('"'+ns+'" is not a widget package.');
                   }
                   if (juice.is_undefined(ns.pkg_name)) {
-                      juice.build.fatal('"'+ns+'" does not refer to a package');
+                      juice.build.fatal('"'+ns+'" does not refer to a package.');
                   }
                   add_widget_package(ns);
               });
@@ -95,7 +103,9 @@ juice.foreach(source_packages,
               });
 
 // Apply various path transformations.
-source_files = juice.map(source_files, juice.build.minified_path);
+if (!options.unminified) {
+    source_files = juice.map(source_files, juice.build.minified_path);
+}
 source_files = juice.map(source_files, juice.build.target_file_path);
 
 // Read all files, concatenate, and write to the output file.
@@ -107,5 +117,5 @@ juice.foreach(source_files,
                   output_content += juice.sys.read_file(path);
               });
 juice.sys.write_file(destination_path, output_content, true);
-print("Wrote "+destination_path);
+print("Wrote "+output_content.length+" bytes to "+destination_path);
 
