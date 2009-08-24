@@ -26,6 +26,7 @@ targets = {                 // Specifies which targets might require recompilati
 program_options = juice.program_options(
     {"cd=DIR"  : ["Change to DIR before doing anything.", "."],
      "help"    : "Display this message.",
+     "check"   : "Exits with non-zero status unless the build is up to date.",
      "all"     : "Recompile all targets.",
      "clean"   : "Delete all compiled output before doing anything.",
      "base"    : "Recompile the site base file.",
@@ -151,6 +152,26 @@ else {
 }
 
 file_log = juice.build.file_log(all_source_files_plus_user, "source");
+
+// If the user supplied the --check option, we only need to check if the build
+// is up to date. If any source file has changed since the last compile, we
+// need to recompile. Exit with a non-zero value if the build is out of date,
+// and zero otherwise.
+
+if (options.check) {
+    if (file_log.empty() ||
+        file_log.has_file_changed(juice.build.config.site_settings_path()) ||
+        juice.any(all_source_files_plus_user,
+                  function(f) {
+                      return file_log.has_file_changed(f.path);
+                  }))
+    {
+        print("Build is out of date.");
+        juice.sys.exit(1);
+    }
+    print("Build is up to date.");
+    juice.sys.exit(0);
+}
 
 if (file_log.empty()) {
     print("Starting full build...");
