@@ -62,7 +62,7 @@
 
                                                  metadata =
                                                      juice.build.read_widget_package_metadata(
-                                                         juice.build.find_library(lib_name), pkg_name);
+                                                         juice.build.lib_path(lib_name), pkg_name);
 
                                                  script_urls = script_urls.concat(metadata.script_urls);
                                                  stylesheet_urls = stylesheet_urls.concat(metadata.stylesheet_urls);
@@ -187,20 +187,16 @@
                                                  return js_base_url.path_join(
                                                      juice.build.minified_path(
                                                          juice.build.versioned_path(
-                                                             juice.path_join("js/libs",
-                                                                             pkg.lib_name,
-                                                                             "rpcs",
-                                                                             pkg.pkg_name + ".js"))));
+                                                             juice.build.compiled_package_path(
+                                                                 pkg.lib_name, "rpcs", pkg.pkg_name))));
                                              }),
                                    juice.map(dependencies.widget_pkgs,
                                              function(pkg) {
                                                  return js_base_url.path_join(
                                                      juice.build.minified_path(
                                                          juice.build.versioned_path(
-                                                             juice.path_join("js/libs",
-                                                                             pkg.lib_name,
-                                                                             "widgets",
-                                                                             pkg.pkg_name + ".js"))));
+                                                             juice.build.compiled_package_path(
+                                                                 pkg.lib_name, "widgets", pkg.pkg_name))));
                                              }));
 
                            dependencies.stylesheet_urls =

@@ -5,7 +5,7 @@
          var path;
          if (what.lib_name) {
              try {
-                 path = juice.build.find_library(what.lib_name);
+                 path = juice.build.lib_path(what.lib_name);
              }
              catch (e) {
                  juice.error.raise("Attempting to set categorizer for unrecognized library: " +lib_name);

@@ -137,6 +137,9 @@
          load(juice.sys.canonical_path(filename));
      };
 
+     // Given the relative path to a compiled output file, returns a path that
+     // is relative to the build output directory. Warning: not idempotent.
+
      juice.build.target_file_path = function(relpath) {
          return juice.path_join('build', relpath);
      };
@@ -231,6 +234,35 @@
          return answer;
      };
 
+     // Returns the filesystem location of a library, given its name. Does not
+     // work unless "juice config" has already run successfully.
+
+     juice.build.lib_path = function(name) {
+         var path = juice.build.config.lib_paths()[name];
+         if (path) { return path; }
+         return juice.error.raise('path to library "'+name+'" is unknown');
+     };
+
+     // Returns the name of a library given its filesystem location. Returns
+     // undefined if there isn't a valid library at the specified path.
+
+     juice.build.lib_name = function(path) {
+         var json, lib_json_path;
+         lib_json_path = juice.path_join(path, 'lib.json');
+         if (juice.sys.file_exists(lib_json_path) !== 'file') {
+             return false;
+         }
+         json = juice.build.read_file_json(lib_json_path);
+         return json.hasOwnProperty('name') ? json.name : undefined;
+     };
+
+     // Tests whether a valid library with the given name exists at the
+     // specified filesystem path.
+
+     juice.build.lib_exists = function(name, path) {
+         return juice.build.lib_name(path) === name;
+     };
+
      // Returns the list of all normal files (i.e. non-directories) in the
      // specified directory tree. Paths include top_dir. If filter_re is
      // given, we only return paths that match.
@@ -255,7 +287,7 @@
      juice.build.find_util_source_files = function(lib_name) {
          var files, templates_path, util_path;
 
-         util_path = juice.path_join(juice.build.find_library(lib_name), "util");
+         util_path = juice.path_join(juice.build.lib_path(lib_name), "util");
          if (!juice.sys.file_exists(util_path)) {
              return [];
          }

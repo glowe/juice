@@ -14,6 +14,7 @@ if (@ARGV < 1) {
     print "Commands:\n";
     print "  compile    Compile a site.\n";
     print "  config     Configure a site.\n";
+    print "  box        Create an archive of compiled source files.\n";
     print "  newsite    Create scaffolding for a new site.\n";
     print "  runserver  Run a standalone webserver for a site.\n";
     print "\n";

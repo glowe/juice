@@ -7,7 +7,7 @@
 
      find_widget_packages = function(lib_name) {
          var base_path, packages = [];
-         base_path = juice.path_join(juice.build.find_library(lib_name), "widgets");
+         base_path = juice.path_join(juice.build.lib_path(lib_name), "widgets");
          juice.foreach(juice.sys.list_dir(base_path, {fullpath:true}),
                        function(filepath) {
                            if (juice.sys.file_exists(filepath) == "dir") {
@@ -24,7 +24,7 @@
 
      find_rpc_packages = function(lib_name) {
          var base_path, packages = [];
-         base_path = juice.path_join(juice.build.find_library(lib_name), "rpcs");
+         base_path = juice.path_join(juice.build.lib_path(lib_name), "rpcs");
          juice.foreach(juice.sys.list_dir(base_path, {fullpath:true}),
                        function(path) {
                            if (juice.sys.file_exists(path) == "file") {
@@ -33,6 +33,15 @@
                            }
                        });
          return packages;
+     };
+
+     // ...
+
+     juice.build.compiled_package_path = function(lib_name, pkg_type, pkg_name) {
+         if (pkg_type !== "widgets" && pkg_type !== "rpcs") {
+             juice.build.fatal('invalid package pkg_type: "' + pkg_type + '"');
+         }
+         return juice.path_join("js/libs", lib_name, pkg_type, pkg_name) + ".js";
      };
 
      juice.build.find_widget_source_files = function(lib_name) {
@@ -182,7 +191,7 @@
                        }));
 
          juice.build.write_target_script_file(
-             juice.path_join('js/libs', lib_name, 'widgets', pkg_name) + '.js',
+             juice.build.compiled_package_path(lib_name, "widgets", pkg_name),
              ['juice.widget.define_package("' + lib_name + '", "' + pkg_name + '", function(juice, site, jQuery) {',
               'var templates = ' + templates + ';',
               '(function() { ' + widgets.join('\n') + '})();',
@@ -201,7 +210,7 @@
          rpcs = juice.map(source_files, juice.build.read_and_scope_js_source_file);
 
          juice.build.write_target_script_file(
-             juice.path_join('js/libs', lib_name, 'rpcs', pkg_name) + '.js',
+             juice.build.compiled_package_path(lib_name, "rpcs", pkg_name),
              ['juice.rpc.define_package("' + lib_name + '", "' + pkg_name + '", function(juice, site, jQuery) {',
               rpcs.join('\n'),
               '});'].join("\n"));

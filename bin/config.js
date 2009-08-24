@@ -9,16 +9,14 @@
 
 
 var
-find_library,
-lib_paths = {},
-libs_seen = {},
-new_lib_deps,
-options,
-program_options,
-site_lib_deps,          // recursive library dependencies for entire site
-site_lib_name,
-site_lib_path,
-site_settings_path;
+find_library,           // searches the filesystem for a library given its name
+lib_paths = {},         // maps library names to filesystem paths
+options,                // command-line options specified with "--"
+program_options,        // specifies the options accepted by this program
+search_library_deps,    // finds all libraeries on which our site depends; store in lib_paths
+site_lib_name,          // name of our site's internal library
+site_lib_path,          // path to site_lib_name
+site_settings_path;     // user-supplied settings file
 
 find_library = function(name) {
     var path = lib_paths[name];
@@ -43,6 +41,23 @@ find_library = function(name) {
         return path;
     }
     return juice.error.raise('unable to locate library: '+name);
+};
+
+search_library_deps = function(lib_path) {
+    // For each widget package in the library...
+    juice.foreach(juice.sys.list_dir(juice.path_join(lib_path, 'widgets')),
+                  function(pkg) {
+                      // For each library on which this widget package depends...
+                      juice.foreach(juice.build.read_widget_package_metadata(lib_path, pkg).dependencies,
+                                    function(lib_name) {
+                                        // If we have not already explored this library...
+                                        if (!lib_paths.hasOwnProperty(lib_name)) {
+                                            lib_paths[lib_name] = find_library(lib_name);
+                                            print('Found library '+lib_name+' at "'+lib_paths[lib_name]+'".');
+                                            search_library_deps(lib_paths[lib_name]); // recurse
+                                        }
+                                    });
+                  });
 };
 
 program_options = juice.program_options(
@@ -80,30 +95,9 @@ if (!(site_lib_name = juice.build.lib_name(site_lib_path))) {
     juice.error.raise("couldn't find library at "+site_lib_path);
 }
 lib_paths[site_lib_name] = site_lib_path;
-site_lib_deps = juice.build.library_dependencies(site_lib_path);
 
-// Recursively find all of our library dependencies
-do {
-    new_lib_deps = [];
-
-    juice.foreach(site_lib_deps,
-                  function(name) {
-                      var path;
-                      if (libs_seen[name]) {
-                          return;
-                      }
-                      path = lib_paths[name] = find_library(name);
-                      print('Found library '+name+' at "'+path+'".');
-                      new_lib_deps.push(juice.build.library_dependencies(path));
-                      libs_seen[name] = true;
-                  });
-
-    site_lib_deps =
-        juice.build.merge_library_dependencies.apply(
-            this,
-            [site_lib_deps].concat(new_lib_deps));
-
-} while (new_lib_deps.length != 0);
+// Search for all our library dependencies.
+search_library_deps(site_lib_path);
 
 print('Saving configuration.');
 juice.build.config.set_debug(options['debug']);

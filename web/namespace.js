@@ -13,12 +13,12 @@
          // Parses a period-separated namespace and returns a
          // namespace object.
          parse: function(string) {
-             return this.make.apply(this, string.split("."));
+             return juice.namespace.make.apply(this, string.split("."));
          },
 
          // Accepts a list of namespace components and returns a namespace object.
          // For example:
-         //     var ns = juice.namespace(["foo", "rpcs", "bar", "baz"]);
+         //     var ns = juice.namespace("foo", "rpcs", "bar", "baz");
          //     ns.lib_name == "foo";
          //     ns.pkg_type == "rpcs";
          //     ns.pkg_name == "bar";
@@ -67,23 +67,6 @@
                  // The function name; undefined if the namespace is a
                  // 3-level namespace.
                  fn_name: fn_name,
-
-                 // Asserts that the specified namespace exists.
-                 assert_exists: function() {
-                     if (!site.lib.hasOwnProperty(lib_name)) {
-                         juice.error.raise("Unrecognized library: " + lib_name);
-                     }
-
-                     if (pkg_type && !site.lib[lib_name].hasOwnProperty(pkg_type)) {
-                         juice.error.raise("Unrecognized package type: " + pkg_type);
-                     }
-                     if (pkg_name && !site.lib[lib_name][pkg_type].hasOwnProperty(pkg_name)) {
-                         juice.error.raise("Unrecognized package: " + pkg_name);
-                     }
-                     if (fn_name && !site.lib[lib_name][pkg_type][pkg_name].hasOwnProperty(fn_name)) {
-                         juice.error.raise("Unrecognized function: " + fn_name);
-                     }
-                 },
 
                  // Returns an array of namespace parts.
                  split: function() {
