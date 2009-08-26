@@ -165,7 +165,6 @@
          return null;
      };
 
-
      // Like first_key, but returns the value instead.
 
      juice.first = function(dict) {
@@ -313,6 +312,11 @@
                        });
          return answer;
      };
+
+     // Given an array containing any number of recusively nested arrays,
+     // flattens the arrays, returning an array containing all scalar elements
+     // (or, more accurately, only non-array elements). For example, given the
+     // array [[1, [2]], 3, [4, [5, [6, [7]]]]], returns [1,2,3,4,5,6,7].
 
      juice.flatten = function(a) {
          if (!juice.is_array(a)) {
@@ -500,19 +504,9 @@
          return (juice.is_object(x) || juice.is_array(x)) ? juice.map(x, juice.deep_copy) : x;
      };
 
-     juice.delegate = function(delegator, implementation) {
-         juice.foreach(implementation,
-                       function(property) {
-                           if (!delegator.hasOwnProperty(property)) {
-                               delegator[property] = implementation[property];
-                           }
-                       });
-         return delegator;
-     };
-
-     // Accepts 1 or more arrays and returns an array consisting
-     // of the unique items. Only works with items that can be
-     // used as associative array keys. NOTE: preserves order.
+     // Accepts 1 or more arrays and returns an array consisting of the unique
+     // items. Only works with items that can be used as associative array
+     // keys. NOTE: preserves order.
 
      juice.unique = function() {
          var arrays = juice.args(arguments), s = {}, uniqued = [];
@@ -528,6 +522,8 @@
                        });
          return uniqued;
      };
+
+     // Given a Date object, returns the corresponding UNIX timestamp.
 
      juice.date_to_unix = function(d) {
          return Math.floor(((d || new Date()).getTime() / 1000).toFixed());
@@ -642,8 +638,48 @@
 
       })();
 
-
-     // TODO: docs!
+     // Multi-dimensional object manipulation/accessors functions:
+     //
+     //     juice.mset(a, v, dims)
+     //
+     //         Sets a value in an object using a multi-dimensional key. For
+     //         example:
+     //
+     //             var o = {};
+     //             juice.mset(o, "foo", ["a", "b", "c"]);
+     //             print(juice.dump(o));
+     //
+     //         The above code prints: {"a": {"b": {"c": "foo"}}}
+     //
+     //     juice.mdef(a, v, dims)
+     //
+     //         Works exactly like mset, except it will not overwrite a value
+     //         that already exists. For example:
+     //
+     //             var o = {};
+     //             juice.mset(o, "foo", ["x"]);
+     //             juice.mdef(o, "bar", ["x"]);  // does NOT change `o`
+     //             juice.mset(o, "baz", ["x"]);  // changes `o`
+     //
+     //     juice.mget(a, dims)
+     //
+     //         Retrieves a value from a multi-dimensional object. For
+     //         example:
+     //
+     //             var o = {};
+     //             juice.mset(o, "foo", ["a", "b", "c"]);
+     //             var x = juice.mget(o, ["a", "b"])/
+     //             print(juice.dump(x));
+     //             juice.mget(o, ["a", "d"]);  // throws an exception!
+     //
+     //         The above code prints: {"c": "foo"} (then throws an exception,
+     //         when the second call to juice.mget fails).
+     //
+     //     juice.mhas(a, dims)
+     //
+     //         Similar to mget, but this function only returns a boolean:
+     //         true if a value at the specified dimensions exists, false
+     //         otherwise. Unlike mget, it cannot throw an exception.
 
      (function() {
           var setfn = function(a, v, dims, overwrite) {
