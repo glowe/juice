@@ -100,7 +100,7 @@ juice.sys.write_file(juice.path_join(site_name, "macros.json"),
 print("Created empty macros.json file: OK");
 
 write_template("pages.js", site_name);
-print("Created pages.sj file: OK");
+print("Created pages.js file: OK");
 
 write_template("layouts.js", site_name);
 print("Created layouts file: OK");
